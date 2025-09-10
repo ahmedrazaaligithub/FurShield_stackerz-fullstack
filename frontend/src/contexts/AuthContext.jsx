@@ -1,0 +1,184 @@
+import { createContext, useContext, useReducer, useEffect } from 'react'
+import { authAPI } from '../services/api'
+import toast from 'react-hot-toast'
+
+const AuthContext = createContext()
+
+const authReducer = (state, action) => {
+  switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    case 'SET_USER':
+      return { ...state, user: action.payload, loading: false }
+    case 'SET_TOKEN':
+      return { ...state, token: action.payload }
+    case 'LOGOUT':
+      return { ...state, user: null, token: null, loading: false }
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, loading: false }
+    default:
+      return state
+  }
+}
+
+const initialState = {
+  user: null,
+  token: localStorage.getItem('token'),
+  loading: true,
+  error: null
+}
+
+export const AuthProvider = ({ children }) => {
+  const [state, dispatch] = useReducer(authReducer, initialState)
+
+  useEffect(() => {
+    const initAuth = async () => {
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const response = await authAPI.getMe()
+          dispatch({ type: 'SET_USER', payload: response.data.data })
+        } catch (error) {
+          localStorage.removeItem('token')
+          dispatch({ type: 'LOGOUT' })
+        }
+      } else {
+        dispatch({ type: 'SET_LOADING', payload: false })
+      }
+    }
+
+    initAuth()
+  }, [])
+
+  const login = async (email, password) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true })
+      const response = await authAPI.login({ email, password })
+      const { user, accessToken } = response.data.data
+      
+      localStorage.setItem('token', accessToken)
+      dispatch({ type: 'SET_TOKEN', payload: accessToken })
+      dispatch({ type: 'SET_USER', payload: user })
+      
+      toast.success(`Welcome back, ${user.name}!`)
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Login failed'
+      dispatch({ type: 'SET_ERROR', payload: message })
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const register = async (userData) => {
+    try {
+      dispatch({ type: 'SET_LOADING', payload: true })
+      const response = await authAPI.register(userData)
+      const { user, accessToken } = response.data.data
+      
+      localStorage.setItem('token', accessToken)
+      dispatch({ type: 'SET_TOKEN', payload: accessToken })
+      dispatch({ type: 'SET_USER', payload: user })
+      
+      toast.success('Registration successful! Please check your email to verify your account.')
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Registration failed'
+      dispatch({ type: 'SET_ERROR', payload: message })
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const logout = async () => {
+    try {
+      await authAPI.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      localStorage.removeItem('token')
+      dispatch({ type: 'LOGOUT' })
+      toast.success('Logged out successfully')
+    }
+  }
+
+  const forgotPassword = async (email) => {
+    try {
+      await authAPI.forgotPassword({ email })
+      toast.success('Password reset link sent to your email')
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Failed to send reset email'
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const resetPassword = async (token, password) => {
+    try {
+      const response = await authAPI.resetPassword(token, { password })
+      const { accessToken } = response.data.data
+      
+      localStorage.setItem('token', accessToken)
+      dispatch({ type: 'SET_TOKEN', payload: accessToken })
+      
+      toast.success('Password reset successful')
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Password reset failed'
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const verifyEmail = async (token) => {
+    try {
+      await authAPI.verifyEmail(token)
+      toast.success('Email verified successfully')
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Email verification failed'
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const updateProfile = async (userData) => {
+    try {
+      const response = await authAPI.updateProfile(userData)
+      const updatedUser = response.data.data || response.data
+      dispatch({ type: 'SET_USER', payload: updatedUser })
+      toast.success('Profile updated successfully')
+      return { success: true }
+    } catch (error) {
+      const message = error.response?.data?.error || 'Profile update failed'
+      toast.error(message)
+      return { success: false, error: message }
+    }
+  }
+
+  const value = {
+    ...state,
+    login,
+    register,
+    logout,
+    forgotPassword,
+    resetPassword,
+    verifyEmail,
+    updateProfile
+  }
+
+  return (
+    <AuthContext.Provider value={value}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}

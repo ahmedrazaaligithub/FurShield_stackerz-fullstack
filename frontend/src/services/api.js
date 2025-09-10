@@ -1,0 +1,203 @@
+import axios from 'axios'
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api/v1'
+
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json'
+  }
+})
+
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
+api.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config
+    
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true
+      
+      try {
+        const response = await api.post('/auth/refresh')
+        const { accessToken } = response.data.data
+        localStorage.setItem('token', accessToken)
+        originalRequest.headers.Authorization = `Bearer ${accessToken}`
+        return api(originalRequest)
+      } catch (refreshError) {
+        localStorage.removeItem('token')
+        window.location.href = '/login'
+        return Promise.reject(refreshError)
+      }
+    }
+    
+    return Promise.reject(error)
+  }
+)
+
+export const authAPI = {
+  register: (data) => api.post('/auth/register', data),
+  login: (data) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
+  refresh: () => api.post('/auth/refresh'),
+  forgotPassword: (data) => api.post('/auth/forgot-password', data),
+  resetPassword: (token, data) => api.post(`/auth/reset-password/${token}`, data),
+  verifyEmail: (token) => api.post(`/auth/verify-email/${token}`),
+  getMe: () => api.get('/auth/me'),
+  updateProfile: (data) => api.put('/auth/profile', data)
+}
+
+export const userAPI = {
+  getProfile: () => api.get('/auth/me'),
+  updateProfile: (data) => api.put('/users/profile', data),
+  uploadAvatar: (formData) => api.post('/users/upload-avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteAccount: () => api.delete('/users/profile'),
+  getVets: (params) => api.get('/users/vets', { params }),
+  requestVetVerification: (data) => api.post('/users/vet-verification', data),
+  approveVetVerification: (userId) => api.put(`/users/${userId}/verify-vet`),
+  rejectVetVerification: (userId, data) => api.put(`/users/${userId}/reject-vet`, data)
+}
+
+export const petAPI = {
+  getPets: (params) => api.get('/pets', { params }),
+  getPet: (id) => api.get(`/pets/${id}`),
+  createPet: (data) => api.post('/pets', data),
+  updatePet: (id, data) => api.put(`/pets/${id}`, data),
+  deletePet: (id) => api.delete(`/pets/${id}`),
+  uploadPhotos: (id, formData) => api.post(`/pets/${id}/photos`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  getHealthRecords: (id, params) => api.get(`/pets/${id}/health-records`, { params }),
+  createHealthRecord: (id, data) => api.post(`/pets/${id}/health-records`, data)
+}
+
+export const appointmentAPI = {
+  getAppointments: (params) => api.get('/appointments', { params }),
+  getAppointment: (id) => api.get(`/appointments/${id}`),
+  createAppointment: (data) => api.post('/appointments', data),
+  updateAppointment: (id, data) => api.put(`/appointments/${id}`, data),
+  deleteAppointment: (id) => api.delete(`/appointments/${id}`),
+  acceptAppointment: (id) => api.put(`/appointments/${id}/accept`),
+  proposeTimeChange: (id, data) => api.put(`/appointments/${id}/propose-time`, data),
+  completeAppointment: (id, data) => api.put(`/appointments/${id}/complete`, data),
+  cancelAppointment: (id, data) => api.put(`/appointments/${id}/cancel`, data)
+}
+
+export const shelterAPI = {
+  getShelters: (params) => api.get('/shelters', { params }),
+  getShelter: (id) => api.get(`/shelters/${id}`),
+  createShelter: (data) => api.post('/shelters', data),
+  updateShelter: (id, data) => api.put(`/shelters/${id}`, data),
+  deleteShelter: (id) => api.delete(`/shelters/${id}`),
+  verifyShelter: (id) => api.put(`/shelters/${id}/verify`),
+  rejectShelter: (id, data) => api.put(`/shelters/${id}/reject`, data)
+}
+
+export const adoptionAPI = {
+  getListings: (params) => api.get('/adoptions', { params }),
+  getListing: (id) => api.get(`/adoptions/${id}`),
+  createListing: (data) => api.post('/adoptions', data),
+  updateListing: (id, data) => api.put(`/adoptions/${id}`, data),
+  deleteListing: (id) => api.delete(`/adoptions/${id}`),
+  createInquiry: (id, data) => api.post(`/adoptions/${id}/inquire`, data),
+  updateInquiryStatus: (id, inquiryId, data) => api.put(`/adoptions/${id}/inquiries/${inquiryId}`, data),
+  completeAdoption: (id, inquiryId, data) => api.put(`/adoptions/${id}/complete/${inquiryId}`, data)
+}
+
+export const productAPI = {
+  getProducts: (params) => api.get('/products', { params }),
+  getProduct: (id) => api.get(`/products/${id}`),
+  createProduct: (data) => api.post('/products', data),
+  updateProduct: (id, data) => api.put(`/products/${id}`, data),
+  deleteProduct: (id) => api.delete(`/products/${id}`),
+  getCategories: () => api.get('/products/categories')
+}
+
+export const cartAPI = {
+  getCart: () => api.get('/cart'),
+  addToCart: (productId, quantity) => api.post('/cart/add', { productId, quantity }),
+  updateQuantity: (productId, quantity) => api.put('/cart/update', { productId, quantity }),
+  removeFromCart: (productId) => api.delete(`/cart/remove/${productId}`),
+  clearCart: () => api.delete('/cart/clear'),
+  applyCoupon: (code) => api.post('/cart/coupon', { code }),
+  removeCoupon: () => api.delete('/cart/coupon')
+}
+
+export const orderAPI = {
+  getOrders: (params) => api.get('/orders', { params }),
+  getOrder: (id) => api.get(`/orders/${id}`),
+  createOrder: (data) => api.post('/orders', data),
+  updateOrder: (id, data) => api.put(`/orders/${id}`, data),
+  cancelOrder: (id, data) => api.put(`/orders/${id}/cancel`, data),
+  processPayment: (id, data) => api.post(`/orders/${id}/payment`, data),
+  refundOrder: (id, data) => api.post(`/orders/${id}/refund`, data)
+}
+
+export const ratingAPI = {
+  getRatings: (params) => api.get('/ratings', { params }),
+  createRating: (data) => api.post('/ratings', data),
+  updateRating: (id, data) => api.put(`/ratings/${id}`, data),
+  deleteRating: (id) => api.delete(`/ratings/${id}`),
+  markHelpful: (id) => api.put(`/ratings/${id}/helpful`),
+  reportRating: (id, data) => api.post(`/ratings/${id}/report`, data),
+  moderateRating: (id, data) => api.put(`/ratings/${id}/moderate`, data)
+}
+
+export const chatAPI = {
+  getChatHistory: (params) => api.get('/chat/history', { params }),
+  sendMessage: (data) => api.post('/chat/send', data),
+  editMessage: (id, data) => api.put(`/chat/${id}`, data),
+  deleteMessage: (id) => api.delete(`/chat/${id}`),
+  markAsRead: (data) => api.put('/chat/read', data),
+  getUnreadCount: (params) => api.get('/chat/unread-count', { params }),
+  getChatRooms: (params) => api.get('/chat/rooms', { params })
+}
+
+export const aiAPI = {
+  askQuestion: (data) => api.post('/ai/ask', data),
+  askGeneral: (data) => api.post('/ai/ask', data),
+  askPetAdvice: (data) => api.post('/ai/pet-advice', data),
+  getHealthRecommendations: (data) => api.post('/ai/health-recommendations', data),
+  getStatus: () => api.get('/ai/status')
+}
+
+export const adminAPI = {
+  getDashboardStats: () => api.get('/admin/dashboard'),
+  getPaymentProviders: () => api.get('/admin/payment-providers'),
+  addPaymentProvider: (data) => api.post('/admin/payment-providers', data),
+  updatePaymentProvider: (id, data) => api.put(`/admin/payment-providers/${id}`, data),
+  deletePaymentProvider: (id) => api.delete(`/admin/payment-providers/${id}`),
+  getAuditLogs: (params) => api.get('/admin/audit-logs', { params }),
+  broadcastNotification: (data) => api.post('/admin/broadcast', data),
+  getSystemHealth: () => api.get('/admin/health'),
+  getUsers: (params) => api.get('/admin/users', { params }),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`)
+}
+
+export const uploadAPI = {
+  uploadSingle: (formData) => api.post('/uploads/single', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  uploadMultiple: (formData) => api.post('/uploads/multiple', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  deleteFile: (filename) => api.delete(`/uploads/${filename}`)
+}
+
+export default api
