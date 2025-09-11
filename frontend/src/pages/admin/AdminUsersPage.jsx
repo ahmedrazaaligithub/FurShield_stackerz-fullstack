@@ -45,11 +45,9 @@ const UserRow = ({ user, onEdit, onDelete, onToggleStatus }) => (
     <td className="px-6 py-4 whitespace-nowrap">
       <span className={cn(
         'badge',
-        user.status === 'active' ? 'badge-success' :
-        user.status === 'suspended' ? 'badge-warning' :
-        'badge-error'
+        user.isActive ? 'badge-success' : 'badge-error'
       )}>
-        {user.status}
+        {user.isActive ? 'active' : 'inactive'}
       </span>
     </td>
     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -70,10 +68,10 @@ const UserRow = ({ user, onEdit, onDelete, onToggleStatus }) => (
           onClick={() => onToggleStatus(user)}
           className={cn(
             'hover:opacity-75',
-            user.status === 'active' ? 'text-yellow-600' : 'text-green-600'
+            user.isActive ? 'text-yellow-600' : 'text-green-600'
           )}
         >
-          {user.status === 'active' ? (
+          {user.isActive ? (
             <ShieldExclamationIcon className="h-4 w-4" />
           ) : (
             <ShieldCheckIcon className="h-4 w-4" />
@@ -142,7 +140,7 @@ export default function AdminUsersPage() {
   }
 
   const handleToggleStatus = (user) => {
-    const newStatus = user.status === 'active' ? 'suspended' : 'active'
+    const newStatus = user.isActive ? 'inactive' : 'active'
     updateUserMutation.mutate({
       id: user._id,
       data: { status: newStatus }
@@ -153,13 +151,11 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-6">
-    
       <div>
         <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
         <p className="text-gray-600 mt-1">Manage platform users and permissions</p>
       </div>
 
-    
       <div className="card p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -192,13 +188,11 @@ export default function AdminUsersPage() {
           >
             <option value="">All Status</option>
             <option value="active">Active</option>
-            <option value="suspended">Suspended</option>
             <option value="inactive">Inactive</option>
           </select>
         </div>
       </div>
 
-     
       <div className="card">
         <div className="card-header">
           <div className="flex items-center justify-between">
@@ -260,7 +254,6 @@ export default function AdminUsersPage() {
         )}
       </div>
 
-    
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -286,12 +279,11 @@ export default function AdminUsersPage() {
               <div>
                 <label className="label">Status</label>
                 <select
-                  value={selectedUser.status}
-                  onChange={(e) => setSelectedUser({...selectedUser, status: e.target.value})}
+                  value={selectedUser.isActive ? 'active' : 'inactive'}
+                  onChange={(e) => setSelectedUser({...selectedUser, isActive: e.target.value === 'active'})}
                   className="input w-full"
                 >
                   <option value="active">Active</option>
-                  <option value="suspended">Suspended</option>
                   <option value="inactive">Inactive</option>
                 </select>
               </div>
@@ -301,7 +293,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => updateUserMutation.mutate({
                   id: selectedUser._id,
-                  data: { role: selectedUser.role, status: selectedUser.status }
+                  data: { role: selectedUser.role, status: selectedUser.isActive ? 'active' : 'inactive' }
                 })}
                 disabled={updateUserMutation.isPending}
                 className="btn btn-primary flex-1"

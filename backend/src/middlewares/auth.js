@@ -37,12 +37,34 @@ const protect = async (req, res, next) => {
 
 const authorize = (...roles) => {
   return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        error: 'Access denied. Authentication required.'
+      });
+    }
+
+    if (!req.user.isActive) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Account is inactive.'
+      });
+    }
+
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({
         success: false,
-        error: `User role ${req.user.role} is not authorized to access this route`
+        error: 'Access denied. Insufficient permissions.'
       });
     }
+
+    if (req.user.role === 'admin' && !req.user.isVerified) {
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. Admin account not verified.'
+      });
+    }
+
     next();
   };
 };

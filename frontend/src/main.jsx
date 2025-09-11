@@ -7,6 +7,7 @@ import App from './App.jsx'
 import { AuthProvider } from './contexts/AuthContext.jsx'
 import { SocketProvider } from './contexts/SocketContext.jsx'
 import './styles/index.css'
+import './styles/admin.css'
 
 const queryClient = new QueryClient({
   defaultOptions: {

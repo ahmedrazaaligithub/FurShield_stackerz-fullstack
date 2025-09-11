@@ -33,13 +33,8 @@ const StatCard = ({ title, value, icon: Icon, change, color = 'primary' }) => (
 
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['admin-stats'],
-    queryFn: adminAPI.getStats
-  })
-
-  const { data: recentActivity } = useQuery({
-    queryKey: ['admin-recent-activity'],
-    queryFn: adminAPI.getRecentActivity
+    queryKey: ['admin-dashboard-stats'],
+    queryFn: adminAPI.getDashboardStats
   })
 
   if (isLoading) {
@@ -51,7 +46,6 @@ export default function AdminDashboard() {
   }
 
   const statsData = stats?.data?.data || {}
-  const activities = recentActivity?.data?.data || []
 
   return (
     <div className="space-y-6">
@@ -69,28 +63,24 @@ export default function AdminDashboard() {
           title="Total Users"
           value={statsData.totalUsers || 0}
           icon={UsersIcon}
-          change={statsData.userGrowth}
           color="blue"
         />
         <StatCard
-          title="Active Pets"
-          value={statsData.totalPets || 0}
-          icon={HeartIcon}
-          change={statsData.petGrowth}
+          title="Total Orders"
+          value={statsData.totalOrders || 0}
+          icon={ShoppingBagIcon}
           color="green"
         />
         <StatCard
-          title="Appointments"
-          value={statsData.totalAppointments || 0}
-          icon={CalendarIcon}
-          change={statsData.appointmentGrowth}
+          title="Active Adoptions"
+          value={statsData.activeAdoptions || 0}
+          icon={HeartIcon}
           color="purple"
         />
         <StatCard
           title="Revenue"
           value={`$${statsData.totalRevenue || 0}`}
-          icon={ShoppingBagIcon}
-          change={statsData.revenueGrowth}
+          icon={CalendarIcon}
           color="yellow"
         />
       </div>
@@ -99,22 +89,22 @@ export default function AdminDashboard() {
         {/* Recent Activity */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-xl font-semibold text-gray-900">Recent Activity</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
           </div>
           <div className="card-content">
-            {activities.length === 0 ? (
-              <p className="text-gray-500 text-center py-4">No recent activity</p>
+            {!statsData.recentOrders || statsData.recentOrders.length === 0 ? (
+              <p className="text-gray-500 text-center py-4">No recent orders</p>
             ) : (
               <div className="space-y-3">
-                {activities.slice(0, 10).map((activity, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
+                {statsData.recentOrders.map((order) => (
+                  <div key={order._id} className="flex items-center space-x-3 p-2 hover:bg-gray-50 rounded">
                     <div className="flex-shrink-0">
                       <div className="h-2 w-2 bg-primary-600 rounded-full"></div>
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm text-gray-900">{activity.description}</p>
+                      <p className="text-sm text-gray-900">{order.user?.name} - ${order.total}</p>
                       <p className="text-xs text-gray-500">
-                        {new Date(activity.createdAt).toLocaleString()}
+                        {new Date(order.createdAt).toLocaleString()}
                       </p>
                     </div>
                   </div>
@@ -139,12 +129,12 @@ export default function AdminDashboard() {
               <span className="text-sm text-gray-900">125ms</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Active Sessions</span>
-              <span className="text-sm text-gray-900">{statsData.activeSessions || 0}</span>
+              <span className="text-sm text-gray-600">Total Vets</span>
+              <span className="text-sm text-gray-900">{statsData.totalVets || 0}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Storage Used</span>
-              <span className="text-sm text-gray-900">2.4 GB / 10 GB</span>
+              <span className="text-sm text-gray-600">Total Shelters</span>
+              <span className="text-sm text-gray-900">{statsData.totalShelters || 0}</span>
             </div>
           </div>
         </div>

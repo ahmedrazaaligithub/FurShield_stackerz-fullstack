@@ -178,16 +178,20 @@ export const aiAPI = {
 
 export const adminAPI = {
   getDashboardStats: () => api.get('/admin/dashboard'),
+  getUsers: (params) => api.get('/admin/users', { params }),
+  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
+  deleteUser: (id) => api.delete(`/admin/users/${id}`),
+  getPayments: (params) => api.get('/admin/payments', { params }),
+  getPaymentStats: () => api.get('/admin/payment-stats'),
+  updatePaymentStatus: (id, status) => api.put(`/admin/payments/${id}/status`, { status }),
   getPaymentProviders: () => api.get('/admin/payment-providers'),
   addPaymentProvider: (data) => api.post('/admin/payment-providers', data),
   updatePaymentProvider: (id, data) => api.put(`/admin/payment-providers/${id}`, data),
   deletePaymentProvider: (id) => api.delete(`/admin/payment-providers/${id}`),
   getAuditLogs: (params) => api.get('/admin/audit-logs', { params }),
+  getAuditStats: () => api.get('/admin/audit-stats'),
   broadcastNotification: (data) => api.post('/admin/broadcast', data),
-  getSystemHealth: () => api.get('/admin/health'),
-  getUsers: (params) => api.get('/admin/users', { params }),
-  updateUser: (id, data) => api.put(`/admin/users/${id}`, data),
-  deleteUser: (id) => api.delete(`/admin/users/${id}`)
+  getSystemHealth: () => api.get('/admin/system-health')
 }
 
 export const uploadAPI = {

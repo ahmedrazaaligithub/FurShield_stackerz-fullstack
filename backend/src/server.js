@@ -17,6 +17,7 @@ const mongoose = require('mongoose');
 const { logger } = require('./utils/logger');
 const { connectDB } = require('./config/database');
 const { initializeSocket } = require('./sockets/socketHandler');
+const { seedAdminUser } = require('./utils/seedAdmin');
 const errorHandler = require('./middlewares/errorHandler');
 
 const authRoutes = require('./routes/authRoutes');
@@ -44,14 +45,22 @@ const io = new Server(server, {
   }
 });
 
-connectDB();
+connectDB().then(() => {
+  seedAdminUser().catch(error => {
+    logger.error('Failed to seed admin user:', error);
+  });
+});
 
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
-  max: parseInt(process.env.RATE_LIMIT_MAX) || 100,
+  max: parseInt(process.env.RATE_LIMIT_MAX) || (process.env.NODE_ENV === 'development' ? 1000 : 100),
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true,
   legacyHeaders: false,
+  skip: (req) => {
+    // Skip rate limiting for admin routes in development
+    return process.env.NODE_ENV === 'development' && req.path.startsWith('/api/v1/admin');
+  }
 });
 
 app.use(helmet({

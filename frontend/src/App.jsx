@@ -1,6 +1,6 @@
 import { Routes, Route } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
-import { ProtectedRoute } from './components/ProtectedRoute'
+import ProtectedRoute from './components/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
 
@@ -35,11 +35,12 @@ import OrdersPage from './pages/shop/OrdersPage'
 import ChatPage from './pages/chat/ChatPage'
 import AIAssistantPage from './pages/ai/AIAssistantPage'
 
-import AdminDashboardPage from './pages/admin/AdminDashboardPage'
+import AdminLayout from './components/admin/AdminLayout'
+import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
 import AdminAuditPage from './pages/admin/AdminAuditPage'
-
+import AdminLoginPage from './pages/admin/AdminLoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 
 function App() {
@@ -89,13 +90,19 @@ function App() {
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:roomId" element={<ChatPage />} />
         <Route path="/ai-assistant" element={<AIAssistantPage />} />
-        
-        <Route element={<ProtectedRoute roles={['admin']} />}>
-          <Route path="/admin" element={<AdminDashboardPage />} />
-          <Route path="/admin/users" element={<AdminUsersPage />} />
-          <Route path="/admin/payments" element={<AdminPaymentsPage />} />
-          <Route path="/admin/audit" element={<AdminAuditPage />} />
-        </Route>
+      </Route>
+      
+      {/* Admin Routes - Outside of protected route */}
+      <Route path="/admin/login" element={<AdminLoginPage />} />
+      <Route path="/admin" element={
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout />
+        </ProtectedRoute>
+      }>
+        <Route index element={<AdminDashboard />} />
+        <Route path="users" element={<AdminUsersPage />} />
+        <Route path="payments" element={<AdminPaymentsPage />} />
+        <Route path="audit" element={<AdminAuditPage />} />
       </Route>
       
       <Route path="*" element={<NotFoundPage />} />
