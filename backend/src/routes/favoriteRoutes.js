@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { protect } = require('../middlewares/authMiddleware')
+const { protect } = require('../middlewares/auth')
 const User = require('../models/User')
 
 // Get user's favorite vets
