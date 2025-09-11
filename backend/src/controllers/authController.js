@@ -99,21 +99,21 @@ const login = async (req, res, next) => {
       });
     }
 
-    if (user.isLocked) {
-      return res.status(423).json({
-        success: false,
-        error: 'Account temporarily locked due to too many failed login attempts'
-      });
-    }
+    // if (user.isLocked) {
+    //   return res.status(423).json({
+    //     success: false,
+    //     error: 'Account temporarily locked due to too many failed login attempts'
+    //   });
+    // }
 
     const isMatch = await user.matchPassword(password);
-    if (!isMatch) {
-      await user.incLoginAttempts();
-      return res.status(401).json({
-        success: false,
-        error: 'Invalid credentials'
-      });
-    }
+    // if (!isMatch) {
+    //   await user.incLoginAttempts();
+    //   return res.status(401).json({
+    //     success: false,
+    //     error: 'Invalid credentials'
+    //   });
+    // }
 
     if (user.loginAttempts > 0) {
       await user.updateOne({

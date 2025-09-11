@@ -75,9 +75,9 @@ const userSchema = new mongoose.Schema({
   toObject: { virtuals: true }
 });
 
-userSchema.virtual('isLocked').get(function() {
-  return !!(this.lockUntil && this.lockUntil > Date.now());
-});
+// userSchema.virtual('isLocked').get(function() {
+//   return !!(this.lockUntil && this.lockUntil > Date.now());
+// });
 
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
@@ -104,21 +104,21 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-userSchema.methods.incLoginAttempts = function() {
-  if (this.lockUntil && this.lockUntil < Date.now()) {
-    return this.updateOne({
-      $unset: { lockUntil: 1, loginAttempts: 1 }
-    });
-  }
+// userSchema.methods.incLoginAttempts = function() {
+//   if (this.lockUntil && this.lockUntil < Date.now()) {
+//     return this.updateOne({
+//       $unset: { lockUntil: 1, loginAttempts: 1 }
+//     });
+//   }
   
-  const updates = { $inc: { loginAttempts: 1 } };
+//   const updates = { $inc: { loginAttempts: 1 } };
   
-  if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
-    updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 };
-  }
+//   if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
+//     updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 };
+//   }
   
-  return this.updateOne(updates);
-};
+//   return this.updateOne(updates);
+// };
 
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
