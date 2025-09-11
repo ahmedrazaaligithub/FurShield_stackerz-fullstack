@@ -38,18 +38,16 @@ const getDashboardStats = async (req, res, next) => {
     res.json({
       success: true,
       data: {
-        stats: {
-          totalUsers,
-          totalVets,
-          verifiedVets,
-          totalShelters,
-          verifiedShelters,
-          totalProducts,
-          totalOrders,
-          totalRevenue: totalRevenue[0]?.total || 0,
-          activeAdoptions,
-          completedAdoptions
-        },
+        totalUsers,
+        totalVets,
+        verifiedVets,
+        totalShelters,
+        verifiedShelters,
+        totalProducts,
+        totalOrders,
+        totalRevenue: totalRevenue[0]?.total || 0,
+        activeAdoptions,
+        completedAdoptions,
         recentOrders,
         recentUsers
       }
@@ -354,6 +352,244 @@ const manageUser = async (req, res, next) => {
   }
 };
 
+const getUsers = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    const filter = { isActive: true };
+    if (req.query.search) {
+      filter.$or = [
+        { name: { $regex: req.query.search, $options: 'i' } },
+        { email: { $regex: req.query.search, $options: 'i' } }
+      ];
+    }
+    if (req.query.role) filter.role = req.query.role;
+    if (req.query.status) {
+      if (req.query.status === 'active') filter.isActive = true;
+      if (req.query.status === 'inactive') filter.isActive = false;
+    }
+
+    const users = await User.find(filter)
+      .select('-password')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await User.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: users,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPayments = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+    
+    const filter = {};
+    if (req.query.search) {
+      filter.transactionId = { $regex: req.query.search, $options: 'i' };
+    }
+    if (req.query.status) filter.status = req.query.status;
+    if (req.query.type) filter.type = req.query.type;
+
+    const payments = await Order.find(filter)
+      .populate('user', 'name email')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await Order.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: payments,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getPaymentStats = async (req, res, next) => {
+  try {
+    const totalRevenue = await Order.aggregate([
+      { $match: { paymentStatus: 'paid' } },
+      { $group: { _id: null, total: { $sum: '$total' } } }
+    ]);
+    
+    const pendingCount = await Order.countDocuments({ paymentStatus: 'pending' });
+    const todayCount = await Order.countDocuments({
+      paymentStatus: 'paid',
+      createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+    });
+    const failedCount = await Order.countDocuments({ paymentStatus: 'failed' });
+
+    res.json({
+      success: true,
+      data: {
+        totalRevenue: totalRevenue[0]?.total || 0,
+        pendingCount,
+        todayCount,
+        failedCount
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updatePaymentStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    const order = await Order.findByIdAndUpdate(
+      req.params.id,
+      { paymentStatus: status },
+      { new: true, runValidators: true }
+    );
+
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        error: 'Payment not found'
+      });
+    }
+
+    await AuditLog.create({
+      user: req.user._id,
+      action: 'payment_status_update',
+      resource: 'payment',
+      resourceId: req.params.id,
+      details: { status },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.json({
+      success: true,
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const getAuditStats = async (req, res, next) => {
+  try {
+    const totalEvents = await AuditLog.countDocuments();
+    const highSeverityCount = await AuditLog.countDocuments({ severity: 'high' });
+    const todayCount = await AuditLog.countDocuments({
+      createdAt: { $gte: new Date(new Date().setHours(0, 0, 0, 0)) }
+    });
+    const activeUsers = await User.countDocuments({ 
+      isActive: true,
+      lastLogin: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) }
+    });
+
+    res.json({
+      success: true,
+      data: {
+        totalEvents,
+        highSeverityCount,
+        todayCount,
+        activeUsers
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUser = async (req, res, next) => {
+  try {
+    const { role, status } = req.body;
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    if (role) user.role = role;
+    if (status) {
+      user.isActive = status === 'active';
+    }
+
+    await user.save();
+
+    await AuditLog.create({
+      user: req.user._id,
+      action: 'user_update',
+      resource: 'user',
+      resourceId: req.params.id,
+      details: { role, status },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.json({
+      success: true,
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'User not found'
+      });
+    }
+
+    user.isActive = false;
+    await user.save();
+
+    await AuditLog.create({
+      user: req.user._id,
+      action: 'user_deactivate',
+      resource: 'user',
+      resourceId: req.params.id,
+      details: { reason: 'Admin deletion' },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
+    res.json({
+      success: true,
+      message: 'User deactivated successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getDashboardStats,
   getPaymentProviders,
@@ -363,5 +599,12 @@ module.exports = {
   getAuditLogs,
   sendBroadcastNotification,
   getSystemHealth,
-  manageUser
+  manageUser,
+  getUsers,
+  getPayments,
+  getPaymentStats,
+  updatePaymentStatus,
+  getAuditStats,
+  updateUser,
+  deleteUser
 };

@@ -53,8 +53,9 @@ export default function LoginPage() {
     const result = await login(formData.email, formData.password)
     setLoading(false)
     
-    if (result.success) {
-      navigate(from, { replace: true })
+    if (result.success && result.user) {
+      const redirectPath = result.user.role === 'admin' ? '/admin' : from
+      navigate(redirectPath, { replace: true })
     }
   }
 

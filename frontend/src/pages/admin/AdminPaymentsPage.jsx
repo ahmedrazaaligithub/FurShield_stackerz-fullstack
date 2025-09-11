@@ -18,6 +18,7 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
   const getStatusIcon = (status) => {
     switch (status) {
       case 'completed':
+      case 'paid':
         return <CheckCircleIcon className="h-5 w-5 text-green-500" />
       case 'pending':
         return <ClockIcon className="h-5 w-5 text-yellow-500" />
@@ -31,6 +32,7 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
+      case 'paid':
         return 'badge-success'
       case 'pending':
         return 'badge-warning'
@@ -44,22 +46,22 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">#{payment.transactionId}</div>
-        <div className="text-sm text-gray-500">{payment.paymentMethod}</div>
+        <div className="text-sm font-medium text-gray-900">#{payment._id?.slice(-8) || 'N/A'}</div>
+        <div className="text-sm text-gray-500">{payment.paymentMethod || 'Card'}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="text-sm text-gray-900">{payment.user?.name}</div>
         <div className="text-sm text-gray-500">{payment.user?.email}</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="text-sm font-medium text-gray-900">${payment.amount}</div>
-        <div className="text-sm text-gray-500">{payment.type}</div>
+        <div className="text-sm font-medium text-gray-900">${payment.total || payment.amount}</div>
+        <div className="text-sm text-gray-500">Order</div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center">
-          {getStatusIcon(payment.status)}
-          <span className={cn('badge ml-2', getStatusColor(payment.status))}>
-            {payment.status}
+          {getStatusIcon(payment.paymentStatus || payment.status)}
+          <span className={cn('badge ml-2', getStatusColor(payment.paymentStatus || payment.status))}>
+            {payment.paymentStatus || payment.status}
           </span>
         </div>
       </td>
@@ -67,10 +69,10 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
         {new Date(payment.createdAt).toLocaleDateString()}
       </td>
       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-        {payment.status === 'pending' && (
+        {(payment.paymentStatus === 'pending' || payment.status === 'pending') && (
           <div className="flex items-center space-x-2">
             <button
-              onClick={() => onUpdateStatus(payment._id, 'completed')}
+              onClick={() => onUpdateStatus(payment._id, 'paid')}
               className="text-green-600 hover:text-green-900"
             >
               Approve
