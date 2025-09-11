@@ -63,9 +63,10 @@ export const authAPI = {
 export const userAPI = {
   getProfile: () => api.get('/auth/me'),
   updateProfile: (data) => api.put('/users/profile', data),
-  uploadAvatar: (formData) => api.post('/users/upload-avatar', formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
+  // uploadAvatar: (formData) => api.post('/users/upload-avatar', formData, {
+  //   headers: {  'Authorization': `Bearer ${token}` }
+  // }),
+  uploadAvatar: (avatarUrl) => api.post('/users/upload-avatar', { avatarUrl }),
   deleteAccount: () => api.delete('/users/profile'),
   getVets: (params) => api.get('/users/vets', { params }),
   requestVetVerification: (data) => api.post('/users/vet-verification', data),

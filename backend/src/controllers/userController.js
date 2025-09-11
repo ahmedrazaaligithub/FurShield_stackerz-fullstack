@@ -203,28 +203,18 @@ const verifyVet = async (req, res, next) => {
 };
 
 const uploadAvatar = async (req, res, next) => {
+  console.log('avatarUrl------------------------------->',req.body);
   try {
-    if (!req.file) {
+    const { avatarUrl } = req.body;
+    
+
+    if (!avatarUrl) {
       return res.status(400).json({
         success: false,
-        error: 'Please upload an image'
+        error: 'Please provide avatar URL'
       });
     }
 
-    const fs = require('fs');
-    const path = require('path');
-    
-    // Delete old avatar if it exists and is not the default
-    const oldUser = await User.findById(req.user.id);
-    if (oldUser.avatar && !oldUser.avatar.includes('default-avatar')) {
-      const oldPath = path.join(__dirname, '../../..', oldUser.avatar);
-      if (fs.existsSync(oldPath)) {
-        fs.unlinkSync(oldPath);
-      }
-    }
-
-    const avatarUrl = `/uploads/profiles/${req.file.filename}`;
-    
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatar: avatarUrl },
@@ -236,7 +226,7 @@ const uploadAvatar = async (req, res, next) => {
       action: 'avatar_upload',
       resource: 'user',
       resourceId: req.user._id.toString(),
-      details: { filename: req.file.filename, url: avatarUrl },
+      details: { avatarUrl },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
@@ -244,7 +234,7 @@ const uploadAvatar = async (req, res, next) => {
     res.json({
       success: true,
       data: user,
-      message: 'Avatar uploaded successfully'
+      message: 'Avatar updated successfully'
     });
   } catch (error) {
     next(error);

@@ -46,7 +46,7 @@ router.put('/profile', updateProfile);
 router.put('/:id', authorize('admin'), updateUser);
 router.delete('/:id', authorize('admin'), deleteUser);
 router.post('/verify-vet', authorize('admin'), verifyVet);
-router.post('/upload-avatar', upload.single('avatar'), uploadAvatar);
+router.post('/upload-avatar', uploadAvatar);
 router.get('/avatar', (req, res) => {
   const avatarPath = req.user?.avatar || '/public/default-avatar.svg';
   if (avatarPath.startsWith('/')) {
