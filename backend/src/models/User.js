@@ -44,15 +44,20 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  isVetVerified: {
+    type: Boolean,
+    default: false
+  },
   isActive: {
     type: Boolean,
     default: true
   },
-  emailVerified: {
+  isEmailVerified: {
     type: Boolean,
     default: false
   },
   emailVerificationToken: String,
+  emailVerificationExpires: Date,
   passwordResetToken: String,
   passwordResetExpire: Date,
   loginAttempts: {

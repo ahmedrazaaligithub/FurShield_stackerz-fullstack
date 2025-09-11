@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "../../contexts/AuthContext";
 import { userAPI, uploadAPI } from "../../services/api";
@@ -19,20 +19,47 @@ export default function ProfilePage() {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    name: user?.name || "",
-    email: user?.email || "",
-    phone: user?.phone || "",
-    address: user?.address || "",
-    bio: user?.bio || "",
-    // avatar: user?.avatar || "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    bio: "",
   });
 
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["profile"],
     queryFn: userAPI.getProfile,
     initialData: { data: { data: user } },
   });
+
+  // Listen for user updates from AuthContext and custom events
+  useEffect(() => {
+    refetch();
+  }, [user, refetch]);
+
+  useEffect(() => {
+    const handleUserUpdate = () => {
+      refetch();
+    };
+    
+    window.addEventListener('userUpdated', handleUserUpdate);
+    return () => window.removeEventListener('userUpdated', handleUserUpdate);
+  }, [refetch]);
   console.log('profile----->',profile);
+
+  // Update form data when profile data is available
+  useEffect(() => {
+    const currentUser = profile?.data?.data || user;
+    if (currentUser) {
+      setFormData({
+        name: currentUser.name || "",
+        email: currentUser.email || "",
+        phone: currentUser.phone || "",
+        address: currentUser.address || "",
+        bio: currentUser.bio || "",
+      });
+    }
+  }, [profile, user]);
   
 
   const updateMutation = useMutation({
@@ -74,12 +101,13 @@ export default function ProfilePage() {
   };
 
   const handleCancel = () => {
+    const currentUser = profile?.data?.data || user;
     setFormData({
-      name: user?.name || "",
-      email: user?.email || "",
-      phone: user?.phone || "",
-      address: user?.address || "",
-      bio: user?.bio || "",
+      name: currentUser?.name || "",
+      email: currentUser?.email || "",
+      phone: currentUser?.phone || "",
+      address: currentUser?.address || "",
+      bio: currentUser?.bio || "",
     });
     setIsEditing(false);
   };
@@ -301,7 +329,11 @@ export default function ProfilePage() {
                     <div>
                       <label className="label">Email</label>
                       <p className="text-gray-900">{currentUser?.email}</p>
-                      {!currentUser?.isEmailVerified && (
+                      {profile?.data?.data?.isEmailVerified ? (
+                        <span className="badge badge-success mt-1">
+                          ✓ Verified
+                        </span>
+                      ) : (
                         <span className="badge badge-warning mt-1">
                           Unverified
                         </span>
@@ -323,7 +355,7 @@ export default function ProfilePage() {
 
                   <div>
                     <label className="label">Address</label>
-                    <p className="text-gray-900">{currentUser?.address}</p>
+                    <p className="text-gray-900 break-words">{currentUser?.address}</p>
                   </div>
 
                   {currentUser?.bio && (

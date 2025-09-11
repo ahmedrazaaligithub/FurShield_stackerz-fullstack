@@ -601,8 +601,9 @@ const getPendingApprovals = async (req, res, next) => {
 
     const pendingVets = await User.find({ 
       role: 'vet', 
-      isVerified: false, 
-      isActive: true 
+      isVetVerified: false, 
+      isActive: true,
+      isEmailVerified: true // Only show vets who have verified their email
     }).select('-password').sort({ createdAt: -1 });
 
     res.json({
@@ -757,25 +758,22 @@ const approveVet = async (req, res, next) => {
       });
     }
 
-    if (vet.isVerified) {
+    if (vet.isVetVerified) {
       return res.status(400).json({
         success: false,
         error: 'Veterinarian is already verified'
       });
     }
 
-    vet.isVerified = true;
+    vet.isVetVerified = true;
     vet.verifiedAt = new Date();
     vet.verifiedBy = req.user._id;
     if (notes) vet.approvalNotes = notes;
     await vet.save();
 
     // Send approval email
-    await sendEmail({
-      email: vet.email,
-      subject: 'Veterinarian Application Approved - FurShield',
-      message: `Congratulations Dr. ${vet.name}! Your veterinarian profile has been approved and verified on FurShield. You can now start accepting appointments and providing services to pet owners.`
-    });
+    const { sendVetApprovalEmail } = require('../services/emailService');
+    await sendVetApprovalEmail(vet);
 
     // Create audit log
     await AuditLog.create({
@@ -830,7 +828,7 @@ const rejectVet = async (req, res, next) => {
       });
     }
 
-    if (vet.isVerified) {
+    if (vet.isVetVerified) {
       return res.status(400).json({
         success: false,
         error: 'Cannot reject an already verified veterinarian'

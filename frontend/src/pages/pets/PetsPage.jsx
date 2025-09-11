@@ -1,8 +1,10 @@
 import { useState } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
-import { petAPI } from '../../services/api'
+import { toast } from 'react-hot-toast'
+import { petAPI, userAPI } from '../../services/api'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
+import { useAuth } from '../../contexts/AuthContext'
 import { 
   HeartIcon, 
   PlusIcon,
@@ -11,11 +13,12 @@ import {
   CalendarIcon,
   PhotoIcon
 } from '@heroicons/react/24/outline'
+import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
 
-const PetCard = ({ pet }) => (
-  <Link to={`/pets/${pet._id}`} className="block">
-    <div className="card hover:shadow-glow transition-all duration-300 group">
+const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
+  <div className="card hover:shadow-glow transition-all duration-300 group relative">
+    <Link to={`/pets/${pet._id}`} className="block">
       <div className="relative">
         {pet.photos?.[0] ? (
           <img
@@ -45,7 +48,6 @@ const PetCard = ({ pet }) => (
           <h3 className="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
             {pet.name}
           </h3>
-          <HeartIcon className="h-5 w-5 text-red-500" />
         </div>
         
         <div className="space-y-2 text-sm text-gray-600">
@@ -83,14 +85,39 @@ const PetCard = ({ pet }) => (
           </div>
         </div>
       </div>
-    </div>
-  </Link>
+    </Link>
+    
+    {/* Favorite Button */}
+    <button
+      onClick={(e) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onToggleFavorite(pet._id)
+      }}
+      className="absolute top-4 left-4 p-2 bg-white/80 backdrop-blur-sm rounded-full hover:bg-white transition-colors z-10"
+      title={isFavorite ? "Remove from favorites" : "Add to favorites"}
+    >
+      {isFavorite ? (
+        <HeartIconSolid className="h-5 w-5 text-red-500" />
+      ) : (
+        <HeartIcon className="h-5 w-5 text-gray-600 hover:text-red-500" />
+      )}
+    </button>
+  </div>
 )
 
 export default function PetsPage() {
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
   const [speciesFilter, setSpeciesFilter] = useState('')
   const [healthFilter, setHealthFilter] = useState('')
+  const [favoritePets, setFavoritePets] = useState(() => {
+    const saved = localStorage.getItem('favoritePets')
+    return saved ? new Set(JSON.parse(saved)) : new Set()
+  })
+  const queryClient = useQueryClient()
+  
+  const isVet = user?.role === 'veterinarian' || user?.role === 'vet'
 
   const { data: pets, isLoading, error } = useQuery({
     queryKey: ['pets', { search: searchTerm, species: speciesFilter, health: healthFilter }],
@@ -101,6 +128,28 @@ export default function PetsPage() {
     })
   })
 
+  // Mock favorite pets functionality (since backend is not running)
+  const handleToggleFavorite = (petId) => {
+    setFavoritePets(prev => {
+      const newFavorites = new Set(prev)
+      if (newFavorites.has(petId)) {
+        newFavorites.delete(petId)
+        toast.success('Removed from favorites')
+      } else {
+        newFavorites.add(petId)
+        toast.success('Added to favorites')
+      }
+      
+      // Save to localStorage for persistence across pages
+      localStorage.setItem('favoritePets', JSON.stringify([...newFavorites]))
+      
+      // Dispatch custom event to notify other components
+      window.dispatchEvent(new CustomEvent('favoritesUpdated'))
+      
+      return newFavorites
+    })
+  }
+
   const filteredPets = pets?.data?.data || []
 
   return (
@@ -108,9 +157,11 @@ export default function PetsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Pets</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            All Pets
+          </h1>
           <p className="text-gray-600 mt-1">
-            Manage your pets' health records and information
+            Browse all pets from the community and connect with pet owners
           </p>
         </div>
         <Link to="/pets/add" className="btn btn-primary">
@@ -184,15 +235,15 @@ export default function PetsPage() {
           <h3 className="text-lg font-medium text-gray-900 mb-2">
             {searchTerm || speciesFilter || healthFilter ? 'No pets found' : 'No pets yet'}
           </h3>
-          <p className="text-gray-600 mb-6">
+          <p className="text-gray-500 mb-4">
             {searchTerm || speciesFilter || healthFilter 
               ? 'Try adjusting your search or filters'
-              : 'Add your first pet to start tracking their health and appointments'
+              : 'No pets have been added to the community yet'
             }
           </p>
           <Link to="/pets/add" className="btn btn-primary">
             <PlusIcon className="h-4 w-4 mr-2" />
-            Add Your First Pet
+            Add First Pet
           </Link>
         </div>
       ) : (
@@ -211,7 +262,12 @@ export default function PetsPage() {
           {/* Pets Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPets.map((pet) => (
-              <PetCard key={pet._id} pet={pet} />
+              <PetCard 
+                key={pet._id} 
+                pet={pet} 
+                onToggleFavorite={handleToggleFavorite}
+                isFavorite={favoritePets.has(pet._id)}
+              />
             ))}
           </div>
         </>

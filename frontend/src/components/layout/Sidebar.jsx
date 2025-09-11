@@ -20,7 +20,7 @@ import { cn } from '../../utils/cn'
 const getNavigation = (userRole) => {
   const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-    { name: 'My Pets', href: '/pets', icon: HeartIcon },
+    { name: 'Pets', href: '/pets', icon: HeartIcon },
     { 
       name: userRole === 'veterinarian' || userRole === 'vet' ? 'Vet Network' : 'Appointments', 
       href: '/appointments', 

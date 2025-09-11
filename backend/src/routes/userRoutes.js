@@ -13,7 +13,7 @@ const {
   approveVetVerification,
   rejectVetVerification
 } = require('../controllers/userController')
-const favoriteRoutes = require('./favoriteRoutes');
+const favoriteRoutes = require('./favoriteRoutes')
 
 const multer = require('multer');
 const path = require('path');
@@ -45,7 +45,6 @@ router.use(protect);
 router.get('/', authorize('admin'), getUsers);
 router.get('/vets', getVets);
 router.get('/vets/:id', getUser);
-router.get('/:id', getUser);
 router.put('/profile', updateProfile);
 router.put('/:id', authorize('admin'), updateUser);
 router.delete('/:id', authorize('admin'), deleteUser);
@@ -61,5 +60,8 @@ router.get('/avatar', (req, res) => {
 
 // Use favorites routes
 router.use('/favorites', favoriteRoutes);
+
+// Add individual user route after favorites to avoid conflicts
+router.get('/:id', getUser);
 
 module.exports = router;

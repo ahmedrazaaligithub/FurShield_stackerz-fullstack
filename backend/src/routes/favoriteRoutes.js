@@ -6,13 +6,39 @@ const User = require('../models/User')
 // Get user's favorite vets
 router.get('/', protect, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).populate('favoriteVets', 
-      'name email avatar specialization rating experience bio languages'
-    )
+    // First get user with favoriteVets array
+    const user = await User.findById(req.user.id)
+    
+    if (!user || !user.favoriteVets || user.favoriteVets.length === 0) {
+      console.log('No favorites found for user')
+      return res.json({
+        success: true,
+        data: {
+          data: []
+        }
+      })
+    }
+    
+    // Then populate the favoriteVets
+    await user.populate({
+      path: 'favoriteVets',
+      select: 'name email avatar specialization rating experience bio languages profile role'
+    })
+    
+    console.log('User ID:', req.user.id)
+    console.log('Raw user favorites:', user.favoriteVets)
+    console.log('Favorites count:', user.favoriteVets ? user.favoriteVets.length : 0)
+    
+    // Filter out any null values from population
+    const validFavorites = user.favoriteVets ? user.favoriteVets.filter(vet => vet !== null) : []
+    
+    console.log('Valid favorites after filtering:', validFavorites)
     
     res.json({
       success: true,
-      data: user.favoriteVets || []
+      data: {
+        data: validFavorites
+      }
     })
   } catch (error) {
     console.error('Get favorites error:', error)
@@ -36,8 +62,13 @@ router.post('/', protect, async (req, res) => {
     }
 
     const user = await User.findById(req.user.id)
+    console.log('Current user favorites:', user.favoriteVets)
+    console.log('Adding vet ID:', vetId)
     
-    if (user.favoriteVets.includes(vetId)) {
+    // Check if already exists using string comparison
+    const isAlreadyFavorite = user.favoriteVets.some(fav => fav.toString() === vetId.toString())
+    
+    if (isAlreadyFavorite) {
       return res.status(400).json({
         success: false,
         error: 'Vet already in favorites'
@@ -46,6 +77,8 @@ router.post('/', protect, async (req, res) => {
 
     user.favoriteVets.push(vetId)
     await user.save()
+    
+    console.log('Updated user favorites:', user.favoriteVets)
 
     res.json({
       success: true,

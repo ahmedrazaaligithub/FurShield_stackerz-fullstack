@@ -13,6 +13,7 @@ import VerifyEmailPage from './pages/auth/VerifyEmailPage'
 
 import DashboardPage from './pages/dashboard/DashboardPage'
 import ProfilePage from './pages/profile/ProfilePage'
+import UserProfilePage from './pages/profile/UserProfilePage'
 
 import PetsPage from './pages/pets/PetsPage'
 import PetDetailsPage from './pages/pets/PetDetailsPage'
@@ -71,6 +72,7 @@ function App() {
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/profile/:userId" element={<UserProfilePage />} />
         
         <Route path="/pets" element={<PetsPage />} />
         <Route path="/pets/add" element={<AddPetPage />} />

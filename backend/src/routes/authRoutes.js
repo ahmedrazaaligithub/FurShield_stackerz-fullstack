@@ -31,7 +31,7 @@ router.post('/logout', protect, logout);
 router.post('/refresh', refreshToken);
 router.post('/forgot-password', authLimiter, forgotPassword);
 router.put('/reset-password/:resettoken', authLimiter, resetPassword);
-router.get('/verify-email/:token', verifyEmail);
+router.post('/verify-email/:token', verifyEmail);
 router.get('/me', protect, getMe);
 router.put('/profile', protect, updateProfile);
 

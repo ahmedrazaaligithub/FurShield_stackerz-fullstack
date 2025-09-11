@@ -51,11 +51,6 @@ export default function VetDirectoryPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900">Veterinarian Directory</h1>
-        <p className="text-gray-600 mt-2">Connect with veterinary professionals</p>
-      </div>
 
       {/* Search and Filters */}
       <div className="card">
@@ -142,11 +137,9 @@ export default function VetDirectoryPage() {
               )}
 
               {/* Bio */}
-              {vet.bio && (
-                <p className="text-sm text-gray-700 mb-4 line-clamp-3">
-                  {vet.bio}
-                </p>
-              )}
+              <p className="text-sm text-gray-700 mb-4 line-clamp-3">
+                {vet.bio || `Dr. ${vet.name} is a dedicated veterinary professional committed to providing exceptional care for your beloved pets.`}
+              </p>
 
               {/* Contact Info */}
               <div className="space-y-2 mb-4">

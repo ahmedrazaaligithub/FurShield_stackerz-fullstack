@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
-const { sendEmail } = require('../services/emailService');
+const { sendEmail, sendEmailVerification } = require('../services/emailService');
 const { normalizePhoneNumber } = require('../utils/validation');
 const crypto = require('crypto');
 const jwt = require('jsonwebtoken');
@@ -47,13 +47,26 @@ const register = async (req, res, next) => {
 
     const emailVerificationToken = crypto.randomBytes(20).toString('hex');
     user.emailVerificationToken = emailVerificationToken;
+    user.emailVerificationExpires = Date.now() + 24 * 60 * 60 * 1000; // 24 hours
     await user.save();
 
-    await sendEmail({
-      email: user.email,
-      subject: 'Email Verification - PetCare',
-      message: `Please verify your email by clicking this link: ${process.env.CLIENT_URL}/verify-email/${emailVerificationToken}`
-    });
+    await sendEmailVerification(user, emailVerificationToken);
+
+    // If user is registering as vet, ensure they need approval
+    if (role === 'vet') {
+      user.isVetVerified = false; // Ensure vet starts unverified
+      await user.save();
+      
+      await AuditLog.create({
+        user: user._id,
+        action: 'vet_verification_request',
+        resource: 'user',
+        resourceId: user._id.toString(),
+        details: { email, role, status: 'pending' },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+    }
 
     await AuditLog.create({
       user: user._id,
@@ -305,16 +318,50 @@ const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
 
-    const user = await User.findOne({ emailVerificationToken: token });
+    // Find user with matching token (regardless of expiration first)
+    const user = await User.findOne({ 
+      emailVerificationToken: token
+    });
+    
     if (!user) {
+      // Check if user already verified
+      const verifiedUser = await User.findOne({ 
+        emailVerificationToken: { $exists: false },
+        isEmailVerified: true 
+      });
+      
+      if (verifiedUser) {
+        return res.status(400).json({
+          success: false,
+          error: 'Email already verified'
+        });
+      }
+      
       return res.status(400).json({
         success: false,
         error: 'Invalid verification token'
       });
     }
 
-    user.emailVerified = true;
+    // Check if already verified
+    if (user.isEmailVerified) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email already verified'
+      });
+    }
+
+    // Check expiration
+    if (user.emailVerificationExpires && user.emailVerificationExpires < Date.now()) {
+      return res.status(400).json({
+        success: false,
+        error: 'Verification token has expired. Please request a new verification email.'
+      });
+    }
+
+    user.isEmailVerified = true;
     user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
     await user.save();
 
     await AuditLog.create({

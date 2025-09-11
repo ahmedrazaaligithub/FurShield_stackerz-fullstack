@@ -248,7 +248,7 @@ const getVets = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = { role: 'vet', isActive: true };
-    if (req.query.verified === 'true') filter.isVerified = true;
+    if (req.query.verified === 'true') filter.isVetVerified = true;
     if (req.query.specialization) {
       filter['profile.specialization'] = { $regex: req.query.specialization, $options: 'i' };
     }
@@ -257,7 +257,7 @@ const getVets = async (req, res, next) => {
       .select('-password')
       .skip(skip)
       .limit(limit)
-      .sort({ isVerified: -1, createdAt: -1 });
+      .sort({ isVetVerified: -1, createdAt: -1 });
 
     const total = await User.countDocuments(filter);
 

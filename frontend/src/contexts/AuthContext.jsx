@@ -136,6 +136,18 @@ export const AuthProvider = ({ children }) => {
   const verifyEmail = async (token) => {
     try {
       await authAPI.verifyEmail(token)
+      
+      // Force refresh user data from server
+      const userData = await authAPI.getMe()
+      const updatedUser = userData.data.data
+      
+      // Update all user state
+      setUser(updatedUser)
+      localStorage.setItem('user', JSON.stringify(updatedUser))
+      
+      // Force reload the page to ensure all components update
+      window.location.reload()
+      
       toast.success('Email verified successfully')
       return { success: true }
     } catch (error) {

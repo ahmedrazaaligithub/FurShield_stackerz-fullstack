@@ -36,9 +36,11 @@ export default function VetProfilePage() {
     mutationFn: (vetId) => userAPI.addFavoriteVet(vetId),
     onSuccess: () => {
       queryClient.invalidateQueries(['favorites'])
+      queryClient.refetchQueries(['favorites'])
       toast.success('Added to favorites!')
     },
     onError: (error) => {
+      console.error('Add favorite error:', error)
       toast.error(error.response?.data?.error || 'Failed to add to favorites')
     }
   })
@@ -55,8 +57,13 @@ export default function VetProfilePage() {
   })
 
   const vetData = vet?.data?.data
-  const favoriteVets = favorites?.data?.data || []
-  const isFavorite = favoriteVets.some(fav => fav._id === id)
+  const favoriteVetsData = favorites?.data?.data?.data || []
+  
+  console.log('VetProfile - Favorites response:', favorites)
+  console.log('VetProfile - Favorite vets data:', favoriteVetsData)
+  console.log('VetProfile - Current vet ID:', id)
+  console.log('VetProfile - Is favorite check:', favoriteVetsData.some(fav => fav._id === id))
+  const isFavorite = favoriteVetsData.some(fav => fav._id === id)
 
   const handleChatVet = () => {
     // TODO: Implement chat functionality

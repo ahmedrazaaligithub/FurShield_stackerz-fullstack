@@ -62,13 +62,14 @@ export const authAPI = {
 
 export const userAPI = {
   getProfile: () => api.get('/auth/me'),
+  getUserProfile: (userId) => api.get(`/users/${userId}`),
   updateProfile: (data) => api.put('/users/profile', data),
   // uploadAvatar: (formData) => api.post('/users/upload-avatar', formData, {
   //   headers: {  'Authorization': `Bearer ${token}` }
   // }),
   uploadAvatar: (avatarUrl) => api.post('/users/upload-avatar', { avatarUrl }),
   deleteAccount: () => api.delete('/users/profile'),
-  getVets: (params) => api.get('/users/vets', { params }),
+  getVets: (params = {}) => api.get('/users/vets', { params }),
   getVetById: (id) => api.get(`/users/vets/${id}`),
   getFavoriteVets: () => api.get('/users/favorites'),
   addFavoriteVet: (vetId) => api.post('/users/favorites', { vetId }),
@@ -79,16 +80,43 @@ export const userAPI = {
 }
 
 export const petAPI = {
-  getPets: (params) => api.get('/pets', { params }),
+  // Get all pets with filters
+  getPets: (filters = {}) => {
+    const params = new URLSearchParams()
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value) params.append(key, value)
+    })
+    return api.get(`/pets?${params}`)
+  },
+
+  // Get single pet by ID
   getPet: (id) => api.get(`/pets/${id}`),
-  createPet: (data) => api.post('/pets', data),
-  updatePet: (id, data) => api.put(`/pets/${id}`, data),
+
+  // Create new pet
+  createPet: (petData) => api.post('/pets', petData),
+
+  // Update pet
+  updatePet: (id, petData) => api.patch(`/pets/${id}`, petData),
+
+  // Delete pet
   deletePet: (id) => api.delete(`/pets/${id}`),
+
+  // Upload pet photos
   uploadPhotos: (id, formData) => api.post(`/pets/${id}/photos`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }),
-  getHealthRecords: (id, params) => api.get(`/pets/${id}/health-records`, { params }),
-  createHealthRecord: (id, data) => api.post(`/pets/${id}/health-records`, data)
+
+  // Delete pet photo
+  deletePhoto: (id, photoUrl) => api.delete(`/pets/${id}/photos`, { data: { photoUrl } }),
+
+  // Get user's pets
+  getUserPets: (userId) => api.get(`/pets/user/${userId}`),
+
+  // Pet feedback endpoints
+  getFeedback: (id) => api.get(`/pets/${id}/feedback`),
+  submitFeedback: (id, data) => api.post(`/pets/${id}/feedback`, data),
+  updateFeedback: (feedbackId, data) => api.patch(`/feedback/${feedbackId}`, data),
+  deleteFeedback: (feedbackId) => api.delete(`/feedback/${feedbackId}`)
 }
 
 export const appointmentAPI = {
@@ -155,6 +183,7 @@ export const orderAPI = {
 
 export const ratingAPI = {
   getRatings: (params) => api.get('/ratings', { params }),
+  getUserRatings: (userId) => api.get(`/ratings/user/${userId}`),
   createRating: (data) => api.post('/ratings', data),
   updateRating: (id, data) => api.put(`/ratings/${id}`, data),
   deleteRating: (id) => api.delete(`/ratings/${id}`),
