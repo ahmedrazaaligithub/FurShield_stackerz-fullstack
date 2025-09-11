@@ -51,8 +51,11 @@ export default function ProfilePage() {
   const avatarMutation = useMutation({
     mutationFn: userAPI.uploadAvatar,
     onSuccess: (data) => {
+      const updatedUser = data.data.data;
       queryClient.setQueryData(["profile"], data);
-      updateProfile(data.data.data);
+      updateProfile(updatedUser);
+      // Force re-render by updating local state
+      queryClient.invalidateQueries(["profile"]);
       toast.success("Avatar updated successfully");
     },
     onError: (error) => {
@@ -119,17 +122,24 @@ export default function ProfilePage() {
         <div className="lg:col-span-1">
           <div className="card p-6 text-center">
             <div className="relative inline-block">
-              <img
-                src={getAvatarUrl(currentUser?.avatar)}
-                alt={currentUser?.name || "User"}
-                className="h-32 w-32 rounded-full object-cover mx-auto"
-                onError={(e) => {
-                  e.target.src = `${
-                    import.meta.env.VITE_API_URL || "http://localhost:5000"
-                  }/public/default-avatar.svg`;
-                }}
-              />
-
+              {currentUser?.avatar ? (
+                <img
+                  key={`profile-avatar-${currentUser.avatar}-${Date.now()}`}
+                  src={`${getAvatarUrl(currentUser.avatar)}?t=${Date.now()}`}
+                  alt={currentUser?.name || "User"}
+                  className="h-32 w-32 rounded-full object-cover mx-auto"
+                  onError={(e) => {
+                    e.target.style.display = 'none';
+                    e.target.nextSibling.style.display = 'flex';
+                  }}
+                />
+              ) : null}
+              <div 
+                className="h-32 w-32 bg-gray-300 rounded-full flex items-center justify-center mx-auto"
+                style={{ display: currentUser?.avatar ? 'none' : 'flex' }}
+              >
+                <UserCircleIcon className="h-20 w-20 text-gray-600" />
+              </div>
               <label className="absolute bottom-0 right-0 bg-primary-600 text-white p-2 rounded-full cursor-pointer hover:bg-primary-700 transition-colors">
                 <CameraIcon className="h-4 w-4" />
                 <input

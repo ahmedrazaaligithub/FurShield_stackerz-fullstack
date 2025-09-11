@@ -42,6 +42,7 @@ const petSchema = Joi.object({
   medicalConditions: Joi.array().items(Joi.string()).optional(),
   allergies: Joi.array().items(Joi.string()).optional(),
   medications: Joi.array().items(Joi.string()).optional(),
+  photos: Joi.array().items(Joi.string().uri()).optional(),
   vetContact: Joi.string().max(100).optional(),
   microchipId: Joi.string().max(50).optional(),
   notes: Joi.string().max(1000).optional(),

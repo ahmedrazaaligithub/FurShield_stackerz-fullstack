@@ -1,20 +1,23 @@
-const express = require('express');
+const express = require('express')
+const router = express.Router()
+const { protect, authorize } = require('../middlewares/authMiddleware')
+const { 
+  getUsers, 
+  getUser, 
+  updateUser, 
+  deleteUser,
+  uploadAvatar,
+  updateProfile,
+  getVets,
+  requestVetVerification,
+  approveVetVerification,
+  rejectVetVerification
+} = require('../controllers/userController')
+const favoriteRoutes = require('./favoriteRoutes');
+
 const multer = require('multer');
 const path = require('path');
 const User = require('../models/User');
-const {
-  getUsers,
-  getUser,
-  updateProfile,
-  updateUser,
-  deleteUser,
-  verifyVet,
-  uploadAvatar,
-  getVets
-} = require('../controllers/userController');
-const { protect, authorize } = require('../middlewares/auth');
-
-const router = express.Router();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
@@ -41,6 +44,7 @@ router.use(protect);
 
 router.get('/', authorize('admin'), getUsers);
 router.get('/vets', getVets);
+router.get('/vets/:id', getUser);
 router.get('/:id', getUser);
 router.put('/profile', updateProfile);
 router.put('/:id', authorize('admin'), updateUser);
@@ -54,5 +58,8 @@ router.get('/avatar', (req, res) => {
   }
   res.redirect(`/uploads/profiles/${avatarPath}`);
 });
+
+// Use favorites routes
+router.use('/favorites', favoriteRoutes);
 
 module.exports = router;

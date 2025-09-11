@@ -68,7 +68,11 @@ const userSchema = new mongoose.Schema({
     specialization: String,
     licenseNumber: String,
     experience: Number
-  }
+  },
+  favoriteVets: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }]
 }, {
   timestamps: true,
   toJSON: { virtuals: true },

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { petAPI, appointmentAPI } from '../../services/api'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
+import { uploadImageToCloudinary } from '../../utils/uploadImage'
 import { 
   ArrowLeftIcon,
   PencilIcon,
@@ -50,22 +51,47 @@ export default function PetDetailsPage() {
     }
   })
 
-  const uploadPhotosMutation = useMutation({
-    mutationFn: ({ petId, formData }) => petAPI.uploadPhotos(petId, formData),
+  const uploadPhotoMutation = useMutation({
+    mutationFn: async (file) => {
+      const photoUrl = await uploadImageToCloudinary(file)
+      const updatedPhotos = [...(petData.photos || []), photoUrl]
+      
+      return petAPI.updatePet(id, { photos: updatedPhotos })
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['pet', id])
-      toast.success('Photos uploaded successfully')
-      setIsUploading(false)
+      toast.success('Photo uploaded successfully!')
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || 'Failed to upload photos')
-      setIsUploading(false)
+      console.error('Photo upload error:', error)
+      toast.error('Failed to upload photo')
+    }
+  })
+
+  const deletePhotoMutation = useMutation({
+    mutationFn: async (photoIndex) => {
+      const updatedPhotos = petData.photos.filter((_, index) => index !== photoIndex)
+      return petAPI.updatePet(id, { photos: updatedPhotos })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['pet', id])
+      toast.success('Photo deleted successfully!')
+    },
+    onError: (error) => {
+      console.error('Photo deletion error:', error)
+      toast.error('Failed to delete photo')
     }
   })
 
   const handleDeletePet = () => {
     if (window.confirm('Are you sure you want to delete this pet? This action cannot be undone.')) {
       deletePetMutation.mutate(id)
+    }
+  }
+
+  const handleDeletePhoto = (photoIndex) => {
+    if (window.confirm('Are you sure you want to delete this photo?')) {
+      deletePhotoMutation.mutate(photoIndex)
     }
   }
 
@@ -78,90 +104,53 @@ export default function PetDetailsPage() {
     try {
       const uploadedPhotos = []
       
-      // Mock pet data for development without backend
-      const mockPetData = {
-        _id: id,
-        name: 'Buddy',
-        species: 'dog',
-        breed: 'Golden Retriever',
-        age: 3,
-        weight: 30,
-        color: 'Golden',
-        gender: 'male',
-        description: 'Friendly and energetic dog who loves to play fetch.',
-        photos: [
-          '/api/placeholder/300/300',
-          '/api/placeholder/300/300'
-        ],
-        owner: {
-          _id: 'mock-owner-id',
-          name: 'John Doe',
-          email: 'john@example.com'
-        },
-        createdAt: new Date().toISOString()
-      }
-
       for (const file of files) {
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('type', 'pet')
-        
         try {
-          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/v1/upload/single`, {
-            method: 'POST',
-            body: formData,
-            credentials: 'include',
-            headers: {
-              'Authorization': `Bearer ${localStorage.getItem('token')}`
-            }
-          })
-          
-          const data = await response.json()
-          if (data.success) {
-            uploadedPhotos.push(data.data.url)
-          } else {
-            console.error('Upload failed:', data.error)
-            // Fallback to mock for development
-            const mockUrl = `/uploads/pets/${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${file.name}`
-            uploadedPhotos.push(mockUrl)
-          }
+          const data = await uploadImageToCloudinary(file)
+          uploadedPhotos.push(data.secure_url)
         } catch (error) {
           console.error('Upload error:', error)
-          // Fallback to mock for development
-          const mockUrl = `/uploads/pets/${Date.now()}_${Math.random().toString(36).substr(2, 9)}_${file.name}`
-          uploadedPhotos.push(mockUrl)
+          toast.error(`Failed to upload ${file.name}`)
         }
       }
       
-      // Update pet photos
-      const currentPhotos = petData.photos || []
-      const updatedPhotos = [...currentPhotos, ...uploadedPhotos]
-      
-      // Update query cache
-      setTimeout(() => {
-        queryClient.setQueryData(['pet', id], (oldData) => {
-          if (oldData?.data?.data) {
-            return {
-              ...oldData,
-              data: {
-                ...oldData.data,
+      if (uploadedPhotos.length > 0) {
+        // Update pet photos via API
+        const currentPhotos = petData.photos || []
+        const updatedPhotos = [...currentPhotos, ...uploadedPhotos]
+        
+        // Update the pet with new photos
+        try {
+          await petAPI.updatePet(id, { photos: updatedPhotos })
+          
+          // Update query cache
+          queryClient.setQueryData(['pet', id], (oldData) => {
+            if (oldData?.data?.data) {
+              return {
+                ...oldData,
                 data: {
-                  ...oldData.data.data,
-                  photos: updatedPhotos
+                  ...oldData.data,
+                  data: {
+                    ...oldData.data.data,
+                    photos: updatedPhotos
+                  }
                 }
               }
             }
-          }
-          return oldData
-        })
-        
-        toast.success('Photos uploaded successfully! (Mock mode)')
-        setIsUploading(false)
-      }, 1000)
+            return oldData
+          })
+          
+          toast.success(`${uploadedPhotos.length} photo(s) uploaded successfully`)
+        } catch (error) {
+          console.error('Failed to update pet photos:', error)
+          toast.error('Failed to save photos to pet record')
+        }
+      }
       
     } catch (error) {
       console.error('Upload error:', error)
       toast.error('Failed to upload photos')
+    } finally {
       setIsUploading(false)
     }
   }
@@ -249,7 +238,7 @@ export default function PetDetailsPage() {
             <div className="flex-shrink-0">
               {petData.photos?.[0] ? (
                 <img
-                  src={petData.photos[0].startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${petData.photos[0]}` : petData.photos[0]}
+                  src={petData.photos[0]}
                   alt={petData.name}
                   className="h-32 w-32 rounded-lg object-cover"
                 />
@@ -519,12 +508,22 @@ export default function PetDetailsPage() {
             {petData.photos?.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {petData.photos.map((photo, index) => (
-                  <img
-                    key={index}
-                    src={photo.startsWith('/') ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${photo}` : photo}
-                    alt={`${petData.name} photo ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-lg"
-                  />
+                  <div key={index} className="relative group">
+                    <img
+                      src={photo}
+                      alt={`${petData.name} photo ${index + 1}`}
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                    <button
+                      onClick={() => handleDeletePhoto(index)}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
+                      title="Delete photo"
+                    >
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
                 ))}
               </div>
             ) : (

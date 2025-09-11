@@ -11,6 +11,8 @@ import {
   FunnelIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
+import { useAuth } from '../../contexts/AuthContext'
+import VetDirectoryPage from '../vets/VetDirectoryPage'
 
 const AppointmentCard = ({ appointment }) => (
   <Link to={`/appointments/${appointment._id}`} className="block">
@@ -78,8 +80,26 @@ const AppointmentCard = ({ appointment }) => (
 )
 
 export default function AppointmentsPage() {
+  const { user } = useAuth()
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
+
+  // Debug user role
+  console.log('User object:', user)
+  console.log('User role:', user?.role)
+  
+  // If user is a veterinarian, show vet directory instead
+  if (user?.role === 'veterinarian' || user?.role === 'vet') {
+    return (
+      <div className="space-y-6">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Veterinarian Network</h1>
+          <p className="text-gray-600 mt-2">Connect with fellow veterinary professionals</p>
+        </div>
+        <VetDirectoryPage />
+      </div>
+    )
+  }
 
   const { data: appointments, isLoading, error } = useQuery({
     queryKey: ['appointments', { status: statusFilter, type: typeFilter }],

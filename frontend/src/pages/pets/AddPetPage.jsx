@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { petAPI } from '../../services/api'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
+import { uploadImageToCloudinary } from '../../utils/uploadImage'
 import { 
   ArrowLeftIcon,
   PhotoIcon,
@@ -106,28 +107,14 @@ export default function AddPetPage() {
     const files = Array.from(e.target.files)
     
     for (const file of files) {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('type', 'pet')
-      
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/v1/upload/single`, {
-          method: 'POST',
-          body: formData,
-          credentials: 'include',
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token')}`
-          }
-        })
-        
-        const data = await response.json()
-        if (data.success) {
-          setPhotos(prev => [...prev, {
-            url: data.data.url,
-            filename: data.data.filename,
-            name: file.name
-          }])
-        }
+        const data = await uploadImageToCloudinary(file)
+        setPhotos(prev => [...prev, {
+          url: data.secure_url,
+          public_id: data.public_id,
+          name: file.name
+        }])
+        toast.success('Photo uploaded successfully')
       } catch (error) {
         console.error('Upload error:', error)
         toast.error('Failed to upload photo')
@@ -217,7 +204,7 @@ export default function AddPetPage() {
       ...formData,
       age: parseInt(formData.age),
       weight: formData.weight ? parseFloat(formData.weight) : undefined,
-      photos: photos.map(photo => photo.url || photo.filename || photo.name)
+      photos: photos.map(photo => photo.url)
     }
     
     if (isEditing) {
@@ -402,7 +389,7 @@ export default function AddPetPage() {
                   {photos.map((photo, index) => (
                     <div key={index} className="relative">
                       <img
-                        src={photo.url ? `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}${photo.url}` : photo.preview}
+                        src={photo.url || photo.preview}
                         alt={`Pet photo ${index + 1}`}
                         className="w-full h-24 object-cover rounded-lg"
                       />

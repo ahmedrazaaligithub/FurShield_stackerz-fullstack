@@ -10,6 +10,7 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../contexts/AuthContext'
 
 const appointmentTypes = [
   { value: 'checkup', label: 'Regular Checkup', duration: 30 },
@@ -25,6 +26,7 @@ export default function BookAppointmentPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preselectedPetId = searchParams.get('petId')
+  const { user } = useAuth()
 
   const [formData, setFormData] = useState({
     petId: preselectedPetId || '',
@@ -36,6 +38,7 @@ export default function BookAppointmentPage() {
     notes: ''
   })
   const [errors, setErrors] = useState({})
+  const [showAllVets, setShowAllVets] = useState(false)
 
   const { data: pets } = useQuery({
     queryKey: ['pets'],
@@ -102,9 +105,40 @@ export default function BookAppointmentPage() {
     bookAppointmentMutation.mutate(appointmentData)
   }
 
+  // Check if current user is a veterinarian
+  const isVeterinarian = user?.role === 'veterinarian'
+
+  // Redirect veterinarians away from appointment booking
+  useEffect(() => {
+    if (isVeterinarian) {
+      toast.error('Veterinarians cannot book appointments. You can view other veterinarian profiles instead.')
+      navigate('/vets') // Redirect to vet directory page
+    }
+  }, [isVeterinarian, navigate])
+
   const selectedType = appointmentTypes.find(t => t.value === formData.type)
   const userPets = pets?.data?.data || []
   const availableVets = vets?.data?.data || []
+  const displayedVets = showAllVets ? availableVets : availableVets.slice(0, 2)
+
+  // Don't render the form if user is a veterinarian
+  if (isVeterinarian) {
+    return (
+      <div className="max-w-2xl mx-auto text-center py-12">
+        <UserIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+        <h2 className="text-2xl font-semibold text-gray-900 mb-2">Access Restricted</h2>
+        <p className="text-gray-600 mb-6">
+          As a veterinarian, you cannot book appointments. You can view other veterinarian profiles, reviews, and connect with colleagues.
+        </p>
+        <button
+          onClick={() => navigate('/vets')}
+          className="btn btn-primary"
+        >
+          View Veterinarian Directory
+        </button>
+      </div>
+    )
+  }
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -155,22 +189,124 @@ export default function BookAppointmentPage() {
             <h2 className="text-xl font-semibold text-gray-900">Select Veterinarian</h2>
           </div>
           <div className="card-content">
-            <div>
+            <div className="space-y-4">
               <label className="label">Veterinarian *</label>
-              <select
-                name="vetId"
-                value={formData.vetId}
-                onChange={handleInputChange}
-                className={`input ${errors.vetId ? 'border-red-300' : ''}`}
-              >
-                <option value="">Select a veterinarian</option>
-                {availableVets.map(vet => (
-                  <option key={vet._id} value={vet._id}>
-                    Dr. {vet.name} - {vet.specialization || 'General Practice'}
-                  </option>
+              {errors.vetId && <p className="text-sm text-red-600 mb-2">{errors.vetId}</p>}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {displayedVets.map(vet => (
+                  <div
+                    key={vet._id}
+                    onClick={() => handleInputChange({ target: { name: 'vetId', value: vet._id } })}
+                    className={`p-4 border-2 rounded-lg cursor-pointer transition-all hover:shadow-md ${
+                      formData.vetId === vet._id 
+                        ? 'border-primary-500 bg-primary-50' 
+                        : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="flex items-start space-x-4">
+                      <div className="flex-shrink-0">
+                        {vet.avatar ? (
+                          <img
+                            src={vet.avatar}
+                            alt={`Dr. ${vet.name}`}
+                            className="h-16 w-16 rounded-full object-cover"
+                          />
+                        ) : (
+                          <div className="h-16 w-16 bg-gray-200 rounded-full flex items-center justify-center">
+                            <UserIcon className="h-8 w-8 text-gray-400" />
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-lg font-semibold text-gray-900">
+                          Dr. {vet.name}
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-2">
+                          {vet.specialization || 'General Practice'}
+                        </p>
+                        
+                        {vet.experience && (
+                          <p className="text-sm text-gray-500 mb-1">
+                            {vet.experience} years experience
+                          </p>
+                        )}
+                        
+                        {vet.rating && (
+                          <div className="flex items-center mb-2">
+                            <div className="flex items-center">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  className={`h-4 w-4 ${
+                                    i < Math.floor(vet.rating) ? 'text-yellow-400' : 'text-gray-300'
+                                  }`}
+                                  fill="currentColor"
+                                  viewBox="0 0 20 20"
+                                >
+                                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                                </svg>
+                              ))}
+                              <span className="ml-1 text-sm text-gray-600">
+                                {vet.rating} ({vet.reviewCount || 0} reviews)
+                              </span>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {vet.bio && (
+                          <p className="text-sm text-gray-600 line-clamp-2">
+                            {vet.bio}
+                          </p>
+                        )}
+                        
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {vet.languages && vet.languages.map((lang, index) => (
+                            <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {lang}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      {formData.vetId === vet._id && (
+                        <div className="flex-shrink-0">
+                          <div className="h-6 w-6 bg-primary-500 rounded-full flex items-center justify-center">
+                            <svg className="h-4 w-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 ))}
-              </select>
-              {errors.vetId && <p className="mt-1 text-sm text-red-600">{errors.vetId}</p>}
+              </div>
+              
+              {availableVets.length === 0 && (
+                <div className="text-center py-8">
+                  <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-500">No veterinarians available at the moment</p>
+                </div>
+              )}
+              
+              {/* Show All/Show Less Link */}
+              {availableVets.length > 2 && (
+                <div className="text-center mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAllVets(!showAllVets)}
+                    className="text-primary-600 hover:text-primary-700 font-medium text-sm transition-colors"
+                  >
+                    {showAllVets ? (
+                      <>Show Less Veterinarians</>
+                    ) : (
+                      <>Show All Veterinarians ({availableVets.length})</>
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

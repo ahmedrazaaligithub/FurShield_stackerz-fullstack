@@ -1,7 +1,7 @@
 import axios from 'axios';
 
-const CLOUD_NAME = "diopvbr2u"; // Replace with your Cloudinary cloud name
-const UPLOAD_PRESET = "survey_images"; // Replace with your upload preset
+const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME || "diopvbr2u";
+const UPLOAD_PRESET = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET || "survey_images";
 
 export const uploadImageToCloudinary = async (image)=> {
   const formData = new FormData();

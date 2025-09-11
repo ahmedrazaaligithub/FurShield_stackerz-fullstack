@@ -11,7 +11,8 @@ import {
   Bars3Icon,
   XMarkIcon,
   BellIcon,
-  UserCircleIcon
+  UserCircleIcon,
+  CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 
@@ -24,6 +25,7 @@ const AdminLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: UsersIcon },
+    { name: 'Approve Shelter', href: '/admin/approvals', icon: CheckCircleIcon },
     { name: 'Payments', href: '/admin/payments', icon: CreditCardIcon },
     { name: 'Audit Logs', href: '/admin/audit', icon: DocumentTextIcon },
   ]

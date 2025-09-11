@@ -15,7 +15,12 @@ const {
   updatePaymentStatus,
   getAuditStats,
   updateUser,
-  deleteUser
+  deleteUser,
+  getPendingApprovals,
+  approveShelter,
+  rejectShelter,
+  approveVet,
+  rejectVet
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
@@ -46,5 +51,12 @@ router.delete('/users/:userId', (req, res, next) => {
   req.body = { action: 'deactivate', reason: 'Admin deletion' };
   manageUser(req, res, next);
 });
+
+// Approval routes
+router.get('/approvals', getPendingApprovals);
+router.post('/shelters/:id/approve', approveShelter);
+router.post('/shelters/:id/reject', rejectShelter);
+router.post('/vets/:id/approve', approveVet);
+router.post('/vets/:id/reject', rejectVet);
 
 module.exports = router;

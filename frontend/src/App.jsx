@@ -27,7 +27,9 @@ import AdoptionDetailsPage from './pages/adoption/AdoptionDetailsPage'
 import CreateListingPage from './pages/adoption/CreateListingPage'
 
 import ShopPage from './pages/shop/ShopPage'
-import ProductDetailsPage from './pages/shop/ProductDetailsPage'
+import VetDirectoryPage from './pages/vets/VetDirectoryPage'
+import VetProfilePage from './pages/vets/VetProfilePage'
+import FavoritesPage from './pages/favorites/FavoritesPage'
 import CartPage from './pages/shop/CartPage'
 import CheckoutPage from './pages/shop/CheckoutPage'
 import OrdersPage from './pages/shop/OrdersPage'
@@ -38,6 +40,7 @@ import AIAssistantPage from './pages/ai/AIAssistantPage'
 import AdminLayout from './components/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
+import AdminApprovalsPage from './pages/admin/AdminApprovalsPage'
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
 import AdminAuditPage from './pages/admin/AdminAuditPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
@@ -63,10 +66,7 @@ function App() {
       <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
       <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
       
-      <Route path="/adoption" element={<AdoptionPage />} />
       <Route path="/adoption/:id" element={<AdoptionDetailsPage />} />
-      <Route path="/shop" element={<ShopPage />} />
-      <Route path="/shop/product/:id" element={<ProductDetailsPage />} />
       
       <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
@@ -81,11 +81,16 @@ function App() {
         <Route path="/appointments/book" element={<BookAppointmentPage />} />
         <Route path="/appointments/:id" element={<AppointmentDetailsPage />} />
         
+        <Route path="/adoption" element={<AdoptionPage />} />
         <Route path="/adoption/create" element={<CreateListingPage />} />
         
+        <Route path="/shop" element={<ShopPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/vets" element={<VetDirectoryPage />} />
+        <Route path="/vets/:id" element={<VetProfilePage />} />
+        <Route path="/favorites" element={<FavoritesPage />} />
         
         <Route path="/chat" element={<ChatPage />} />
         <Route path="/chat/:roomId" element={<ChatPage />} />
@@ -101,6 +106,7 @@ function App() {
       }>
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<AdminUsersPage />} />
+        <Route path="approvals" element={<AdminApprovalsPage />} />
         <Route path="payments" element={<AdminPaymentsPage />} />
         <Route path="audit" element={<AdminAuditPage />} />
       </Route>

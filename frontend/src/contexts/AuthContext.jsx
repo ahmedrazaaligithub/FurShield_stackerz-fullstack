@@ -37,7 +37,9 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const response = await authAPI.getMe()
-          dispatch({ type: 'SET_USER', payload: response.data.data })
+          // Ensure we're getting the user data correctly
+          const userData = response.data.data
+          dispatch({ type: 'SET_USER', payload: userData })
         } catch (error) {
           localStorage.removeItem('token')
           dispatch({ type: 'LOGOUT' })
@@ -143,18 +145,10 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const updateProfile = async (userData) => {
-    try {
-      const response = await authAPI.updateProfile(userData)
-      const updatedUser = response.data.data || response.data
-      dispatch({ type: 'SET_USER', payload: updatedUser })
-      toast.success('Profile updated successfully')
-      return { success: true }
-    } catch (error) {
-      const message = error.response?.data?.error || 'Profile update failed'
-      toast.error(message)
-      return { success: false, error: message }
-    }
+  const updateProfile = (userData) => {
+    // This function is called from ProfilePage to update the user state
+    // It receives the updated user data directly from the API response
+    dispatch({ type: 'SET_USER', payload: userData })
   }
 
   const value = {

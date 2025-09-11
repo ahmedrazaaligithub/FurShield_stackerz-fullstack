@@ -144,8 +144,13 @@ const login = async (req, res, next) => {
           name: user.name,
           email: user.email,
           role: user.role,
+          avatar: user.avatar,
+          phone: user.phone,
+          address: user.address,
+          bio: user.bio,
           isVerified: user.isVerified,
-          emailVerified: user.emailVerified
+          emailVerified: user.emailVerified,
+          createdAt: user.createdAt
         },
         accessToken
       }
@@ -335,7 +340,20 @@ const getMe = async (req, res, next) => {
     const user = await User.findById(req.user.id);
     res.json({
       success: true,
-      data: user
+      data: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar,
+        phone: user.phone,
+        address: user.address,
+        bio: user.bio,
+        isVerified: user.isVerified,
+        emailVerified: user.emailVerified,
+        isVetVerified: user.isVetVerified,
+        createdAt: user.createdAt
+      }
     });
   } catch (error) {
     next(error);

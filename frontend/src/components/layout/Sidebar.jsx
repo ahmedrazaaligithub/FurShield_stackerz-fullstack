@@ -1,7 +1,8 @@
-import { Fragment } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { Dialog, Transition } from '@headlessui/react'
 import { useAuth } from '../../contexts/AuthContext'
+import { getAvatarUrl } from '../../utils/imageUtils'
 import { 
   XMarkIcon,
   HomeIcon,
@@ -16,15 +17,22 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 
-const navigation = [
-  { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
-  { name: 'My Pets', href: '/pets', icon: HeartIcon },
-  { name: 'Appointments', href: '/appointments', icon: CalendarIcon },
-  { name: 'Adoption', href: '/adoption', icon: UserIcon },
-  { name: 'Shop', href: '/shop', icon: ShoppingBagIcon },
-  { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon },
-  { name: 'AI Assistant', href: '/ai-assistant', icon: SparklesIcon },
-]
+const getNavigation = (userRole) => {
+  const baseNavigation = [
+    { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
+    { name: 'My Pets', href: '/pets', icon: HeartIcon },
+    { 
+      name: userRole === 'veterinarian' || userRole === 'vet' ? 'Vet Network' : 'Appointments', 
+      href: '/appointments', 
+      icon: CalendarIcon 
+    },
+    { name: 'Adoption', href: '/adoption', icon: UserIcon },
+    { name: 'Shop', href: '/shop', icon: ShoppingBagIcon },
+    { name: 'Chat', href: '/chat', icon: ChatBubbleLeftRightIcon },
+    { name: 'AI Assistant', href: '/ai-assistant', icon: SparklesIcon },
+  ]
+  return baseNavigation
+}
 
 const adminNavigation = [
   { name: 'Admin Panel', href: '/admin', icon: ShieldCheckIcon },
@@ -36,8 +44,14 @@ const adminNavigation = [
 export const Sidebar = ({ open, onClose }) => {
   const location = useLocation()
   const { user } = useAuth()
+  const [avatarKey, setAvatarKey] = useState(0)
   
   const isAdmin = user?.role === 'admin'
+  
+  // Force avatar re-render when user changes
+  useEffect(() => {
+    setAvatarKey(prev => prev + 1)
+  }, [user?.avatar])
 
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
@@ -57,7 +71,7 @@ export const Sidebar = ({ open, onClose }) => {
       </div>
 
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
-        {navigation.map((item) => {
+        {getNavigation(user?.role).map((item) => {
           const isActive = location.pathname === item.href || 
                           (item.href !== '/dashboard' && location.pathname.startsWith(item.href))
           
@@ -125,15 +139,22 @@ export const Sidebar = ({ open, onClose }) => {
         <div className="flex items-center">
           {user?.avatar ? (
             <img
+              key={`sidebar-avatar-${avatarKey}-${user.avatar}`}
               className="h-10 w-10 rounded-full object-cover"
-              src={user.avatar}
-              alt={user.name}
+              src={`${getAvatarUrl(user.avatar)}?t=${Date.now()}`}
+              alt={user?.name || 'User'}
+              onError={(e) => {
+                e.target.style.display = 'none';
+                e.target.nextSibling.style.display = 'flex';
+              }}
             />
-          ) : (
-            <div className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center">
-              <UserIcon className="h-6 w-6 text-gray-600" />
-            </div>
-          )}
+          ) : null}
+          <div 
+            className="h-10 w-10 bg-gray-300 rounded-full flex items-center justify-center"
+            style={{ display: user?.avatar ? 'none' : 'flex' }}
+          >
+            <UserIcon className="h-6 w-6 text-gray-600" />
+          </div>
           <div className="ml-3">
             <p className="text-sm font-medium text-gray-900">{user?.name}</p>
             <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
