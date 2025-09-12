@@ -39,8 +39,12 @@ export const AuthProvider = ({ children }) => {
           const response = await authAPI.getMe()
           // Ensure we're getting the user data correctly
           const userData = response.data.data
+          console.log('AuthContext - User data from API:', userData)
+          console.log('AuthContext - emailVerified:', userData.emailVerified)
+          console.log('AuthContext - isEmailVerified:', userData.isEmailVerified)
           dispatch({ type: 'SET_USER', payload: userData })
         } catch (error) {
+          console.log('Auth initialization failed:', error.response?.status)
           localStorage.removeItem('token')
           dispatch({ type: 'LOGOUT' })
         }
@@ -92,16 +96,15 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const logout = async () => {
-    try {
-      await authAPI.logout()
-    } catch (error) {
-      console.error('Logout error:', error)
-    } finally {
-      localStorage.removeItem('token')
-      dispatch({ type: 'LOGOUT' })
-      toast.success('Logged out successfully')
+  const logout = () => {
+    localStorage.removeItem('token')
+    sessionStorage.clear()
+    dispatch({ type: 'LOGOUT' })
+    // Force clear all cached data
+    if (window.queryClient) {
+      window.queryClient.clear()
     }
+    toast.success('Logged out successfully')
   }
 
   const forgotPassword = async (email) => {
@@ -142,17 +145,21 @@ export const AuthProvider = ({ children }) => {
       const updatedUser = userData.data.data
       
       // Update all user state
-      setUser(updatedUser)
-      localStorage.setItem('user', JSON.stringify(updatedUser))
+      dispatch({ type: 'SET_USER', payload: updatedUser })
       
-      // Force reload the page to ensure all components update
-      window.location.reload()
+      // Update localStorage token to ensure fresh data
+      const currentToken = localStorage.getItem('token')
+      if (currentToken) {
+        // Force a small delay to ensure backend has updated
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('userUpdated'))
+          window.dispatchEvent(new CustomEvent('forceUserRefresh'))
+        }, 100)
+      }
       
-      toast.success('Email verified successfully')
       return { success: true }
     } catch (error) {
       const message = error.response?.data?.error || 'Email verification failed'
-      toast.error(message)
       return { success: false, error: message }
     }
   }

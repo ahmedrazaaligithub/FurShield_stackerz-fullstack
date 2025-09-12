@@ -1,18 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useQuery, useMutation } from '@tanstack/react-query'
-import { cartAPI, orderAPI } from '../../services/api'
+import { cartAPI, orderAPI, userAPI } from '../../services/api'
+import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { 
   ArrowLeftIcon,
   CreditCardIcon,
   TruckIcon,
-  ShieldCheckIcon
+  ShieldCheckIcon,
+  UserIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 
 export default function CheckoutPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
    
     firstName: '',
@@ -42,14 +45,41 @@ export default function CheckoutPage() {
     queryFn: cartAPI.getCart
   })
 
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: () => userAPI.getProfile(),
+    enabled: !!user
+  })
+
+  // Auto-fill form with user data
+  useEffect(() => {
+    if (userProfile?.data?.data) {
+      const profile = userProfile.data.data
+      setFormData(prev => ({
+        ...prev,
+        firstName: profile.name?.split(' ')[0] || prev.firstName,
+        lastName: profile.name?.split(' ').slice(1).join(' ') || prev.lastName,
+        email: profile.email || prev.email,
+        phone: profile.phone || prev.phone,
+        address: profile.address?.street || prev.address,
+        city: profile.address?.city || prev.city,
+        state: profile.address?.state || prev.state,
+        zipCode: profile.address?.zipCode || prev.zipCode,
+        country: profile.address?.country || prev.country
+      }))
+    }
+  }, [userProfile])
+
   const createOrderMutation = useMutation({
     mutationFn: orderAPI.createOrder,
     onSuccess: (data) => {
       toast.success('Order placed successfully!')
-      navigate(`/orders/${data.data.data._id}`)
+      // Redirect to success page
+      navigate(`/order-success/${data.data.data._id}`)
     },
     onError: (error) => {
-      toast.error(error.response?.data?.error || 'Failed to place order')
+      console.error('Order creation error:', error.response?.data)
+      toast.error(error.response?.data?.error || error.response?.data?.message || 'Failed to place order')
     }
   })
 
@@ -67,7 +97,7 @@ export default function CheckoutPage() {
   const validateForm = () => {
     const newErrors = {}
     
-  
+    // Required field validation
     const required = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode', 'cardNumber', 'expiryDate', 'cvv', 'cardName']
     required.forEach(field => {
       if (!formData[field].trim()) {
@@ -75,14 +105,35 @@ export default function CheckoutPage() {
       }
     })
     
- 
-    if (formData.email && !/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email'
+    // Email validation
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
     }
     
-  
-    if (formData.cardNumber && formData.cardNumber.replace(/\s/g, '').length < 16) {
-      newErrors.cardNumber = 'Please enter a valid card number'
+    // Phone validation (10-15 digits)
+    if (formData.phone && !/^[0-9]{10,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
+      newErrors.phone = 'Please enter a valid phone number (10-15 digits)'
+    }
+    
+    // ZIP code validation (5 or 9 digits)
+    if (formData.zipCode && !/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
+      newErrors.zipCode = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
+    }
+    
+    // Card number validation (13-19 digits)
+    const cardNumber = formData.cardNumber.replace(/\s/g, '')
+    if (cardNumber && (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber))) {
+      newErrors.cardNumber = 'Please enter a valid card number (13-19 digits)'
+    }
+    
+    // Expiry date validation (MM/YY or MM/YYYY)
+    if (formData.expiryDate && !/^(0[1-9]|1[0-2])\/(\d{2}|\d{4})$/.test(formData.expiryDate)) {
+      newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)'
+    }
+    
+    // CVV validation (3-4 digits)
+    if (formData.cvv && !/^\d{3,4}$/.test(formData.cvv)) {
+      newErrors.cvv = 'Please enter a valid CVV (3-4 digits)'
     }
     
     setErrors(newErrors)
@@ -114,6 +165,7 @@ export default function CheckoutPage() {
       shippingMethod: formData.shippingMethod
     }
     
+    console.log('Submitting order with data:', orderData)
     createOrderMutation.mutate(orderData)
   }
 
@@ -143,7 +195,7 @@ export default function CheckoutPage() {
   }
 
   const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const tax = subtotal * 0.08
+  const tax = 0 // No tax
   const shipping = formData.shippingMethod === 'express' ? 19.99 : (subtotal > 50 ? 0 : 9.99)
   const total = subtotal + tax + shipping
 
@@ -221,6 +273,8 @@ export default function CheckoutPage() {
                       value={formData.phone}
                       onChange={handleInputChange}
                       className={`input ${errors.phone ? 'border-red-300' : ''}`}
+                      placeholder="(123) 456-7890"
+                      maxLength="15"
                     />
                     {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                   </div>
@@ -269,6 +323,8 @@ export default function CheckoutPage() {
                       value={formData.zipCode}
                       onChange={handleInputChange}
                       className={`input ${errors.zipCode ? 'border-red-300' : ''}`}
+                      placeholder="12345"
+                      maxLength="10"
                     />
                     {errors.zipCode && <p className="mt-1 text-sm text-red-600">{errors.zipCode}</p>}
                   </div>
@@ -335,9 +391,18 @@ export default function CheckoutPage() {
                     type="text"
                     name="cardNumber"
                     value={formData.cardNumber}
-                    onChange={handleInputChange}
+                    onChange={(e) => {
+                      // Format card number with spaces
+                      let value = e.target.value.replace(/\s/g, '')
+                      let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value
+                      setFormData(prev => ({ ...prev, cardNumber: formattedValue }))
+                      if (errors.cardNumber) {
+                        setErrors(prev => ({ ...prev, cardNumber: '' }))
+                      }
+                    }}
                     className={`input ${errors.cardNumber ? 'border-red-300' : ''}`}
                     placeholder="1234 5678 9012 3456"
+                    maxLength="23"
                   />
                   {errors.cardNumber && <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>}
                 </div>
@@ -349,9 +414,19 @@ export default function CheckoutPage() {
                       type="text"
                       name="expiryDate"
                       value={formData.expiryDate}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        let value = e.target.value.replace(/\D/g, '')
+                        if (value.length >= 2) {
+                          value = value.slice(0, 2) + '/' + value.slice(2, 4)
+                        }
+                        setFormData(prev => ({ ...prev, expiryDate: value }))
+                        if (errors.expiryDate) {
+                          setErrors(prev => ({ ...prev, expiryDate: '' }))
+                        }
+                      }}
                       className={`input ${errors.expiryDate ? 'border-red-300' : ''}`}
                       placeholder="MM/YY"
+                      maxLength="5"
                     />
                     {errors.expiryDate && <p className="mt-1 text-sm text-red-600">{errors.expiryDate}</p>}
                   </div>
@@ -361,9 +436,16 @@ export default function CheckoutPage() {
                       type="text"
                       name="cvv"
                       value={formData.cvv}
-                      onChange={handleInputChange}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        setFormData(prev => ({ ...prev, cvv: value }))
+                        if (errors.cvv) {
+                          setErrors(prev => ({ ...prev, cvv: '' }))
+                        }
+                      }}
                       className={`input ${errors.cvv ? 'border-red-300' : ''}`}
                       placeholder="123"
+                      maxLength="4"
                     />
                     {errors.cvv && <p className="mt-1 text-sm text-red-600">{errors.cvv}</p>}
                   </div>

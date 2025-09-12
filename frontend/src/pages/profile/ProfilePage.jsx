@@ -42,10 +42,25 @@ export default function ProfilePage() {
       refetch();
     };
     
+    const handleForceRefresh = () => {
+      // Force refetch user data from server
+      queryClient.invalidateQueries(['profile']);
+      refetch();
+    };
+    
     window.addEventListener('userUpdated', handleUserUpdate);
-    return () => window.removeEventListener('userUpdated', handleUserUpdate);
-  }, [refetch]);
-  console.log('profile----->',profile);
+    window.addEventListener('forceUserRefresh', handleForceRefresh);
+    
+    return () => {
+      window.removeEventListener('userUpdated', handleUserUpdate);
+      window.removeEventListener('forceUserRefresh', handleForceRefresh);
+    };
+  }, [refetch, queryClient]);
+  console.log('profile----->', profile);
+  console.log('user from AuthContext----->', user);
+  console.log('currentUser----->', profile?.data?.data || user);
+  console.log('emailVerified----->', (profile?.data?.data || user)?.emailVerified);
+  console.log('isEmailVerified----->', (profile?.data?.data || user)?.isEmailVerified);
 
   // Update form data when profile data is available
   useEffect(() => {
@@ -329,7 +344,7 @@ export default function ProfilePage() {
                     <div>
                       <label className="label">Email</label>
                       <p className="text-gray-900">{currentUser?.email}</p>
-                      {profile?.data?.data?.isEmailVerified ? (
+                      {(profile?.data?.data?.isEmailVerified || user?.isEmailVerified || user?.emailVerified) ? (
                         <span className="badge badge-success mt-1">
                           ✓ Verified
                         </span>

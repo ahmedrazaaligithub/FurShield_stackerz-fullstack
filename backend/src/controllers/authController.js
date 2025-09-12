@@ -54,7 +54,7 @@ const register = async (req, res, next) => {
 
     // If user is registering as vet, ensure they need approval
     if (role === 'vet') {
-      user.isVetVerified = false; // Ensure vet starts unverified
+      user.isVetVerified = false; // Vets need admin approval
       await user.save();
       
       await AuditLog.create({
@@ -163,6 +163,7 @@ const login = async (req, res, next) => {
           bio: user.bio,
           isVerified: user.isVerified,
           emailVerified: user.emailVerified,
+          isEmailVerified: user.emailVerified,
           createdAt: user.createdAt
         },
         accessToken
@@ -318,36 +319,57 @@ const verifyEmail = async (req, res, next) => {
   try {
     const { token } = req.params;
 
-    // Find user with matching token (regardless of expiration first)
+    if (!token || token.length !== 40) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid verification token format'
+      });
+    }
+
+    // Find user with matching token
     const user = await User.findOne({ 
       emailVerificationToken: token
     });
     
     if (!user) {
-      // Check if user already verified
-      const verifiedUser = await User.findOne({ 
-        emailVerificationToken: { $exists: false },
-        isEmailVerified: true 
+      // Check if there's a user with this token but already verified
+      const verifiedUser = await User.findOne({
+        $or: [
+          { emailVerificationToken: token, isEmailVerified: true },
+          { email: { $exists: true }, isEmailVerified: true }
+        ]
       });
       
-      if (verifiedUser) {
-        return res.status(400).json({
-          success: false,
-          error: 'Email already verified'
+      if (verifiedUser && verifiedUser.emailVerificationToken === token) {
+        // Clear the token and return success
+        verifiedUser.emailVerificationToken = undefined;
+        verifiedUser.emailVerificationExpires = undefined;
+        await verifiedUser.save();
+        
+        return res.json({
+          success: true,
+          message: 'Email is already verified',
+          alreadyVerified: true
         });
       }
       
       return res.status(400).json({
         success: false,
-        error: 'Invalid verification token'
+        error: 'Invalid or expired verification token'
       });
     }
 
-    // Check if already verified
-    if (user.isEmailVerified) {
-      return res.status(400).json({
-        success: false,
-        error: 'Email already verified'
+    // Check if already verified - if so, clear the token and return success
+    if (user.emailVerified) {
+      // Clear the token since email is already verified
+      user.emailVerificationToken = undefined;
+      user.emailVerificationExpires = undefined;
+      await user.save();
+      
+      return res.json({
+        success: true,
+        message: 'Email is already verified',
+        alreadyVerified: true
       });
     }
 
@@ -359,7 +381,8 @@ const verifyEmail = async (req, res, next) => {
       });
     }
 
-    user.isEmailVerified = true;
+    // Verify the email
+    user.emailVerified = true;
     user.emailVerificationToken = undefined;
     user.emailVerificationExpires = undefined;
     await user.save();
@@ -398,6 +421,7 @@ const getMe = async (req, res, next) => {
         bio: user.bio,
         isVerified: user.isVerified,
         emailVerified: user.emailVerified,
+        isEmailVerified: user.emailVerified,
         isVetVerified: user.isVetVerified,
         createdAt: user.createdAt
       }

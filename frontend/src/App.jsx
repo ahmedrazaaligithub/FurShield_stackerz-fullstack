@@ -3,6 +3,7 @@ import { useAuth } from './contexts/AuthContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import { Layout } from './components/Layout'
 import { LoadingSpinner } from './components/ui/LoadingSpinner'
+import ErrorBoundary from './components/common/ErrorBoundary'
 
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/auth/LoginPage'
@@ -28,11 +29,14 @@ import AdoptionDetailsPage from './pages/adoption/AdoptionDetailsPage'
 import CreateListingPage from './pages/adoption/CreateListingPage'
 
 import ShopPage from './pages/shop/ShopPage'
+import ProductDetailsPage from './pages/shop/ProductDetailsPage'
 import VetDirectoryPage from './pages/vets/VetDirectoryPage'
 import VetProfilePage from './pages/vets/VetProfilePage'
-import FavoritesPage from './pages/favorites/FavoritesPage'
+import FavoritesPage from './pages/shop/FavoritesPage'
 import CartPage from './pages/shop/CartPage'
 import CheckoutPage from './pages/shop/CheckoutPage'
+import OrderSuccessPage from './pages/shop/OrderSuccessPage'
+import OrderDetailsPage from './pages/shop/OrderDetailsPage'
 import OrdersPage from './pages/shop/OrdersPage'
 
 import ChatPage from './pages/chat/ChatPage'
@@ -41,9 +45,12 @@ import AIAssistantPage from './pages/ai/AIAssistantPage'
 import AdminLayout from './components/admin/AdminLayout'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import AdminUsersPage from './pages/admin/AdminUsersPage'
-import AdminApprovalsPage from './pages/admin/AdminApprovalsPage'
+import AdminOrdersPage from './pages/admin/AdminOrdersPage'
+import AdminCategoriesPage from './pages/admin/AdminCategoriesPage'
+import AdminProductsPage from './pages/admin/AdminProductsPage'
+import AdminShelterApprovalPage from './pages/admin/AdminShelterApprovalPage'
 import AdminPaymentsPage from './pages/admin/AdminPaymentsPage'
-import AdminAuditPage from './pages/admin/AdminAuditPage'
+import AdminAuditLogsPage from './pages/admin/AdminAuditLogsPage'
 import AdminLoginPage from './pages/admin/AdminLoginPage'
 import NotFoundPage from './pages/NotFoundPage'
 
@@ -59,17 +66,18 @@ function App() {
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<HomePage />} />
-      <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
-      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-      <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
-      <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
-      
-      <Route path="/adoption/:id" element={<AdoptionDetailsPage />} />
-      
-      <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
+    <ErrorBoundary>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/verify-email/:token" element={<VerifyEmailPage />} />
+        
+        <Route path="/adoption/:id" element={<AdoptionDetailsPage />} />
+        
+        <Route element={<ProtectedRoute><Layout /></ProtectedRoute>}>
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/profile/:userId" element={<UserProfilePage />} />
@@ -87,9 +95,12 @@ function App() {
         <Route path="/adoption/create" element={<CreateListingPage />} />
         
         <Route path="/shop" element={<ShopPage />} />
+        <Route path="/shop/product/:id" element={<ProductDetailsPage />} />
         <Route path="/cart" element={<CartPage />} />
         <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/order-success/:orderId?" element={<OrderSuccessPage />} />
         <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:id" element={<OrderDetailsPage />} />
         <Route path="/vets" element={<VetDirectoryPage />} />
         <Route path="/vets/:id" element={<VetProfilePage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
@@ -101,20 +112,20 @@ function App() {
       
       {/* Admin Routes - Outside of protected route */}
       <Route path="/admin/login" element={<AdminLoginPage />} />
-      <Route path="/admin" element={
-        <ProtectedRoute requiredRole="admin">
-          <AdminLayout />
-        </ProtectedRoute>
-      }>
+      <Route path="/admin" element={<AdminLayout />}>
         <Route index element={<AdminDashboard />} />
         <Route path="users" element={<AdminUsersPage />} />
-        <Route path="approvals" element={<AdminApprovalsPage />} />
+        <Route path="orders" element={<AdminOrdersPage />} />
+        <Route path="categories" element={<AdminCategoriesPage />} />
+        <Route path="products" element={<AdminProductsPage />} />
+        <Route path="shelter-approval" element={<AdminShelterApprovalPage />} />
         <Route path="payments" element={<AdminPaymentsPage />} />
-        <Route path="audit" element={<AdminAuditPage />} />
+        <Route path="audit-logs" element={<AdminAuditLogsPage />} />
       </Route>
       
       <Route path="*" element={<NotFoundPage />} />
     </Routes>
+    </ErrorBoundary>
   )
 }
 

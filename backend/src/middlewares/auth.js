@@ -5,6 +5,7 @@ const protect = async (req, res, next) => {
   try {
     let token;
 
+    // Check for token in Authorization header
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
     }
@@ -16,17 +17,42 @@ const protect = async (req, res, next) => {
       });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decoded.id).select('-password');
-    
-    if (!req.user) {
-      return res.status(401).json({
-        success: false,
-        error: 'No user found with this token'
-      });
-    }
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = await User.findById(decoded.id).select('-password');
+      
+      if (!req.user) {
+        return res.status(401).json({
+          success: false,
+          error: 'No user found with this token'
+        });
+      }
 
-    next();
+      // Check if user is active
+      if (!req.user.isActive) {
+        return res.status(401).json({
+          success: false,
+          error: 'Account is deactivated'
+        });
+      }
+
+      next();
+    } catch (jwtError) {
+      if (jwtError.name === 'TokenExpiredError') {
+        return res.status(401).json({
+          success: false,
+          error: 'Token expired',
+          code: 'TOKEN_EXPIRED'
+        });
+      }
+      if (jwtError.name === 'JsonWebTokenError') {
+        return res.status(401).json({
+          success: false,
+          error: 'Invalid token'
+        });
+      }
+      throw jwtError;
+    }
   } catch (error) {
     return res.status(401).json({
       success: false,
@@ -79,4 +105,9 @@ const checkVetVerification = (req, res, next) => {
   next();
 };
 
-module.exports = { protect, authorize, checkVetVerification };
+module.exports = { 
+  protect, 
+  authenticate: protect, // alias for consistency
+  authorize, 
+  checkVetVerification 
+};

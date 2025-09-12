@@ -12,7 +12,10 @@ import {
   XMarkIcon,
   BellIcon,
   UserCircleIcon,
-  CheckCircleIcon
+  CheckCircleIcon,
+  TagIcon,
+  CubeIcon,
+  ShoppingBagIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 
@@ -25,6 +28,8 @@ const AdminLayout = () => {
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: UsersIcon },
+    { name: 'Categories', href: '/admin/categories', icon: TagIcon },
+    { name: 'Products', href: '/admin/products', icon: CubeIcon },
     { name: 'Approve Shelter', href: '/admin/approvals', icon: CheckCircleIcon },
     { name: 'Payments', href: '/admin/payments', icon: CreditCardIcon },
     { name: 'Audit Logs', href: '/admin/audit', icon: DocumentTextIcon },
@@ -98,29 +103,109 @@ const AdminLayout = () => {
               <h1 className="text-xl font-bold text-gray-900">FurShield Admin</h1>
             </div>
             <nav className="mt-5 flex-1 px-2 bg-white space-y-1">
-              {navigation.map((item) => {
-                const isActive = location.pathname === item.href
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    className={cn(
-                      'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
-                      isActive
-                        ? 'bg-blue-100 text-blue-900'
-                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-                    )}
-                  >
-                    <item.icon
-                      className={cn(
-                        'mr-3 flex-shrink-0 h-6 w-6',
-                        isActive ? 'text-blue-500' : 'text-gray-400 group-hover:text-gray-500'
-                      )}
-                    />
-                    {item.name}
-                  </Link>
-                )
-              })}
+              <Link
+                to="/admin"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <HomeIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Dashboard
+              </Link>
+
+              <Link
+                to="/admin/users"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/users'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <UsersIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Users
+              </Link>
+
+              <Link
+                to="/admin/orders"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/orders'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <ShoppingBagIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Orders
+              </Link>
+
+              <Link
+                to="/admin/categories"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/categories'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <TagIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Categories
+              </Link>
+
+              <Link
+                to="/admin/products"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/products'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <CubeIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Products
+              </Link>
+
+              <Link
+                to="/admin/shelter-approval"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/shelter-approval'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <CheckCircleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Approve Shelter
+              </Link>
+
+              <Link
+                to="/admin/payments"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/payments'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <CreditCardIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Payments
+              </Link>
+
+              <Link
+                to="/admin/audit-logs"
+                className={cn(
+                  'group flex items-center px-2 py-2 text-sm font-medium rounded-md',
+                  location.pathname === '/admin/audit-logs'
+                    ? 'bg-gray-100 text-gray-900'
+                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                )}
+              >
+                <DocumentTextIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
+                Audit Logs
+              </Link>
             </nav>
           </div>
         </div>

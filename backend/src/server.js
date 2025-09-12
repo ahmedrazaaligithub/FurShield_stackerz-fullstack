@@ -30,6 +30,8 @@ const productRoutes = require('./routes/productRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
+const reviewRoutes = require('./routes/reviewRoutes');
+const favoriteRoutes = require('./routes/favoriteRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const aiRoutes = require('./routes/aiRoutes');
@@ -81,13 +83,16 @@ app.use(helmet({
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
 
 app.use(limiter);
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
-app.use(express.json({ limit: '10mb' }));
+app.use(express.json({ 
+  limit: '10mb',
+  strict: false
+}));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(xss());
@@ -128,6 +133,8 @@ app.use('/api/v1/products', productRoutes);
 app.use('/api/v1/cart', cartRoutes);
 app.use('/api/v1/orders', orderRoutes);
 app.use('/api/v1/ratings', ratingRoutes);
+app.use('/api/v1/reviews', reviewRoutes);
+app.use('/api/v1/favorites', favoriteRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/upload', uploadRoutes);
 app.use('/api/v1/ai', aiRoutes);
@@ -146,4 +153,12 @@ const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
+}).on('error', (err) => {
+  if (err.code === 'EADDRINUSE') {
+    logger.error(`Port ${PORT} is already in use`);
+    process.exit(1);
+  } else {
+    logger.error('Server error:', err);
+    process.exit(1);
+  }
 });

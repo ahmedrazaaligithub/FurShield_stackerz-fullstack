@@ -2,6 +2,42 @@ const Pet = require('../models/Pet');
 const HealthRecord = require('../models/HealthRecord');
 const AuditLog = require('../models/AuditLog');
 
+// Get pets for a specific user
+const getUserPets = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const filter = { 
+      owner: userId, 
+      isActive: true 
+    };
+
+    const pets = await Pet.find(filter)
+      .populate('owner', 'name email')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await Pet.countDocuments(filter);
+
+    res.json({
+      success: true,
+      data: pets,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getPets = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -306,5 +342,6 @@ module.exports = {
   deletePet,
   uploadPetPhoto,
   getHealthRecords,
-  addHealthRecord
+  addHealthRecord,
+  getUserPets
 };

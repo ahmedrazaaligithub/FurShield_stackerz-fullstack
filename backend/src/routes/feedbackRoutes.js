@@ -29,8 +29,12 @@ const validateFeedbackUpdate = [
   validateRequest
 ]
 
-const validateObjectId = [
+const validatePetId = [
   param('petId').isMongoId().withMessage('Invalid pet ID'),
+  validateRequest
+]
+
+const validateFeedbackId = [
   param('feedbackId').isMongoId().withMessage('Invalid feedback ID'),
   validateRequest
 ]
@@ -39,13 +43,13 @@ const validateObjectId = [
 router.use(protect)
 
 // Pet feedback routes
-router.get('/pets/:petId/feedback', validateObjectId, feedbackController.getPetFeedback)
-router.post('/pets/:petId/feedback', validateObjectId, validateFeedbackSubmission, feedbackController.submitFeedback)
+router.get('/pets/:petId/feedback', validatePetId, feedbackController.getPetFeedback)
+router.post('/pets/:petId/feedback', validatePetId, validateFeedbackSubmission, feedbackController.submitFeedback)
 
 // Individual feedback routes
-router.patch('/feedback/:feedbackId', validateObjectId, validateFeedbackUpdate, feedbackController.updateFeedback)
-router.delete('/feedback/:feedbackId', validateObjectId, feedbackController.deleteFeedback)
-router.post('/feedback/:feedbackId/report', validateObjectId, feedbackController.reportFeedback)
+router.patch('/feedback/:feedbackId', validateFeedbackId, validateFeedbackUpdate, feedbackController.updateFeedback)
+router.delete('/feedback/:feedbackId', validateFeedbackId, feedbackController.deleteFeedback)
+router.post('/feedback/:feedbackId/report', validateFeedbackId, feedbackController.reportFeedback)
 
 // User feedback routes
 router.get('/my-feedback', feedbackController.getUserFeedback)

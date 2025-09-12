@@ -49,82 +49,136 @@ const OrderCard = ({ order }) => {
 
   return (
     <Link to={`/orders/${order._id}`} className="block">
-      <div className="card hover:shadow-glow transition-all duration-300 group">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-primary-300 transition-all duration-300 group overflow-hidden">
         <div className="p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
-                Order #{order.orderNumber || order._id.slice(-8)}
-              </h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Placed on {new Date(order.createdAt).toLocaleDateString()}
+          <div className="flex items-start justify-between mb-6">
+            <div className="flex-1">
+              <div className="flex items-center space-x-3 mb-2">
+                <h3 className="text-xl font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
+                  #{order.orderNumber || order._id.slice(-8)}
+                </h3>
+                <div className="flex items-center space-x-2">
+                  {getStatusIcon(order.status)}
+                  <span className={cn('px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wide', getStatusColor(order.status))}>
+                    {order.status}
+                  </span>
+                </div>
+              </div>
+              <p className="text-sm text-gray-500">
+                Placed {new Date(order.createdAt).toLocaleDateString('en-US', {
+                  weekday: 'short',
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
               </p>
             </div>
-            <div className="flex items-center space-x-2">
-              {getStatusIcon(order.status)}
-              <span className={cn('badge', getStatusColor(order.status))}>
-                {order.status}
-              </span>
+            <div className="text-right">
+              <p className="text-2xl font-bold text-gray-900">${order.total?.toFixed(2) || '0.00'}</p>
+              <p className="text-sm text-gray-500">{order.items?.length || 0} items</p>
             </div>
           </div>
 
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Total Amount</span>
-              <span className="text-lg font-bold text-gray-900">${order.totalAmount}</span>
+          {/* Order Progress Bar */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
+              <span>Order Progress</span>
+              <span>{order.status === 'delivered' ? '100%' : order.status === 'shipped' ? '75%' : order.status === 'processing' ? '50%' : '25%'}</span>
             </div>
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Items</span>
-              <span className="text-sm text-gray-900">
-                {order.items?.length || 0} item{order.items?.length !== 1 ? 's' : ''}
-              </span>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className={`h-2 rounded-full transition-all duration-500 ${
+                  order.status === 'delivered' ? 'bg-green-500 w-full' :
+                  order.status === 'shipped' ? 'bg-purple-500 w-3/4' :
+                  order.status === 'processing' ? 'bg-blue-500 w-1/2' :
+                  'bg-yellow-500 w-1/4'
+                }`}
+              ></div>
             </div>
+          </div>
 
-            {order.trackingNumber && (
+          {/* Shipping & Payment Info */}
+          <div className="grid grid-cols-2 gap-4 mb-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Payment</p>
+              <p className="text-sm font-medium text-gray-900 mt-1">
+                {order.paymentStatus === 'paid' ? '✅ Paid' : 
+                 order.paymentStatus === 'failed' ? '❌ Failed' : 
+                 '⏳ Pending'}
+              </p>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Shipping</p>
+              <p className="text-sm font-medium text-gray-900 mt-1">
+                {order.shipping?.method === 'express' ? '🚀 Express' : '📦 Standard'}
+              </p>
+            </div>
+          </div>
+
+          {order.shipping?.trackingNumber && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Tracking</span>
-                <span className="text-sm font-mono text-primary-600">{order.trackingNumber}</span>
+                <span className="text-sm font-medium text-blue-900">Tracking Number</span>
+                <span className="text-sm font-mono text-blue-700">{order.shipping.trackingNumber}</span>
               </div>
-            )}
+            </div>
+          )}
 
-            {order.estimatedDelivery && (
+          {order.estimatedDelivery && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Estimated Delivery</span>
-                <span className="text-sm text-gray-900">
-                  {new Date(order.estimatedDelivery).toLocaleDateString()}
+                <span className="text-sm font-medium text-green-900">Estimated Delivery</span>
+                <span className="text-sm text-green-700">
+                  {new Date(order.estimatedDelivery).toLocaleDateString('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                  })}
                 </span>
               </div>
-            )}
-          </div>
+            </div>
+          )}
 
-          {order.items?.slice(0, 3).map((item, index) => (
-            <div key={index} className="flex items-center space-x-3 mt-4 p-2 bg-gray-50 rounded">
-              {item.product?.images?.[0] ? (
-                <img
-                  src={item.product.images[0]}
-                  alt={item.product.name}
-                  className="h-10 w-10 rounded object-cover"
-                />
-              ) : (
-                <div className="h-10 w-10 bg-gray-200 rounded flex items-center justify-center">
-                  <ShoppingBagIcon className="h-4 w-4 text-gray-400" />
+          {/* Order Items Preview */}
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-semibold text-gray-900 mb-3">Order Items</h4>
+            <div className="space-y-2">
+              {order.items?.slice(0, 2).map((item, index) => (
+                <div key={index} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                  {item.product?.images?.[0] ? (
+                    <img
+                      src={item.product.images[0]}
+                      alt={item.name || item.product?.name}
+                      className="h-12 w-12 rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div className="h-12 w-12 bg-gray-200 rounded-lg flex items-center justify-center">
+                      <ShoppingBagIcon className="h-6 w-6 text-gray-400" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {item.name || item.product?.name || 'Product'}
+                    </p>
+                    <div className="flex items-center justify-between mt-1">
+                      <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
+                      <p className="text-sm font-semibold text-gray-900">${(item.price * item.quantity).toFixed(2)}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+              
+              {order.items?.length > 2 && (
+                <div className="text-center py-2">
+                  <p className="text-sm text-gray-500">
+                    +{order.items.length - 2} more item{order.items.length - 2 !== 1 ? 's' : ''}
+                  </p>
                 </div>
               )}
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {item.product?.name || 'Product'}
-                </p>
-                <p className="text-xs text-gray-600">Qty: {item.quantity}</p>
-              </div>
             </div>
-          ))}
-
-          {order.items?.length > 3 && (
-            <p className="text-sm text-gray-500 mt-2">
-              +{order.items.length - 3} more item{order.items.length - 3 !== 1 ? 's' : ''}
-            </p>
-          )}
+          </div>
         </div>
       </div>
     </Link>

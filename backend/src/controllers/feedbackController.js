@@ -31,6 +31,11 @@ exports.submitFeedback = catchAsync(async (req, res, next) => {
   const { content, type } = req.body
   const userId = req.user.id
 
+  // Validate required fields
+  if (!content || content.trim().length === 0) {
+    return next(new AppError('Feedback content is required', 400))
+  }
+
   // Check if pet exists
   const pet = await Pet.findById(petId)
   if (!pet) {
@@ -50,6 +55,12 @@ exports.submitFeedback = catchAsync(async (req, res, next) => {
     } else {
       feedbackType = 'experience_share'
     }
+  }
+
+  // Validate feedback type
+  const validTypes = ['professional_advice', 'care_tip', 'experience_share']
+  if (!validTypes.includes(feedbackType)) {
+    return next(new AppError('Invalid feedback type', 400))
   }
 
   const feedback = await Feedback.create({

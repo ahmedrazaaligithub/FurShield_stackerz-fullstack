@@ -3,7 +3,7 @@ const Product = require('../models/Product');
 const Notification = require('../models/Notification');
 const AuditLog = require('../models/AuditLog');
 const paymentService = require('../services/paymentService');
-const { sendPaymentConfirmation } = require('../services/emailService');
+const { sendOrderConfirmation, sendOrderCancellation } = require('../services/emailService');
 const { emitToUser, emitToAdmins } = require('../sockets/socketHandler');
 
 const getOrders = async (req, res, next) => {
@@ -78,54 +78,78 @@ const getOrder = async (req, res, next) => {
 
 const createOrder = async (req, res, next) => {
   try {
-    const { items, shippingAddress, billingAddress, notes } = req.body;
+    const Cart = require('../models/Cart');
+    const { shippingAddress, paymentMethod, shippingMethod } = req.body;
+
+    // Get user's cart
+    const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
+    
+    if (!cart || cart.items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Cart is empty'
+      });
+    }
 
     let subtotal = 0;
     const orderItems = [];
 
-    for (const item of items) {
-      const product = await Product.findById(item.product);
-      if (!product) {
-        return res.status(404).json({
-          success: false,
-          error: `Product not found: ${item.product}`
-        });
-      }
-
-      if (!product.inStock || product.inventory.quantity < item.quantity) {
+    // Process cart items
+    for (const cartItem of cart.items) {
+      if (!cartItem.product) continue;
+      
+      const product = cartItem.product;
+      
+      // Check stock availability
+      if (product.inventory && product.inventory.quantity < cartItem.quantity) {
         return res.status(400).json({
           success: false,
           error: `Insufficient stock for product: ${product.name}`
         });
       }
 
-      const itemTotal = product.price * item.quantity;
+      const itemTotal = product.price * cartItem.quantity;
       subtotal += itemTotal;
 
       orderItems.push({
         product: product._id,
         name: product.name,
         price: product.price,
-        quantity: item.quantity,
-        variant: item.variant,
+        quantity: cartItem.quantity,
         total: itemTotal
       });
     }
 
-    const tax = subtotal * 0.08;
+    const tax = 0; // No tax
     const shipping = subtotal > 50 ? 0 : 9.99;
     const total = subtotal + tax + shipping;
 
+    // Generate order number
+    const orderNumber = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+
     const order = await Order.create({
+      orderNumber,
       user: req.user.id,
       items: orderItems,
       subtotal,
       tax,
-      shipping: { cost: shipping },
+      shipping: { 
+        cost: shipping,
+        method: shippingMethod 
+      },
       total,
-      shippingAddress,
-      billingAddress,
-      notes
+      shippingAddress: {
+        name: `${shippingAddress.firstName} ${shippingAddress.lastName}`,
+        street: shippingAddress.address,
+        city: shippingAddress.city,
+        state: shippingAddress.state,
+        zipCode: shippingAddress.zipCode,
+        country: shippingAddress.country,
+        phone: shippingAddress.phone || ''
+      },
+      paymentMethod: 'credit-card', // Use valid enum value
+      status: 'pending',
+      paymentStatus: 'pending'
     });
 
     await order.populate([
@@ -133,12 +157,30 @@ const createOrder = async (req, res, next) => {
       { path: 'items.product', select: 'name price images' }
     ]);
 
+    // Clear the cart after successful order
+    cart.items = [];
+    await cart.save();
+
+    // Send order confirmation email
+    try {
+      const orderForEmail = {
+        ...order.toObject(),
+        subtotal,
+        shippingCost: shipping,
+        totalAmount: total
+      };
+      await sendOrderConfirmation(orderForEmail);
+    } catch (emailError) {
+      console.error('Failed to send order confirmation email:', emailError);
+      // Don't fail the order if email fails
+    }
+
     await AuditLog.create({
       user: req.user._id,
       action: 'order_creation',
       resource: 'order',
       resourceId: order._id.toString(),
-      details: { total, itemCount: items.length },
+      details: { total, itemCount: orderItems.length },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
@@ -270,8 +312,9 @@ const processPayment = async (req, res, next) => {
 
 const updateOrderStatus = async (req, res, next) => {
   try {
-    const { status, trackingNumber, notes } = req.body;
-    const order = await Order.findById(req.params.id);
+    const { status, paymentStatus, trackingNumber, notes, shipping, estimatedDelivery, timeline } = req.body;
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email');
 
     if (!order) {
       return res.status(404).json({
@@ -280,15 +323,26 @@ const updateOrderStatus = async (req, res, next) => {
       });
     }
 
-    order.status = status;
-    if (trackingNumber) order.shipping.trackingNumber = trackingNumber;
+    // Update order fields
+    if (status) order.status = status;
+    if (paymentStatus) order.paymentStatus = paymentStatus;
+    if (trackingNumber || shipping?.trackingNumber) {
+      order.shipping = order.shipping || {};
+      order.shipping.trackingNumber = trackingNumber || shipping?.trackingNumber;
+    }
+    if (estimatedDelivery) order.estimatedDelivery = estimatedDelivery;
     
-    order.timeline.push({
-      status,
-      note: notes || `Order status updated to ${status}`
-    });
+    // Add to timeline if provided
+    if (timeline && timeline.length > 0) {
+      order.timeline = timeline;
+    } else {
+      order.timeline.push({
+        status: status || order.status,
+        note: notes || `Order status updated to ${status || order.status}`
+      });
+    }
 
-    if (status === 'shipped') {
+    if (status === 'shipped' && !order.estimatedDelivery) {
       order.estimatedDelivery = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     } else if (status === 'delivered') {
       order.actualDelivery = new Date();
@@ -296,11 +350,29 @@ const updateOrderStatus = async (req, res, next) => {
 
     await order.save();
 
+    // Send email notification for status updates
+    if (status && order.user?.email) {
+      const { sendOrderStatusUpdate } = require('../services/emailService');
+      
+      // Send email asynchronously
+      sendOrderStatusUpdate(order.user.email, {
+        orderNumber: order.orderNumber,
+        customerName: order.user.name,
+        status: status,
+        trackingNumber: order.shipping?.trackingNumber,
+        estimatedDelivery: order.estimatedDelivery,
+        items: order.items,
+        total: order.total
+      }).catch(err => {
+        console.error('Failed to send order status update email:', err);
+      });
+    }
+
     const notification = await Notification.create({
       recipient: order.user,
       sender: req.user.id,
       title: 'Order Status Updated',
-      message: `Your order ${order.orderNumber} is now ${status}`,
+      message: `Your order ${order.orderNumber} is now ${status || order.status}`,
       type: 'system',
       data: { orderId: order._id }
     });
@@ -317,7 +389,7 @@ const updateOrderStatus = async (req, res, next) => {
       action: 'order_status_update',
       resource: 'order',
       resourceId: req.params.id,
-      details: { status, trackingNumber },
+      details: { status, paymentStatus, trackingNumber },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
@@ -334,7 +406,9 @@ const updateOrderStatus = async (req, res, next) => {
 const cancelOrder = async (req, res, next) => {
   try {
     const { reason } = req.body;
-    const order = await Order.findById(req.params.id);
+    const order = await Order.findById(req.params.id)
+      .populate('user', 'name email')
+      .populate('items.product', 'name price images');
 
     if (!order) {
       return res.status(404).json({
@@ -343,51 +417,92 @@ const cancelOrder = async (req, res, next) => {
       });
     }
 
-    if (order.user.toString() !== req.user.id && req.user.role !== 'admin') {
+    if (order.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to cancel this order'
       });
     }
 
-    if (['shipped', 'delivered', 'cancelled'].includes(order.status)) {
+    if (order.status === 'cancelled') {
       return res.status(400).json({
         success: false,
-        error: 'Cannot cancel order in current status'
+        error: 'Order is already cancelled'
       });
     }
 
+    if (order.status === 'delivered') {
+      return res.status(400).json({
+        success: false,
+        error: 'Cannot cancel delivered order'
+      });
+    }
+
+    // Update order status
     order.status = 'cancelled';
+    if (!order.timeline) order.timeline = [];
     order.timeline.push({
       status: 'cancelled',
-      note: reason || 'Order cancelled by user'
+      timestamp: new Date(),
+      note: reason || (req.user.role === 'admin' ? 'Order cancelled by admin' : 'Order cancelled by customer')
     });
 
+    // Restore inventory
     for (const item of order.items) {
-      await Product.findByIdAndUpdate(item.product, {
-        $inc: { 'inventory.quantity': item.quantity }
-      });
+      if (item.product) {
+        await Product.findByIdAndUpdate(item.product._id, {
+          $inc: { 'inventory.quantity': item.quantity }
+        });
+      }
     }
 
     await order.save();
 
+    // Handle refund if payment was made
     if (order.paymentStatus === 'paid') {
       try {
-        await paymentService.refundPayment(
-          order.paymentProvider,
-          order.transactionId,
-          order.total
-        );
+        if (order.paymentProvider && order.transactionId) {
+          await paymentService.refundPayment(
+            order.paymentProvider,
+            order.transactionId,
+            order.total
+          );
+        }
         order.paymentStatus = 'refunded';
         await order.save();
       } catch (refundError) {
         console.error('Refund failed:', refundError);
+        // Continue with cancellation even if refund fails
       }
     }
 
+    // Send cancellation email to customer
+    try {
+      await sendOrderCancellation(order, reason || 'Order cancelled as requested');
+    } catch (emailError) {
+      console.error('Failed to send cancellation email:', emailError);
+      // Don't fail the cancellation if email fails
+    }
+
+    // Log the cancellation
+    await AuditLog.create({
+      user: req.user._id,
+      action: 'order_cancellation',
+      resource: 'order',
+      resourceId: order._id.toString(),
+      details: { 
+        reason: reason || 'No reason provided',
+        refundStatus: order.paymentStatus,
+        cancelledBy: req.user.role === 'admin' ? 'admin' : 'customer'
+      },
+      ipAddress: req.ip,
+      userAgent: req.get('User-Agent')
+    });
+
     res.json({
       success: true,
-      message: 'Order cancelled successfully'
+      message: 'Order cancelled successfully',
+      data: order
     });
   } catch (error) {
     next(error);

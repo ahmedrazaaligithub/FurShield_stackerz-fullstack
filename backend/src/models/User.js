@@ -56,6 +56,10 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  emailVerified: {
+    type: Boolean,
+    default: false
+  },
   emailVerificationToken: String,
   emailVerificationExpires: Date,
   passwordResetToken: String,
@@ -80,7 +84,14 @@ const userSchema = new mongoose.Schema({
   }]
 }, {
   timestamps: true,
-  toJSON: { virtuals: true },
+  toJSON: { 
+    virtuals: true,
+    transform: function(doc, ret) {
+      // Ensure isEmailVerified is always included
+      ret.isEmailVerified = doc.isEmailVerified;
+      return ret;
+    }
+  },
   toObject: { virtuals: true }
 });
 

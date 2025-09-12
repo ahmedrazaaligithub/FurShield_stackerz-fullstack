@@ -9,7 +9,8 @@ const {
   deletePet,
   uploadPetPhoto,
   getHealthRecords,
-  addHealthRecord
+  addHealthRecord,
+  getUserPets
 } = require('../controllers/petController');
 const { protect, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
@@ -46,6 +47,7 @@ router.use(protect);
 
 router.get('/', getPets);
 router.post('/', validate(petSchema), createPet);
+router.get('/user/:userId', getUserPets);
 router.get('/:id', getPet);
 router.put('/:id', updatePet);
 router.delete('/:id', deletePet);

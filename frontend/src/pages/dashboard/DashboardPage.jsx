@@ -11,6 +11,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
 import { petAPI, appointmentAPI, orderAPI } from '../../services/api'
+import ShelterDashboard from './ShelterDashboard'
 
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
@@ -50,10 +51,16 @@ const QuickAction = ({ title, description, icon: Icon, href, color }) => (
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  
+  // Redirect shelter users to their specific dashboard
+  if (user?.role === 'shelter') {
+    return <ShelterDashboard />
+  }
 
   const { data: pets, isLoading: petsLoading } = useQuery({
-    queryKey: ['pets'],
-    queryFn: () => petAPI.getPets({ limit: 10 })
+    queryKey: ['user-pets'],
+    queryFn: () => petAPI.getUserPets(user?.id),
+    enabled: !!user?.id
   })
 
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
@@ -68,7 +75,7 @@ export default function DashboardPage() {
 
   const stats = [
     {
-      title: 'My Pets',
+      title: 'Pets',
       value: pets?.data?.data?.length || 0,
       icon: HeartIcon,
       color: 'bg-primary-600',
@@ -217,7 +224,7 @@ export default function DashboardPage() {
           <div className="card-header">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-semibold text-gray-900">
-                My Pets
+               My Pets
               </h2>
               <Link to="/pets" className="text-primary-600 hover:text-primary-700 text-sm font-medium">
                 View all

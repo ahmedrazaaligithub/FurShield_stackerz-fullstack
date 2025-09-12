@@ -699,7 +699,7 @@ export default function PetDetailsPage() {
           <div className="card-header">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Health Records</h3>
-              {!isVet && (
+              {!isVet && user?.id === petData.owner?._id && (
                 <button className="btn btn-primary btn-sm">
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Add Record
@@ -740,7 +740,7 @@ export default function PetDetailsPage() {
           <div className="card-header">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Appointments</h3>
-              {!isVet && (
+              {!isVet && user?.id === petData.owner?._id && (
                 <Link
                   to={`/appointments/book?petId=${id}`}
                   className="btn btn-primary btn-sm"
@@ -795,7 +795,7 @@ export default function PetDetailsPage() {
           <div className="card-header">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-semibold text-gray-900">Photos</h3>
-              {!isVet && (
+              {!isVet && user?.id === petData.owner?._id && (
                 <label className="btn btn-primary btn-sm cursor-pointer">
                   <PlusIcon className="h-4 w-4 mr-2" />
                   {isUploading ? 'Uploading...' : 'Add Photos'}
@@ -821,7 +821,7 @@ export default function PetDetailsPage() {
                       alt={`${petData.name} photo ${index + 1}`}
                       className="w-full h-32 object-cover rounded-lg"
                     />
-                    {!isVet && (
+                    {!isVet && user?.id === petData.owner?._id && (
                       <button
                         onClick={() => handleDeletePhoto(index)}
                         className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"

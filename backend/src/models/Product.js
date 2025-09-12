@@ -12,9 +12,9 @@ const productSchema = new mongoose.Schema({
     maxlength: [1000, 'Description cannot be more than 1000 characters']
   },
   category: {
-    type: String,
-    required: [true, 'Please add a category'],
-    enum: ['food', 'toys', 'accessories', 'health', 'grooming', 'training', 'other']
+    type: mongoose.Schema.ObjectId,
+    ref: 'Category',
+    required: [true, 'Please add a category']
   },
   subcategory: String,
   price: {

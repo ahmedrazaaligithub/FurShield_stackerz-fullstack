@@ -25,6 +25,10 @@ router.use((req, res, next) => {
 router.use(protect);
 
 router.post('/single', upload.single('file'), uploadSingle);
+router.post('/product', upload.single('image'), (req, res, next) => {
+  req.body.type = 'product';
+  uploadSingle(req, res, next);
+});
 router.post('/multiple', upload.array('files', 10), uploadMultiple);
 router.delete('/file', deleteFile);
 

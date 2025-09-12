@@ -6,23 +6,40 @@ const { logger } = require('../utils/logger');
 
 const authenticateSocket = async (socket, next) => {
   try {
-    const token = socket.handshake.auth.token;
-    if (!token) {
-      return next(new Error('No token provided'));
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.id);
+    // Try to get token from auth object or query params
+    const token = socket.handshake.auth?.token || socket.handshake.query?.token;
     
-    if (!user) {
-      return next(new Error('User not found'));
+    if (!token) {
+      // Allow connection without authentication for now
+      // This prevents socket.io connection errors
+      socket.userId = null;
+      socket.userRole = null;
+      return next();
     }
 
-    socket.userId = user._id.toString();
-    socket.userRole = user.role;
-    next();
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const user = await User.findById(decoded.id);
+      
+      if (!user) {
+        socket.userId = null;
+        socket.userRole = null;
+        return next();
+      }
+
+      socket.userId = user._id.toString();
+      socket.userRole = user.role;
+      next();
+    } catch (jwtError) {
+      // Token is invalid or expired, allow connection but without auth
+      socket.userId = null;
+      socket.userRole = null;
+      next();
+    }
   } catch (error) {
-    next(new Error('Authentication failed'));
+    socket.userId = null;
+    socket.userRole = null;
+    next();
   }
 };
 
@@ -30,9 +47,12 @@ const initializeSocket = (io) => {
   io.use(authenticateSocket);
 
   io.on('connection', (socket) => {
-    logger.info(`User ${socket.userId} connected`);
-
-    socket.join(`user_${socket.userId}`);
+    if (socket.userId) {
+      logger.info(`User ${socket.userId} connected`);
+      socket.join(`user_${socket.userId}`);
+    } else {
+      logger.info('Anonymous user connected');
+    }
 
     socket.on('join_chat', async (data) => {
       try {

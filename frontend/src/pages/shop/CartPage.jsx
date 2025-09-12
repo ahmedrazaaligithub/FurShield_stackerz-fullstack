@@ -134,7 +134,7 @@ export default function CartPage() {
   const cartData = cart?.data?.data
   const items = cartData?.items || []
   const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const tax = subtotal * 0.08
+  const tax = 0 // No tax
   const shipping = subtotal > 50 ? 0 : 9.99
   const total = subtotal + tax + shipping
 

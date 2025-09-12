@@ -31,6 +31,18 @@ api.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true
       
+      // Don't try to refresh token for auth endpoints
+      if (originalRequest.url?.includes('/auth/')) {
+        if (originalRequest.url?.includes('/auth/me') || originalRequest.url?.includes('/auth/refresh')) {
+          localStorage.removeItem('token')
+          // Don't redirect if we're already on login page
+          if (!window.location.pathname.includes('/login')) {
+            window.location.href = '/login'
+          }
+        }
+        return Promise.reject(error)
+      }
+      
       try {
         const response = await api.post('/auth/refresh')
         const { accessToken } = response.data.data
@@ -39,7 +51,10 @@ api.interceptors.response.use(
         return api(originalRequest)
       } catch (refreshError) {
         localStorage.removeItem('token')
-        window.location.href = '/login'
+        // Don't redirect if we're already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       }
     }
@@ -120,15 +135,15 @@ export const petAPI = {
 }
 
 export const appointmentAPI = {
-  getAppointments: (params) => api.get('/appointments', { params }),
+  getAppointments: (params = {}) => api.get('/appointments', { params }),
   getAppointment: (id) => api.get(`/appointments/${id}`),
   createAppointment: (data) => api.post('/appointments', data),
   updateAppointment: (id, data) => api.put(`/appointments/${id}`, data),
-  deleteAppointment: (id) => api.delete(`/appointments/${id}`),
-  acceptAppointment: (id) => api.put(`/appointments/${id}/accept`),
-  proposeTimeChange: (id, data) => api.put(`/appointments/${id}/propose-time`, data),
-  completeAppointment: (id, data) => api.put(`/appointments/${id}/complete`, data),
-  cancelAppointment: (id, data) => api.put(`/appointments/${id}/cancel`, data)
+  cancelAppointment: (id, data) => api.put(`/appointments/${id}/cancel`, data),
+  confirmAppointment: (id) => api.put(`/appointments/${id}/confirm`),
+  rescheduleAppointment: (id, data) => api.put(`/appointments/${id}/reschedule`, data),
+  getAvailableSlots: (vetId, date) => api.get(`/appointments/slots/${vetId}`, { params: { date } }),
+  getAdoptionAppointments: (params = {}) => api.get('/appointments/adoption', { params })
 }
 
 export const shelterAPI = {
@@ -142,13 +157,15 @@ export const shelterAPI = {
 }
 
 export const adoptionAPI = {
-  getListings: (params) => api.get('/adoptions', { params }),
-  getListing: (id) => api.get(`/adoptions/${id}`),
-  createListing: (data) => api.post('/adoptions', data),
-  updateListing: (id, data) => api.put(`/adoptions/${id}`, data),
-  deleteListing: (id) => api.delete(`/adoptions/${id}`),
-  createInquiry: (id, data) => api.post(`/adoptions/${id}/inquire`, data),
-  updateInquiryStatus: (id, inquiryId, data) => api.put(`/adoptions/${id}/inquiries/${inquiryId}`, data),
+  getAdoptions: (params = {}) => api.get('/adoptions', { params }),
+  getAdoption: (id) => api.get(`/adoptions/${id}`),
+  createAdoption: (data) => api.post('/adoptions', data),
+  updateAdoption: (id, data) => api.put(`/adoptions/${id}`, data),
+  deleteAdoption: (id) => api.delete(`/adoptions/${id}`),
+  submitApplication: (id, data) => api.post(`/adoptions/${id}/apply`, data),
+  updateApplicationStatus: (applicationId, status) => 
+    api.patch(`/adoptions/applications/${applicationId}/status`, { status }),
+  getShelterListings: (shelterId) => api.get(`/adoptions/shelter/${shelterId}`),
   completeAdoption: (id, inquiryId, data) => api.put(`/adoptions/${id}/complete/${inquiryId}`, data)
 }
 
@@ -172,14 +189,49 @@ export const cartAPI = {
 }
 
 export const orderAPI = {
-  getOrders: (params) => api.get('/orders', { params }),
+  createOrder: (orderData) => api.post('/orders', orderData),
+  getOrders: (params = {}) => api.get('/orders', { params }),
   getOrder: (id) => api.get(`/orders/${id}`),
-  createOrder: (data) => api.post('/orders', data),
   updateOrder: (id, data) => api.put(`/orders/${id}`, data),
-  cancelOrder: (id, data) => api.put(`/orders/${id}/cancel`, data),
-  processPayment: (id, data) => api.post(`/orders/${id}/payment`, data),
+  cancelOrder: (id, data) => api.post(`/orders/${id}/cancel`, data),
+  processPayment: (id, paymentData) => api.post(`/orders/${id}/payment`, paymentData),
   refundOrder: (id, data) => api.post(`/orders/${id}/refund`, data)
 }
+
+export const reviewAPI = {
+  getProductReviews: (productId, params = {}) => 
+    api.get(`/reviews/product/${productId}`, { params }),
+  
+  createReview: (productId, data) => 
+    api.post('/reviews', { ...data, productId }),
+  
+  updateReview: (reviewId, data) => 
+    api.put(`/reviews/${reviewId}`, data),
+  
+  deleteReview: (reviewId) => 
+    api.delete(`/reviews/${reviewId}`),
+  
+};
+
+export const favoritesAPI = {
+  getFavorites: (params = {}) => 
+    api.get('/favorites', { params }),
+  
+  getFavoritesCount: () => 
+    api.get('/favorites/count'),
+  
+  checkFavoriteStatus: (productId) => 
+    api.get(`/favorites/check/${productId}`),
+  
+  addToFavorites: (productId) => 
+    api.post(`/favorites/${productId}`),
+  
+  removeFromFavorites: (productId) => 
+    api.delete(`/favorites/${productId}`),
+  
+  toggleFavorite: (productId) => 
+    api.patch(`/favorites/${productId}/toggle`, {})
+};
 
 export const ratingAPI = {
   getRatings: (params) => api.get('/ratings', { params }),

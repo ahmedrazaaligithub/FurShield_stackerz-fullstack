@@ -130,24 +130,23 @@ export default function PetsPage() {
 
   // Mock favorite pets functionality (since backend is not running)
   const handleToggleFavorite = (petId) => {
-    setFavoritePets(prev => {
-      const newFavorites = new Set(prev)
-      if (newFavorites.has(petId)) {
-        newFavorites.delete(petId)
-        toast.success('Removed from favorites')
-      } else {
-        newFavorites.add(petId)
-        toast.success('Added to favorites')
-      }
-      
-      // Save to localStorage for persistence across pages
-      localStorage.setItem('favoritePets', JSON.stringify([...newFavorites]))
-      
-      // Dispatch custom event to notify other components
-      window.dispatchEvent(new CustomEvent('favoritesUpdated'))
-      
-      return newFavorites
-    })
+    const newFavorites = new Set(favoritePets)
+    if (newFavorites.has(petId)) {
+      newFavorites.delete(petId)
+      toast.success('Removed from favorites')
+    } else {
+      newFavorites.add(petId)
+      toast.success('Added to favorites')
+    }
+    
+    // Save to localStorage for persistence across pages
+    localStorage.setItem('favoritePets', JSON.stringify([...newFavorites]))
+    
+    // Update state
+    setFavoritePets(newFavorites)
+    
+    // Dispatch custom event to notify other components
+    window.dispatchEvent(new CustomEvent('favoritesUpdated'))
   }
 
   const filteredPets = pets?.data?.data || []

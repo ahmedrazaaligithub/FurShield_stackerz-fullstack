@@ -1,0 +1,10 @@
+# API Configuration
+VITE_API_URL=http://localhost:5000
+VITE_API_BASE_URL=http://localhost:5000/api/v1
+
+# Cloudinary Configuration
+VITE_CLOUDINARY_CLOUD_NAME=dwrtj67eh
+VITE_CLOUDINARY_UPLOAD_PRESET=furshield_products
+
+# Other Environment Variables
+VITE_APP_NAME=FurShield

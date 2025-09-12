@@ -1,27 +1,39 @@
 const express = require('express');
-const {
-  getDashboardStats,
-  getPaymentProviders,
-  addPaymentProvider,
-  updatePaymentProvider,
+
+// Import from separate controller files
+const { getDashboardStats, getSystemHealth } = require('../controllers/dashboardController');
+const { getUsers, manageUser, updateUser, deleteUser } = require('../controllers/userManagementController');
+const { 
+  getPaymentProviders, 
+  addPaymentProvider, 
+  updatePaymentProvider, 
   removePaymentProvider,
-  getAuditLogs,
-  sendBroadcastNotification,
-  getSystemHealth,
-  manageUser,
-  getUsers,
   getPayments,
   getPaymentStats,
-  updatePaymentStatus,
-  getAuditStats,
-  updateUser,
-  deleteUser,
-  getPendingApprovals,
-  approveShelter,
-  rejectShelter,
-  approveVet,
-  rejectVet
-} = require('../controllers/adminController');
+  updatePaymentStatus
+} = require('../controllers/paymentManagementController');
+const { getAuditLogs, getAuditStats, sendBroadcastNotification } = require('../controllers/auditController');
+const { 
+  getPendingApprovals, 
+  approveShelter, 
+  rejectShelter, 
+  approveVet, 
+  rejectVet 
+} = require('../controllers/approvalController');
+const { 
+  getCategories, 
+  createCategory, 
+  updateCategory, 
+  deleteCategory, 
+  getCategoryStats 
+} = require('../controllers/categoryController');
+const { 
+  getAllProductsAdmin, 
+  getProductStats, 
+  createProductAdmin, 
+  updateProductAdmin, 
+  deleteProductAdmin 
+} = require('../controllers/productController');
 const { protect, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
 const { paymentProviderSchema } = require('../utils/validation');
@@ -58,5 +70,19 @@ router.post('/shelters/:id/approve', approveShelter);
 router.post('/shelters/:id/reject', rejectShelter);
 router.post('/vets/:id/approve', approveVet);
 router.post('/vets/:id/reject', rejectVet);
+
+// Category routes
+router.get('/categories', getCategories);
+router.post('/categories', createCategory);
+router.put('/categories/:id', updateCategory);
+router.delete('/categories/:id', deleteCategory);
+router.get('/category-stats', getCategoryStats);
+
+// Product routes
+router.get('/products', getAllProductsAdmin);
+router.post('/products', createProductAdmin);
+router.put('/products/:id', updateProductAdmin);
+router.delete('/products/:id', deleteProductAdmin);
+router.get('/product-stats', getProductStats);
 
 module.exports = router;
