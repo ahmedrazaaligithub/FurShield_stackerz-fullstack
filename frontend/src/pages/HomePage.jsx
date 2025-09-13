@@ -95,9 +95,9 @@ export default function HomePage() {
         </div>
       </nav>
       { }
-      <section class="lg:h-220 hero-bg text-white py-20 md:py-32">
-        <div class="container mt-20 mx-auto px-4 text-center">
-          <h1 class="text-4xl md:text-6xl font-bold mb-6 ">Premium Care for Your Furry Friends</h1>
+      <section class="hero-bg text-white">
+        <div class="container mx-auto px-4 text-center">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 pt-52">Premium Care for Your Furry Friends</h1>
           <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">We provide the best medical care, grooming, and boarding services for your pets with love and professionalism.</p>
         </div>
       </section>
