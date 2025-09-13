@@ -10,12 +10,11 @@ import {
   ClipboardDocumentCheckIcon,
   TrashIcon,
   PencilIcon,
-  ExclamationTriangleIcon,
-  ClockIcon
+  ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { uploadImageToCloudinary } from '../../utils/uploadImage'
-import HealthTimeline from './HealthTimeline'
+
 export default function PetHealthRecords({ pet, isOwner }) {
   const [activeTab, setActiveTab] = useState('vaccinations')
   const [showAddModal, setShowAddModal] = useState(false)
@@ -43,6 +42,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
   })
   const [isUploading, setIsUploading] = useState(false)
   const queryClient = useQueryClient()
+
   const healthRecords = pet.healthRecords || {
     vaccinations: [],
     allergies: [],
@@ -50,6 +50,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
     treatments: [],
     documents: []
   }
+
   const addRecordMutation = useMutation({
     mutationFn: (data) => petAPI.addHealthRecord(pet._id, data),
     onSuccess: () => {
@@ -62,6 +63,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
       toast.error(error.response?.data?.error || 'Failed to add health record')
     }
   })
+
   const deleteRecordMutation = useMutation({
     mutationFn: ({ type, recordId }) => petAPI.deleteHealthRecord(pet._id, type, recordId),
     onSuccess: () => {
@@ -72,13 +74,16 @@ export default function PetHealthRecords({ pet, isOwner }) {
       toast.error(error.response?.data?.error || 'Failed to delete record')
     }
   })
+
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
+
     setIsUploading(true)
     try {
       const uploadPromises = files.map(file => uploadImageToCloudinary(file))
       const uploadedUrls = await Promise.all(uploadPromises)
+      
       setFormData(prev => ({
         ...prev,
         documents: [...prev.documents, ...uploadedUrls.map((url, index) => ({
@@ -88,6 +93,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
           uploadedAt: new Date().toISOString()
         }))]
       }))
+      
       toast.success('Documents uploaded successfully')
     } catch (error) {
       toast.error('Failed to upload documents')
@@ -95,12 +101,15 @@ export default function PetHealthRecords({ pet, isOwner }) {
       setIsUploading(false)
     }
   }
+
   const handleSubmit = (e) => {
     e.preventDefault()
+    
     const recordData = {
       type: formData.type,
       data: {}
     }
+
     switch (formData.type) {
       case 'vaccination':
         recordData.data = {
@@ -146,12 +155,14 @@ export default function PetHealthRecords({ pet, isOwner }) {
         }
         break
     }
+
     if (editingRecord) {
       recordData.recordId = editingRecord._id
     } else {
       addRecordMutation.mutate(recordData)
     }
   }
+
   const resetForm = () => {
     setFormData({
       type: 'vaccination',
@@ -176,14 +187,15 @@ export default function PetHealthRecords({ pet, isOwner }) {
     })
     setEditingRecord(null)
   }
+
   const tabs = [
-    { id: 'timeline', name: 'Timeline', icon: ClockIcon, count: 0 },
     { id: 'vaccinations', name: 'Vaccinations', icon: ShieldCheckIcon, count: healthRecords.vaccinations?.length || 0 },
     { id: 'allergies', name: 'Allergies', icon: ExclamationTriangleIcon, count: healthRecords.allergies?.length || 0 },
     { id: 'medications', name: 'Medications', icon: BeakerIcon, count: healthRecords.medications?.length || 0 },
     { id: 'treatments', name: 'Treatments', icon: ClipboardDocumentCheckIcon, count: healthRecords.treatments?.length || 0 },
     { id: 'documents', name: 'Documents', icon: DocumentTextIcon, count: healthRecords.documents?.length || 0 }
   ]
+
   const renderVaccinations = () => (
     <div className="space-y-4">
       {healthRecords.vaccinations?.length > 0 ? (
@@ -235,6 +247,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
       )}
     </div>
   )
+
   const renderAllergies = () => (
     <div className="space-y-4">
       {healthRecords.allergies?.length > 0 ? (
@@ -282,6 +295,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
       )}
     </div>
   )
+
   const renderMedications = () => (
     <div className="space-y-4">
       {healthRecords.medications?.length > 0 ? (
@@ -322,6 +336,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
       )}
     </div>
   )
+
   const renderTreatments = () => (
     <div className="space-y-4">
       {healthRecords.treatments?.length > 0 ? (
@@ -360,6 +375,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
       )}
     </div>
   )
+
   const renderDocuments = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {healthRecords.documents?.length > 0 ? (
@@ -402,9 +418,10 @@ export default function PetHealthRecords({ pet, isOwner }) {
       )}
     </div>
   )
+
   return (
     <div className="space-y-6">
-      {}
+      {/* Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-bold text-gray-900">Health Records</h2>
         {isOwner && (
@@ -417,7 +434,8 @@ export default function PetHealthRecords({ pet, isOwner }) {
           </button>
         )}
       </div>
-      {}
+
+      {/* Tabs */}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
@@ -450,16 +468,17 @@ export default function PetHealthRecords({ pet, isOwner }) {
           })}
         </nav>
       </div>
-      {}
+
+      {/* Content */}
       <div className="min-h-[400px]">
-        {activeTab === 'timeline' && <HealthTimeline pet={pet} />}
         {activeTab === 'vaccinations' && renderVaccinations()}
         {activeTab === 'allergies' && renderAllergies()}
         {activeTab === 'medications' && renderMedications()}
         {activeTab === 'treatments' && renderTreatments()}
         {activeTab === 'documents' && renderDocuments()}
       </div>
-      {}
+
+      {/* Add/Edit Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -467,8 +486,9 @@ export default function PetHealthRecords({ pet, isOwner }) {
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 {editingRecord ? 'Edit' : 'Add'} Health Record
               </h3>
+
               <form onSubmit={handleSubmit} className="space-y-4">
-                {}
+                {/* Record Type */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Record Type
@@ -485,7 +505,8 @@ export default function PetHealthRecords({ pet, isOwner }) {
                     <option value="treatment">Treatment/Illness</option>
                   </select>
                 </div>
-                {}
+
+                {/* Dynamic Fields Based on Type */}
                 {formData.type === 'vaccination' && (
                   <>
                     <div>
@@ -527,6 +548,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
                     </div>
                   </>
                 )}
+
                 {formData.type === 'allergy' && (
                   <>
                     <div>
@@ -581,7 +603,8 @@ export default function PetHealthRecords({ pet, isOwner }) {
                     </div>
                   </>
                 )}
-                {}
+
+                {/* Common Fields */}
                 {(formData.type === 'vaccination' || formData.type === 'treatment') && (
                   <>
                     <div className="grid grid-cols-2 gap-4">
@@ -608,7 +631,8 @@ export default function PetHealthRecords({ pet, isOwner }) {
                         />
                       </div>
                     </div>
-                    {}
+
+                    {/* Document Upload */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Upload Documents
@@ -616,7 +640,26 @@ export default function PetHealthRecords({ pet, isOwner }) {
                       <input
                         type="file"
                         multiple
-                        accept="image}
+                        accept="image/*,.pdf"
+                        onChange={handleFileUpload}
+                        disabled={isUploading}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
+                      />
+                      {isUploading && <p className="text-sm text-gray-500 mt-1">Uploading...</p>}
+                      {formData.documents.length > 0 && (
+                        <div className="mt-2 space-y-1">
+                          {formData.documents.map((doc, index) => (
+                            <div key={index} className="text-sm text-gray-600">
+                              ✓ {doc.name}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+
+                {/* Notes */}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Notes
@@ -628,7 +671,8 @@ export default function PetHealthRecords({ pet, isOwner }) {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
-                {}
+
+                {/* Actions */}
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"

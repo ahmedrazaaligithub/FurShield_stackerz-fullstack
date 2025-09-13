@@ -1,8 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
-import { 
-  HeartIcon, 
-  CalendarIcon, 
+import {
+  HeartIcon,
+  CalendarIcon,
   ShoppingBagIcon,
   SparklesIcon,
   UserGroupIcon,
@@ -56,7 +56,7 @@ export default function HomePage() {
   const { user } = useAuth()
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      {}
+      { }
       <nav className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -94,7 +94,13 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
-      {}
+      { }
+      <section class="lg:h-220 hero-bg text-white py-20 md:py-32">
+        <div class="container mt-20 mx-auto px-4 text-center">
+          <h1 class="text-4xl md:text-6xl font-bold mb-6 ">Premium Care for Your Furry Friends</h1>
+          <p class="text-xl md:text-2xl mb-10 max-w-3xl mx-auto">We provide the best medical care, grooming, and boarding services for your pets with love and professionalism.</p>
+        </div>
+      </section>
       <section className="relative py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -103,7 +109,7 @@ export default function HomePage() {
               <span className="text-primary-600 block">Beloved Pets</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-              Manage your pets health, book vet appointments, find adoption opportunities, 
+              Manage your pets health, book vet appointments, find adoption opportunities,
               and shop for premium pet supplies - all in one secure platform.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -125,7 +131,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      {}
+      { }
       <section className="py-16 bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -140,7 +146,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      {}
+      { }
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -148,7 +154,7 @@ export default function HomePage() {
               Everything Your Pet Needs
             </h2>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Our comprehensive platform brings together all aspects of pet care 
+              Our comprehensive platform brings together all aspects of pet care
               in one convenient, secure location.
             </p>
           </div>
@@ -172,7 +178,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-      {}
+      { }
       <section className="py-20 bg-primary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -191,7 +197,7 @@ export default function HomePage() {
           )}
         </div>
       </section>
-      {}
+      { }
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -203,7 +209,7 @@ export default function HomePage() {
                 <span className="ml-2 text-xl font-bold">PetCare</span>
               </div>
               <p className="text-gray-400 mb-4 max-w-md">
-                The complete platform for pet care, connecting pet owners with 
+                The complete platform for pet care, connecting pet owners with
                 veterinarians, adoption centers, and premium pet products.
               </p>
             </div>
