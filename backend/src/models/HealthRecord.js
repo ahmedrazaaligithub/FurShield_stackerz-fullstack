@@ -37,6 +37,16 @@ const healthRecordSchema = new mongoose.Schema({
   },
   diagnosis: String,
   treatment: String,
+  symptoms: [{
+    name: String,
+    severity: {
+      type: String,
+      enum: ['mild', 'moderate', 'severe'],
+      default: 'mild'
+    },
+    duration: String,
+    notes: String
+  }],
   medications: [{
     name: String,
     dosage: String,

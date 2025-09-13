@@ -37,6 +37,7 @@ const uploadRoutes = require('./routes/uploadRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
+const documentRoutes = require('./routes/documentRoutes');
 
 const app = express();
 const server = createServer(app);
@@ -137,6 +138,7 @@ app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/favorites', favoriteRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/upload', uploadRoutes);
+app.use('/api/v1/documents', documentRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1', feedbackRoutes);

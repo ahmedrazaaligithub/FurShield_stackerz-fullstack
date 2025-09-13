@@ -23,7 +23,12 @@ const setRefreshTokenCookie = (res, refreshToken) => {
 
 const register = async (req, res, next) => {
   try {
-    const { name, email, password, confirmPassword, role, phone, address } = req.body;
+    const { 
+      name, email, password, confirmPassword, role, phone, address,
+      // Vet-specific fields
+      licenseNumber, specialization, experience, clinicName, clinicAddress,
+      consultationFee, availableHours, languages, bio
+    } = req.body;
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
@@ -36,14 +41,48 @@ const register = async (req, res, next) => {
     // Normalize phone number to remove spaces
     const normalizedPhone = phone ? normalizePhoneNumber(phone) : phone;
 
-    const user = await User.create({
+    // Prepare user data
+    const userData = {
       name,
       email,
       password,
       role,
       phone: normalizedPhone,
       address
-    });
+    };
+
+    // Add vet-specific profile data if role is vet
+    if (role === 'vet') {
+      userData.profile = {
+        bio,
+        licenseNumber,
+        specialization,
+        experience: parseInt(experience),
+        clinicName,
+        clinicAddress,
+        consultationFee: parseFloat(consultationFee),
+        availableHours,
+        languages
+      };
+    } else {
+      // Initialize empty profile for non-vet users to avoid geo index issues
+      userData.profile = {
+        availableHours: {
+          monday: { available: false },
+          tuesday: { available: false },
+          wednesday: { available: false },
+          thursday: { available: false },
+          friday: { available: false },
+          saturday: { available: false },
+          sunday: { available: false }
+        },
+        specialization: [],
+        languages: [],
+        conditions: []
+      };
+    }
+
+    const user = await User.create(userData);
 
     const emailVerificationToken = crypto.randomBytes(20).toString('hex');
     user.emailVerificationToken = emailVerificationToken;

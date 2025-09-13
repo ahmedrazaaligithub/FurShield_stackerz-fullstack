@@ -74,9 +74,33 @@ const userSchema = new mongoose.Schema({
     bio: String,
     location: String,
     website: String,
-    specialization: String,
+    specialization: [String], // Array of specializations for vets
     licenseNumber: String,
-    experience: Number
+    experience: Number,
+    clinicName: String,
+    clinicAddress: String,
+    coordinates: {
+      type: {
+        type: String,
+        enum: ['Point']
+      },
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        index: '2dsphere'
+      }
+    },
+    availableHours: {
+      monday: { start: String, end: String, available: { type: Boolean, default: false } },
+      tuesday: { start: String, end: String, available: { type: Boolean, default: false } },
+      wednesday: { start: String, end: String, available: { type: Boolean, default: false } },
+      thursday: { start: String, end: String, available: { type: Boolean, default: false } },
+      friday: { start: String, end: String, available: { type: Boolean, default: false } },
+      saturday: { start: String, end: String, available: { type: Boolean, default: false } },
+      sunday: { start: String, end: String, available: { type: Boolean, default: false } }
+    },
+    consultationFee: Number,
+    languages: [String],
+    conditions: [String] // Conditions/specialties they treat
   },
   favoriteVets: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -143,5 +167,8 @@ userSchema.methods.matchPassword = async function(enteredPassword) {
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isVerified: 1 });
+userSchema.index({ 'profile.coordinates': '2dsphere' });
+userSchema.index({ 'profile.specialization': 1 });
+userSchema.index({ 'profile.location': 1 });
 
 module.exports = mongoose.model('User', userSchema);

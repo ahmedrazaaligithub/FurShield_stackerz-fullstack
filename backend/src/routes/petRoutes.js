@@ -14,7 +14,9 @@ const {
 } = require('../controllers/petController');
 const { protect, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
-const { petSchema } = require('../utils/validation');
+const { petSchema, healthRecordSchema } = require('../utils/validation');
+const { checkPetOwnership } = require('../middlewares/ownershipCheck');
+const { checkVetPetAccess, getVetAuthorizedPets, checkVetHealthRecordAccess } = require('../middlewares/vetPetAccess');
 
 const router = express.Router();
 
@@ -45,14 +47,16 @@ const upload = multer({
 
 router.use(protect);
 
-router.get('/', getPets);
-router.post('/', validate(petSchema), createPet);
-router.get('/user/:userId', getUserPets);
-router.get('/:id', getPet);
-router.put('/:id', updatePet);
-router.delete('/:id', deletePet);
-router.post('/:id/photos', upload.array('photos', 5), uploadPetPhoto);
-router.get('/:id/health-records', getHealthRecords);
-router.post('/:id/health-records', authorize('vet'), addHealthRecord);
+router.get('/user', authorize('owner', 'shelter', 'vet', 'admin'), getVetAuthorizedPets, getUserPets);
+router.get('/user/:userId', authorize('owner', 'shelter', 'admin'), getUserPets);
+router.get('/', authorize('admin', 'vet'), getVetAuthorizedPets, getPets);
+router.post('/', authorize('owner', 'shelter'), validate(petSchema), createPet);
+router.get('/:id', authorize('owner', 'vet', 'admin'), checkPetOwnership, getPet);
+router.put('/:id', authorize('owner', 'shelter'), checkPetOwnership, validate(petSchema), updatePet);
+router.delete('/:id', authorize('owner', 'shelter'), checkPetOwnership, deletePet);
+router.post('/:id/photo', authorize('owner', 'shelter'), checkPetOwnership, upload.single('photo'), uploadPetPhoto);
+router.post('/:id/photos', authorize('owner', 'shelter'), checkPetOwnership, upload.single('photo'), uploadPetPhoto);
+router.get('/:id/health-records', authorize('owner', 'vet', 'admin'), checkVetPetAccess, getHealthRecords);
+router.post('/:id/health-records', authorize('vet', 'admin'), checkVetHealthRecordAccess, validate(healthRecordSchema), addHealthRecord);
 
 module.exports = router;

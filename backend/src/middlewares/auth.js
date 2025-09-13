@@ -78,6 +78,23 @@ const authorize = (...roles) => {
     }
 
     if (!roles.includes(req.user.role)) {
+      // Log unauthorized access attempt
+      const AuditLog = require('../models/AuditLog');
+      AuditLog.create({
+        user: req.user._id,
+        action: 'unauthorized_access_attempt',
+        resource: 'route',
+        resourceId: req.originalUrl,
+        details: { 
+          requiredRoles: roles, 
+          userRole: req.user.role,
+          method: req.method,
+          url: req.originalUrl
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      }).catch(err => console.error('Audit log error:', err));
+
       return res.status(403).json({
         success: false,
         error: 'Access denied. Insufficient permissions.'

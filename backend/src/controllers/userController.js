@@ -248,18 +248,114 @@ const getVets = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = { role: 'vet', isActive: true };
+    
+    // Verification filter
     if (req.query.verified === 'true') filter.isVetVerified = true;
+    
+    // Specialization filter
     if (req.query.specialization) {
       filter['profile.specialization'] = { $regex: req.query.specialization, $options: 'i' };
     }
+    
+    // Location-based filtering
+    if (req.query.location) {
+      filter.$or = [
+        { 'profile.location': { $regex: req.query.location, $options: 'i' } },
+        { 'address': { $regex: req.query.location, $options: 'i' } }
+      ];
+    }
+    
+    // Distance-based filtering (if coordinates provided)
+    let aggregationPipeline = [];
+    if (req.query.latitude && req.query.longitude && req.query.radius) {
+      const lat = parseFloat(req.query.latitude);
+      const lng = parseFloat(req.query.longitude);
+      const radius = parseFloat(req.query.radius) || 50; // Default 50km radius
+      
+      aggregationPipeline = [
+        {
+          $geoNear: {
+            near: {
+              type: "Point",
+              coordinates: [lng, lat]
+            },
+            distanceField: "distance",
+            maxDistance: radius * 1000, // Convert km to meters
+            spherical: true,
+            query: filter
+          }
+        },
+        { $skip: skip },
+        { $limit: limit },
+        { $sort: { isVetVerified: -1, distance: 1 } },
+        {
+          $project: {
+            password: 0,
+            distance: { $round: [{ $divide: ["$distance", 1000] }, 2] } // Convert to km
+          }
+        }
+      ];
+    }
+    
+    // Condition/symptom-based filtering
+    if (req.query.condition) {
+      const conditionSpecializations = {
+        'skin': ['dermatology', 'general'],
+        'dental': ['dentistry', 'oral surgery', 'general'],
+        'surgery': ['surgery', 'orthopedic', 'general'],
+        'emergency': ['emergency', 'critical care', 'general'],
+        'cardiology': ['cardiology', 'internal medicine', 'general'],
+        'orthopedic': ['orthopedic', 'surgery', 'general'],
+        'oncology': ['oncology', 'internal medicine', 'general'],
+        'neurology': ['neurology', 'internal medicine', 'general'],
+        'ophthalmology': ['ophthalmology', 'general'],
+        'reproduction': ['reproduction', 'theriogenology', 'general'],
+        'behavior': ['behavior', 'psychology', 'general'],
+        'exotic': ['exotic', 'avian', 'general']
+      };
+      
+      const relevantSpecs = conditionSpecializations[req.query.condition.toLowerCase()] || ['general'];
+      filter['profile.specialization'] = { 
+        $in: relevantSpecs.map(spec => new RegExp(spec, 'i'))
+      };
+    }
+    
+    let vets, total;
+    
+    if (aggregationPipeline.length > 0) {
+      // Use aggregation for geo-based queries
+      const results = await User.aggregate(aggregationPipeline);
+      vets = results;
+      
+      // Get total count for geo queries
+      const countPipeline = [
+        {
+          $geoNear: {
+            near: {
+              type: "Point",
+              coordinates: [parseFloat(req.query.longitude), parseFloat(req.query.latitude)]
+            },
+            distanceField: "distance",
+            maxDistance: (parseFloat(req.query.radius) || 50) * 1000,
+            spherical: true,
+            query: filter
+          }
+        },
+        { $count: "total" }
+      ];
+      
+      const countResult = await User.aggregate(countPipeline);
+      total = countResult[0]?.total || 0;
+    } else {
+      // Regular query for non-geo searches
+      vets = await User.find(filter)
+        .select('-password')
+        .skip(skip)
+        .limit(limit)
+        .sort({ isVetVerified: -1, createdAt: -1 });
 
-    const vets = await User.find(filter)
-      .select('-password')
-      .skip(skip)
-      .limit(limit)
-      .sort({ isVetVerified: -1, createdAt: -1 });
-
-    const total = await User.countDocuments(filter);
+      total = await User.countDocuments(filter);
+    }
 
     res.json({
       success: true,
@@ -269,6 +365,13 @@ const getVets = async (req, res, next) => {
         limit,
         total,
         pages: Math.ceil(total / limit)
+      },
+      filters: {
+        location: req.query.location,
+        specialization: req.query.specialization,
+        condition: req.query.condition,
+        radius: req.query.radius,
+        verified: req.query.verified
       }
     });
   } catch (error) {

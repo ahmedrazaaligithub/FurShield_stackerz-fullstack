@@ -6,6 +6,34 @@ const AuditLog = require('../models/AuditLog');
 const { sendAdoptionStatusUpdate } = require('../services/emailService');
 const { emitToUser } = require('../sockets/socketHandler');
 
+const getShelterListingsByUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    // Authorization: allow admin or the shelter user themselves
+    if (req.user.role !== 'admin' && req.user.id !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Not authorized to view these listings'
+      });
+    }
+
+    const shelter = await Shelter.findOne({ user: userId });
+    if (!shelter) {
+      return res.json({ success: true, data: [] });
+    }
+
+    const listings = await AdoptionListing.find({ shelter: shelter._id, isActive: true })
+      .populate('pet')
+      .populate('shelter', 'name address phone email')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, data: listings });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const getAdoptionListings = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -13,6 +41,7 @@ const getAdoptionListings = async (req, res, next) => {
     const skip = (page - 1) * limit;
 
     const filter = { isActive: true };
+
     if (req.query.status) filter.status = req.query.status;
     if (req.query.species) filter['pet.species'] = req.query.species;
     if (req.query.size) filter.size = req.query.size;
@@ -84,11 +113,33 @@ const createAdoptionListing = async (req, res, next) => {
       });
     }
 
-    const shelter = await Shelter.findOne({ user: req.user.id });
+    let shelter = await Shelter.findOne({ user: req.user.id });
     if (!shelter) {
-      return res.status(404).json({
+      // Auto-create shelter profile if it doesn't exist
+      shelter = await Shelter.create({
+        user: req.user.id,
+        name: req.user.name + "'s Shelter",
+        address: {
+          street: req.user.address || 'Not specified',
+          city: 'Not specified',
+          state: 'Not specified',
+          zipCode: 'Not specified',
+          country: 'Not specified'
+        },
+        phone: req.user.phone || 'Not specified',
+        email: req.user.email,
+        description: 'Auto-created shelter profile',
+        services: ['adoption'],
+        isVerified: false,
+        isActive: true
+      });
+    }
+
+    // Ensure the pet belongs to this shelter user
+    if (pet.owner.toString() !== req.user.id) {
+      return res.status(403).json({
         success: false,
-        error: 'Shelter profile not found'
+        error: 'Not authorized to create a listing for this pet'
       });
     }
 
@@ -417,5 +468,6 @@ module.exports = {
   deleteAdoptionListing,
   submitInquiry,
   updateInquiryStatus,
-  completeAdoption
+  completeAdoption,
+  getShelterListingsByUser
 };

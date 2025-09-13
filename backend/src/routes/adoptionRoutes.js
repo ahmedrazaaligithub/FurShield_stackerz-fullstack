@@ -16,6 +16,7 @@ const { adoptionListingSchema } = require('../utils/validation');
 const router = express.Router();
 
 router.get('/', getAdoptionListings);
+router.get('/shelter/:userId', protect, authorize('shelter', 'admin'), require('../controllers/adoptionController').getShelterListingsByUser);
 router.get('/:id', getAdoptionListing);
 router.post('/', protect, authorize('shelter'), validate(adoptionListingSchema), createAdoptionListing);
 router.put('/:id', protect, updateAdoptionListing);

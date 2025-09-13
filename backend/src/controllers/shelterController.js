@@ -62,6 +62,29 @@ const getShelter = async (req, res, next) => {
   }
 };
 
+const getMyShelter = async (req, res, next) => {
+  try {
+    const shelter = await Shelter.findOne({ user: req.user.id })
+      .populate('user', 'name email phone');
+
+    if (!shelter) {
+      // Return null data instead of 404 to indicate no profile exists yet
+      return res.json({
+        success: true,
+        data: null,
+        message: 'No shelter profile found. Please create one.'
+      });
+    }
+
+    res.json({
+      success: true,
+      data: shelter
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 const createShelter = async (req, res, next) => {
   try {
     if (req.user.role !== 'shelter') {
@@ -261,6 +284,7 @@ const searchShelters = async (req, res, next) => {
 module.exports = {
   getShelters,
   getShelter,
+  getMyShelter,
   createShelter,
   updateShelter,
   deleteShelter,

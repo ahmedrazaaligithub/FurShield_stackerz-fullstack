@@ -5,15 +5,42 @@ const AuditLog = require('../models/AuditLog');
 // Get pets for a specific user
 const getUserPets = async (req, res, next) => {
   try {
-    const { userId } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
 
-    const filter = { 
-      owner: userId, 
-      isActive: true 
-    };
+    let filter = { isActive: true };
+
+    // Role-based filtering
+    if (req.user.role === 'owner' || req.user.role === 'shelter') {
+      // If a userId param is provided, ensure it's the same user; otherwise default to current user
+      const requestedUserId = req.params.userId;
+      if (requestedUserId) {
+        if (requestedUserId !== req.user.id) {
+          return res.status(403).json({
+            success: false,
+            error: 'Not authorized to view other users\' pets'
+          });
+        }
+        filter.owner = requestedUserId;
+      } else {
+        filter.owner = req.user.id;
+      }
+    } else if (req.user.role === 'vet') {
+      // Use authorized pets from middleware
+      if (req.vetAuthorizedPets && req.vetAuthorizedPets.length > 0) {
+        filter._id = { $in: req.vetAuthorizedPets };
+      } else {
+        // No authorized pets for this vet
+        return res.json({
+          success: true,
+          data: [],
+          pagination: { page, limit, total: 0, pages: 0 }
+        });
+      }
+    } else if (req.user.role === 'admin') {
+      // Admin can see all pets, filter remains as is
+    }
 
     const pets = await Pet.find(filter)
       .populate('owner', 'name email')
@@ -48,10 +75,26 @@ const getPets = async (req, res, next) => {
     
     if (req.user.role === 'owner') {
       filter.owner = req.user.id;
+    } else if (req.user.role === 'vet') {
+      // Use authorized pets from middleware
+      if (req.vetAuthorizedPets && req.vetAuthorizedPets.length > 0) {
+        filter._id = { $in: req.vetAuthorizedPets };
+      } else {
+        return res.json({
+          success: true,
+          data: [],
+          pagination: {
+            page,
+            limit,
+            total: 0,
+            pages: 0
+          }
+        });
+      }
     }
 
     if (req.query.species) filter.species = req.query.species;
-    if (req.query.owner) filter.owner = req.query.owner;
+    if (req.query.owner && req.user.role === 'admin') filter.owner = req.query.owner;
 
     const pets = await Pet.find(filter)
       .populate('owner', 'name email')
@@ -267,12 +310,40 @@ const getHealthRecords = async (req, res, next) => {
     }
 
     const isOwner = pet.owner.toString() === req.user.id;
-    const isVet = req.user.role === 'vet' && req.user.isVerified;
+    const isAdmin = req.user.role === 'admin';
+    
+    // For vets, check if they have appointments with this pet
+    let isAuthorizedVet = false;
+    if (req.user.role === 'vet' && req.user.isVetVerified) {
+      const Appointment = require('../models/Appointment');
+      const hasAppointment = await Appointment.findOne({
+        pet: req.params.id,
+        vet: req.user.id,
+        status: { $in: ['pending', 'confirmed', 'in-progress', 'completed'] }
+      });
+      
+      isAuthorizedVet = !!hasAppointment;
+      
+      if (!isAuthorizedVet) {
+        await AuditLog.create({
+          user: req.user._id,
+          action: 'unauthorized_health_records_access',
+          resource: 'health_record',
+          resourceId: req.params.id,
+          details: { 
+            reason: 'Vet attempted to access health records without appointment',
+            petId: req.params.id
+          },
+          ipAddress: req.ip,
+          userAgent: req.get('User-Agent')
+        });
+      }
+    }
 
-    if (!isOwner && !isVet) {
+    if (!isOwner && !isAdmin && !isAuthorizedVet) {
       return res.status(403).json({
         success: false,
-        error: 'Not authorized to access health records'
+        error: 'Access denied. You can only access health records for pets you own or have appointments with.'
       });
     }
 
@@ -292,7 +363,7 @@ const getHealthRecords = async (req, res, next) => {
 
 const addHealthRecord = async (req, res, next) => {
   try {
-    if (req.user.role !== 'vet' || !req.user.isVerified) {
+    if (req.user.role !== 'vet' || !req.user.isVetVerified) {
       return res.status(403).json({
         success: false,
         error: 'Only verified veterinarians can add health records'
@@ -307,10 +378,39 @@ const addHealthRecord = async (req, res, next) => {
       });
     }
 
+    // Verify vet has appointment with this pet
+    const Appointment = require('../models/Appointment');
+    const hasAppointment = await Appointment.findOne({
+      pet: req.params.id,
+      vet: req.user.id,
+      status: { $in: ['confirmed', 'in-progress', 'completed'] }
+    });
+
+    if (!hasAppointment) {
+      await AuditLog.create({
+        user: req.user._id,
+        action: 'unauthorized_health_record_creation',
+        resource: 'health_record',
+        resourceId: req.params.id,
+        details: { 
+          reason: 'Vet attempted to add health record without appointment',
+          petId: req.params.id
+        },
+        ipAddress: req.ip,
+        userAgent: req.get('User-Agent')
+      });
+
+      return res.status(403).json({
+        success: false,
+        error: 'Access denied. You can only add health records for pets you have appointments with.'
+      });
+    }
+
     const healthRecord = await HealthRecord.create({
       ...req.body,
       pet: req.params.id,
-      vet: req.user.id
+      vet: req.user.id,
+      appointment: hasAppointment._id
     });
 
     await healthRecord.populate('vet', 'name profile.specialization');
@@ -320,7 +420,7 @@ const addHealthRecord = async (req, res, next) => {
       action: 'health_record_creation',
       resource: 'health_record',
       resourceId: healthRecord._id.toString(),
-      details: { petId: req.params.id },
+      details: { petId: req.params.id, appointmentId: hasAppointment._id },
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });

@@ -21,6 +21,7 @@ const getAppointments = async (req, res, next) => {
     }
 
     if (req.query.status) filter.status = req.query.status;
+    if (req.query.petId) filter.pet = req.query.petId;
     if (req.query.date) {
       const date = new Date(req.query.date);
       filter.appointmentDate = {
