@@ -19,8 +19,8 @@ const AdoptionCard = ({ listing }) => (
     <div className="card hover:shadow-glow transition-all duration-300 group">
       <div className="relative">
         <img
-          src={listing.photos?.[0] || '/placeholder-pet.jpg'}
-          alt={listing.title}
+          src={listing.pet?.photos?.[0] || listing.photos?.[0] || '/placeholder-pet.jpg'}
+          alt={listing.title || listing.pet?.name}
           className="w-full h-48 object-cover rounded-t-lg"
         />
         <div className="absolute top-4 right-4">
@@ -47,21 +47,21 @@ const AdoptionCard = ({ listing }) => (
       
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors mb-2">
-          {listing.title}
+          {listing.title || listing.pet?.name}
         </h3>
         
         <div className="space-y-2 text-sm text-gray-600 mb-4">
           <div className="flex items-center">
             <span className="font-medium w-16">Species:</span>
-            <span className="capitalize">{listing.species}</span>
+            <span className="capitalize">{listing.pet?.species || listing.species}</span>
           </div>
           <div className="flex items-center">
             <span className="font-medium w-16">Age:</span>
-            <span>{listing.age} years old</span>
+            <span>{listing.pet?.age || listing.age} years old</span>
           </div>
           <div className="flex items-center">
             <span className="font-medium w-16">Gender:</span>
-            <span className="capitalize">{listing.gender}</span>
+            <span className="capitalize">{listing.pet?.gender || listing.gender}</span>
           </div>
           {listing.shelter && (
             <div className="flex items-center">

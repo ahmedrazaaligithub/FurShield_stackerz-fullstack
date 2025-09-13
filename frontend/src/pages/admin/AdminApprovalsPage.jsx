@@ -25,18 +25,12 @@ const AdminApprovalsPage = () => {
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/admin/approvals', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        }
-      })
+      const { adminAPI } = await import('../../services/api')
+      const response = await adminAPI.getPendingApprovals()
       
-      if (response.ok) {
-        const data = await response.json()
-        setPendingShelters(data.data.shelters || [])
-        setPendingVets(data.data.vets || [])
-      } else {
-        console.error('Failed to fetch pending approvals')
+      if (response.data) {
+        setPendingShelters(response.data.data.shelters || [])
+        setPendingVets(response.data.data.vets || [])
       }
     } catch (error) {
       console.error('Error fetching pending approvals:', error)
@@ -47,31 +41,21 @@ const AdminApprovalsPage = () => {
 
   const handleApprove = async (type, id) => {
     try {
-      const endpoint = type === 'shelter' ? `/api/admin/shelters/${id}/approve` : `/api/admin/vets/${id}/approve`
+      const { adminAPI } = await import('../../services/api')
+      const data = { notes: 'Approved by admin' }
       
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ notes: 'Approved by admin' })
-      })
-      
-      if (response.ok) {
-        if (type === 'shelter') {
-          setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
-        } else {
-          setPendingVets(prev => prev.filter(vet => vet._id !== id))
-        }
-        alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} approved successfully!`)
+      if (type === 'shelter') {
+        await adminAPI.approveShelter(id, data)
+        setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
       } else {
-        const error = await response.json()
-        alert(`Error: ${error.error || 'Failed to approve'}`)
+        await adminAPI.approveVet(id, data)
+        setPendingVets(prev => prev.filter(vet => vet._id !== id))
       }
+      
+      alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} approved successfully!`)
     } catch (error) {
       console.error('Error approving:', error)
-      alert('Error approving. Please try again.')
+      alert(`Error: ${error.response?.data?.error || 'Failed to approve'}`)
     }
   }
 
@@ -80,31 +64,21 @@ const AdminApprovalsPage = () => {
       const reason = prompt('Please provide a reason for rejection:')
       if (!reason) return
       
-      const endpoint = type === 'shelter' ? `/api/admin/shelters/${id}/reject` : `/api/admin/vets/${id}/reject`
+      const { adminAPI } = await import('../../services/api')
+      const data = { reason }
       
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ reason })
-      })
-      
-      if (response.ok) {
-        if (type === 'shelter') {
-          setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
-        } else {
-          setPendingVets(prev => prev.filter(vet => vet._id !== id))
-        }
-        alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} rejected successfully!`)
+      if (type === 'shelter') {
+        await adminAPI.rejectShelter(id, data)
+        setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
       } else {
-        const error = await response.json()
-        alert(`Error: ${error.error || 'Failed to reject'}`)
+        await adminAPI.rejectVet(id, data)
+        setPendingVets(prev => prev.filter(vet => vet._id !== id))
       }
+      
+      alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} rejected successfully!`)
     } catch (error) {
       console.error('Error rejecting:', error)
-      alert('Error rejecting. Please try again.')
+      alert(`Error: ${error.response?.data?.error || 'Failed to reject'}`)
     }
   }
 
@@ -114,6 +88,7 @@ const AdminApprovalsPage = () => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
+      
       minute: '2-digit'
     })
   }

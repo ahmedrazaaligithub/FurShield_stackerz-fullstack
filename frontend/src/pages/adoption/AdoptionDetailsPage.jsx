@@ -24,7 +24,7 @@ export default function AdoptionDetailsPage() {
 
   const { data: listing, isLoading, error } = useQuery({
     queryKey: ['adoption-listing', id],
-    queryFn: () => adoptionAPI.getListing(id)
+    queryFn: () => adoptionAPI.getAdoption(id)
   })
 
   const inquiryMutation = useMutation({
@@ -86,9 +86,9 @@ export default function AdoptionDetailsPage() {
           <ArrowLeftIcon className="h-5 w-5" />
         </button>
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{listingData.title}</h1>
+          <h1 className="text-3xl font-bold text-gray-900">{listingData.title || listingData.pet?.name}</h1>
           <p className="text-gray-600 capitalize">
-            {listingData.species} • {listingData.age} years old • {listingData.gender}
+            {listingData.pet?.species || listingData.species} • {listingData.pet?.age || listingData.age} years old • {listingData.pet?.gender || listingData.gender}
           </p>
         </div>
       </div>
@@ -99,13 +99,13 @@ export default function AdoptionDetailsPage() {
           {/* Photo Gallery */}
           <div className="card">
             <div className="p-0">
-              {listingData.photos?.length > 0 ? (
+              {(listingData.pet?.photos?.length > 0 || listingData.photos?.length > 0) ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-6">
-                  {listingData.photos.map((photo, index) => (
+                  {(listingData.pet?.photos || listingData.photos || []).map((photo, index) => (
                     <img
                       key={index}
                       src={photo}
-                      alt={`${listingData.title} photo ${index + 1}`}
+                      alt={`${listingData.title || listingData.pet?.name} photo ${index + 1}`}
                       className="w-full h-64 object-cover rounded-lg"
                     />
                   ))}
@@ -121,7 +121,7 @@ export default function AdoptionDetailsPage() {
           {/* Description */}
           <div className="card">
             <div className="card-header">
-              <h2 className="text-xl font-semibold text-gray-900">About {listingData.title}</h2>
+              <h2 className="text-xl font-semibold text-gray-900">About {listingData.title || listingData.pet?.name}</h2>
             </div>
             <div className="card-content">
               <p className="text-gray-700 leading-relaxed">{listingData.description}</p>
@@ -137,34 +137,34 @@ export default function AdoptionDetailsPage() {
               <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
                 <div>
                   <label className="label">Species</label>
-                  <p className="text-gray-900 capitalize">{listingData.species}</p>
+                  <p className="text-gray-900 capitalize">{listingData.pet?.species || listingData.species}</p>
                 </div>
                 <div>
                   <label className="label">Age</label>
-                  <p className="text-gray-900">{listingData.age} years old</p>
+                  <p className="text-gray-900">{listingData.pet?.age || listingData.age} years old</p>
                 </div>
                 <div>
                   <label className="label">Gender</label>
-                  <p className="text-gray-900 capitalize">{listingData.gender}</p>
+                  <p className="text-gray-900 capitalize">{listingData.pet?.gender || listingData.gender}</p>
                 </div>
                 <div>
                   <label className="label">Size</label>
-                  <p className="text-gray-900 capitalize">{listingData.size || 'Not specified'}</p>
+                  <p className="text-gray-900 capitalize">{listingData.size || listingData.pet?.size || 'Not specified'}</p>
                 </div>
                 <div>
                   <label className="label">Weight</label>
-                  <p className="text-gray-900">{listingData.weight ? `${listingData.weight} lbs` : 'Not specified'}</p>
+                  <p className="text-gray-900">{(listingData.pet?.weight || listingData.weight) ? `${listingData.pet?.weight || listingData.weight} lbs` : 'Not specified'}</p>
                 </div>
                 <div>
                   <label className="label">Color</label>
-                  <p className="text-gray-900">{listingData.color || 'Not specified'}</p>
+                  <p className="text-gray-900">{listingData.pet?.color || listingData.color || 'Not specified'}</p>
                 </div>
               </div>
 
-              {listingData.breed && (
+              {(listingData.pet?.breed || listingData.breed) && (
                 <div className="mt-6">
                   <label className="label">Breed</label>
-                  <p className="text-gray-900">{listingData.breed}</p>
+                  <p className="text-gray-900">{listingData.pet?.breed || listingData.breed}</p>
                 </div>
               )}
 
@@ -201,10 +201,10 @@ export default function AdoptionDetailsPage() {
                 </div>
               )}
 
-              {listingData.medicalHistory && (
+              {(listingData.pet?.medicalHistory || listingData.medicalHistory) && (
                 <div className="mt-6">
                   <label className="label">Medical History</label>
-                  <p className="text-gray-700">{listingData.medicalHistory}</p>
+                  <p className="text-gray-700">{listingData.pet?.medicalHistory || listingData.medicalHistory}</p>
                 </div>
               )}
             </div>
@@ -259,7 +259,12 @@ export default function AdoptionDetailsPage() {
                   {listingData.shelter.address && (
                     <div className="flex items-center text-gray-600 mt-1">
                       <MapPinIcon className="h-4 w-4 mr-1" />
-                      <span className="text-sm">{listingData.shelter.address}</span>
+                      <span className="text-sm">
+                        {typeof listingData.shelter.address === 'string' 
+                          ? listingData.shelter.address 
+                          : `${listingData.shelter.address.street || ''}, ${listingData.shelter.address.city || ''}, ${listingData.shelter.address.state || ''} ${listingData.shelter.address.zipCode || ''}`.replace(/^,\s*|,\s*$/, '').replace(/,\s*,/g, ',')
+                        }
+                      </span>
                     </div>
                   )}
                 </div>
@@ -349,7 +354,7 @@ export default function AdoptionDetailsPage() {
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
-              Inquire About {listingData.title}
+              Inquire About {listingData.title || listingData.pet?.name}
             </h3>
             <p className="text-gray-600 mb-4">
               Send a message to the shelter expressing your interest in adopting this pet.

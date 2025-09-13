@@ -121,11 +121,19 @@ export default function PetsPage() {
 
   const { data: pets, isLoading, error } = useQuery({
     queryKey: ['pets', { search: searchTerm, species: speciesFilter, health: healthFilter }],
-    queryFn: () => petAPI.getPets({
-      search: searchTerm || undefined,
-      species: speciesFilter || undefined,
-      healthStatus: healthFilter || undefined
-    })
+    queryFn: () => {
+      // Use appropriate endpoint based on user role
+      if (user?.role === 'shelter' || user?.role === 'owner') {
+        return petAPI.getMyPets()
+      } else {
+        return petAPI.getPets({
+          search: searchTerm || undefined,
+          species: speciesFilter || undefined,
+          healthStatus: healthFilter || undefined
+        })
+      }
+    },
+    enabled: !!user
   })
 
   // Mock favorite pets functionality (since backend is not running)

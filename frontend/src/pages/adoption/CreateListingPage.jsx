@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
-import { adoptionAPI } from '../../services/api'
+import { useMutation, useQuery } from '@tanstack/react-query'
+import { adoptionAPI, petAPI } from '../../services/api'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { 
   ArrowLeftIcon,
@@ -10,31 +10,31 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
+import { useAuth } from '../../contexts/AuthContext'
 
 export default function CreateListingPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    species: '',
-    breed: '',
-    age: '',
-    gender: '',
     size: '',
-    weight: '',
-    color: '',
     temperament: [],
-    goodWith: [],
+    energyLevel: 'medium',
     specialNeeds: false,
     specialNeedsDescription: '',
-    medicalHistory: '',
     adoptionFee: '',
     photos: [],
-    adoptionRequirements: []
+    adoptionRequirements: [],
+    goodWith: []
   })
   const [errors, setErrors] = useState({})
   const [newTemperament, setNewTemperament] = useState('')
   const [newGoodWith, setNewGoodWith] = useState('')
+  const [petId, setPetId] = useState('')
+  const [goodWithChildren, setGoodWithChildren] = useState(false)
+  const [goodWithDogs, setGoodWithDogs] = useState(false)
+  const [goodWithCats, setGoodWithCats] = useState(false)
   const [newRequirement, setNewRequirement] = useState('')
 
   const createListingMutation = useMutation({
@@ -47,6 +47,14 @@ export default function CreateListingPage() {
       toast.error(error.response?.data?.error || 'Failed to create listing')
     }
   })
+
+  // Fetch current shelter's pets for selection
+  const { data: myPetsResp, isLoading: petsLoading } = useQuery({
+    queryKey: ['my-pets'],
+    queryFn: () => petAPI.getMyPets(),
+    enabled: !!user?.id && user?.role === 'shelter'
+  })
+  const myPets = myPetsResp?.data?.data || []
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -81,9 +89,7 @@ export default function CreateListingPage() {
     
     if (!formData.title.trim()) newErrors.title = 'Title is required'
     if (!formData.description.trim()) newErrors.description = 'Description is required'
-    if (!formData.species) newErrors.species = 'Species is required'
-    if (!formData.age) newErrors.age = 'Age is required'
-    if (!formData.gender) newErrors.gender = 'Gender is required'
+    if (!petId) newErrors.petId = 'Please select a pet for this listing'
     
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -94,7 +100,26 @@ export default function CreateListingPage() {
     
     if (!validateForm()) return
     
-    createListingMutation.mutate(formData)
+    const payload = {
+      petId,
+      title: formData.title,
+      description: formData.description,
+      adoptionFee: formData.adoptionFee ? Number(formData.adoptionFee) : undefined,
+      size: formData.size && formData.size !== '' ? formData.size : undefined,
+      energyLevel: formData.energyLevel && formData.energyLevel !== '' ? formData.energyLevel : undefined,
+      specialNeeds: formData.specialNeeds,
+      specialNeedsDescription: formData.specialNeeds ? formData.specialNeedsDescription : undefined,
+      goodWith: {
+        children: goodWithChildren,
+        dogs: goodWithDogs,
+        cats: goodWithCats
+      },
+      requirements: formData.adoptionRequirements?.length ? formData.adoptionRequirements.join(', ') : undefined,
+      temperament: formData.temperament?.length ? formData.temperament : undefined,
+      photos: formData.photos?.length ? formData.photos : undefined
+    }
+
+    createListingMutation.mutate(payload)
   }
 
   return (
@@ -114,6 +139,32 @@ export default function CreateListingPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Select Pet */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="text-xl font-semibold text-gray-900">Select Pet *</h2>
+          </div>
+          <div className="card-content space-y-3">
+            {petsLoading ? (
+              <div className="flex items-center"><LoadingSpinner size="sm" /><span className="ml-2 text-gray-600">Loading pets...</span></div>
+            ) : myPets.length > 0 ? (
+              <select
+                value={petId}
+                onChange={(e) => setPetId(e.target.value)}
+                className={`input ${errors.petId ? 'border-red-300' : ''}`}
+              >
+                <option value="">Select a pet</option>
+                {myPets.map(p => (
+                  <option key={p._id} value={p._id}>{p.name} • {p.species} • {p.breed}</option>
+                ))}
+              </select>
+            ) : (
+              <div className="text-sm text-gray-600">No pets found. Please add a pet first.</div>
+            )}
+            {errors.petId && <p className="text-sm text-red-600">{errors.petId}</p>}
+          </div>
+        </div>
+
         {/* Basic Information */}
         <div className="card">
           <div className="card-header">
@@ -148,51 +199,32 @@ export default function CreateListingPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="label">Species *</label>
+                <label className="label">Energy Level</label>
                 <select
-                  name="species"
-                  value={formData.species}
+                  name="energyLevel"
+                  value={formData.energyLevel}
                   onChange={handleInputChange}
-                  className={`input ${errors.species ? 'border-red-300' : ''}`}
+                  className="input"
                 >
-                  <option value="">Select species</option>
-                  <option value="dog">Dog</option>
-                  <option value="cat">Cat</option>
-                  <option value="bird">Bird</option>
-                  <option value="rabbit">Rabbit</option>
-                  <option value="other">Other</option>
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
                 </select>
-                {errors.species && <p className="mt-1 text-sm text-red-600">{errors.species}</p>}
               </div>
-
               <div>
-                <label className="label">Age *</label>
-                <input
-                  type="number"
-                  name="age"
-                  value={formData.age}
-                  onChange={handleInputChange}
-                  className={`input ${errors.age ? 'border-red-300' : ''}`}
-                  placeholder="Age in years"
-                  min="0"
-                  max="30"
-                />
-                {errors.age && <p className="mt-1 text-sm text-red-600">{errors.age}</p>}
-              </div>
-
-              <div>
-                <label className="label">Gender *</label>
+                <label className="label">Size</label>
                 <select
-                  name="gender"
-                  value={formData.gender}
+                  name="size"
+                  value={formData.size}
                   onChange={handleInputChange}
-                  className={`input ${errors.gender ? 'border-red-300' : ''}`}
+                  className="input"
                 >
-                  <option value="">Select gender</option>
-                  <option value="male">Male</option>
-                  <option value="female">Female</option>
+                  <option value="">Select size</option>
+                  <option value="small">Small</option>
+                  <option value="medium">Medium</option>
+                  <option value="large">Large</option>
+                  <option value="extra-large">Extra Large</option>
                 </select>
-                {errors.gender && <p className="mt-1 text-sm text-red-600">{errors.gender}</p>}
               </div>
             </div>
 
@@ -329,12 +361,29 @@ export default function CreateListingPage() {
           </div>
         </div>
 
-        {/* Medical Information */}
+        {/* Compatibility & Medical Information */}
         <div className="card">
           <div className="card-header">
-            <h2 className="text-xl font-semibold text-gray-900">Medical Information</h2>
+            <h2 className="text-xl font-semibold text-gray-900">Compatibility & Medical Information</h2>
           </div>
           <div className="card-content space-y-4">
+            <div>
+              <label className="label">Good With</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="h-4 w-4" checked={goodWithChildren} onChange={(e) => setGoodWithChildren(e.target.checked)} />
+                  <span className="text-sm">Children</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="h-4 w-4" checked={goodWithDogs} onChange={(e) => setGoodWithDogs(e.target.checked)} />
+                  <span className="text-sm">Dogs</span>
+                </label>
+                <label className="flex items-center space-x-2">
+                  <input type="checkbox" className="h-4 w-4" checked={goodWithCats} onChange={(e) => setGoodWithCats(e.target.checked)} />
+                  <span className="text-sm">Cats</span>
+                </label>
+              </div>
+            </div>
             <div className="flex items-center">
               <input
                 type="checkbox"

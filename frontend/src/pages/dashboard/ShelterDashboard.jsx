@@ -13,11 +13,13 @@ import {
   TrashIcon,
   ClipboardDocumentListIcon,
   ShieldCheckIcon,
-  PhotoIcon
+  PhotoIcon,
+  ShoppingBagIcon
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
-import { petAPI, appointmentAPI, adoptionAPI, chatAPI } from '../../services/api'
+import { petAPI, appointmentAPI, adoptionAPI, chatAPI, shelterAPI, orderAPI } from '../../services/api'
 import toast from 'react-hot-toast'
+import ShelterProfileForm from '../../components/shelters/ShelterProfileForm'
 
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
@@ -66,6 +68,16 @@ export default function ShelterDashboard() {
   const queryClient = useQueryClient()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [petToDelete, setPetToDelete] = useState(null)
+  const [showShelterForm, setShowShelterForm] = useState(false)
+
+  // Fetch my shelter profile (if exists)
+  const { data: myShelterResp, isLoading: myShelterLoading, isError: myShelterError } = useQuery({
+    queryKey: ['my-shelter'],
+    queryFn: () => shelterAPI.getMyShelter(),
+    enabled: !!user?.id && user?.role === 'shelter',
+    retry: false
+  })
+  const myShelter = myShelterResp?.data?.data
 
   // Fetch shelter pets
   const { data: pets, isLoading: petsLoading } = useQuery({
@@ -81,17 +93,24 @@ export default function ShelterDashboard() {
     enabled: !!user?.id && user?.role === 'shelter'
   })
 
-  // Fetch adoption appointments
+  // Fetch regular appointments (vet appointments for shelter pets)
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
-    queryKey: ['adoption-appointments', user?.id],
-    queryFn: () => appointmentAPI.getAdoptionAppointments({ shelterId: user?.id }),
+    queryKey: ['shelter-appointments', user?.id],
+    queryFn: () => appointmentAPI.getAppointments({ userId: user?.id }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
 
-  // Fetch adoption inquiries/chats
-  const { data: chats, isLoading: chatsLoading } = useQuery({
-    queryKey: ['adoption-chats', user?.id],
-    queryFn: () => chatAPI.getChatRooms({ type: 'adoption', shelterId: user?.id }),
+  // Fetch adoption inquiries
+  const { data: inquiries, isLoading: inquiriesLoading } = useQuery({
+    queryKey: ['adoption-inquiries', user?.id],
+    queryFn: () => adoptionAPI.getInquiries({ shelterId: user?.id }),
+    enabled: !!user?.id && user?.role === 'shelter'
+  })
+
+  // Fetch orders for shelter products
+  const { data: orders, isLoading: ordersLoading } = useQuery({
+    queryKey: ['shelter-orders', user?.id],
+    queryFn: () => orderAPI.getOrders({ sellerId: user?.id }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
 
@@ -143,11 +162,18 @@ export default function ShelterDashboard() {
       href: '/appointments'
     },
     {
-      title: 'Active Chats',
-      value: chats?.data?.data?.filter(c => c.unreadCount > 0)?.length || 0,
+      title: 'Adoption Inquiries',
+      value: inquiries?.data?.data?.length || 0,
       icon: ChatBubbleLeftRightIcon,
       color: 'bg-orange-600',
-      href: '/chat'
+      href: '/inquiries'
+    },
+    {
+      title: 'Customer Orders',
+      value: orders?.data?.data?.length || 0,
+      icon: ShoppingBagIcon,
+      color: 'bg-indigo-600',
+      href: '/shelter/orders'
     }
   ]
 
@@ -174,15 +200,22 @@ export default function ShelterDashboard() {
       color: 'bg-purple-600'
     },
     {
-      title: 'Chat with Adopters',
-      description: 'Respond to adoption inquiries',
+      title: 'Manage Inquiries',
+      description: 'Respond to adoption inquiries and applications',
       icon: ChatBubbleLeftRightIcon,
-      href: '/chat',
+      href: '/inquiries',
       color: 'bg-orange-600'
+    },
+    {
+      title: 'View Orders',
+      description: 'Manage customer orders and fulfillment',
+      icon: ShoppingBagIcon,
+      href: '/shelter/orders',
+      color: 'bg-indigo-600'
     }
   ]
 
-  const isLoading = petsLoading || adoptionsLoading || appointmentsLoading || chatsLoading
+  const isLoading = petsLoading || adoptionsLoading || appointmentsLoading || inquiriesLoading || ordersLoading
 
   if (user?.role !== 'shelter') {
     return (
@@ -207,7 +240,18 @@ export default function ShelterDashboard() {
               Welcome back, {user?.name}! Manage your shelter operations here.
             </p>
           </div>
-          <ShieldCheckIcon className="h-16 w-16 text-white/20" />
+          <div className="flex items-center space-x-3">
+            {myShelterLoading ? null : myShelter ? (
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${myShelter.isVerified ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                {myShelter.isVerified ? 'Verified Shelter' : 'Pending Verification'}
+              </span>
+            ) : (
+              <button onClick={() => setShowShelterForm(true)} className="btn btn-white/10 hover:bg-white/20">
+                Create Shelter Profile
+              </button>
+            )}
+            <ShieldCheckIcon className="h-16 w-16 text-white/20" />
+          </div>
         </div>
       </div>
 
@@ -402,6 +446,16 @@ export default function ShelterDashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Create Shelter Profile Modal */}
+      {showShelterForm && (
+        <ShelterProfileForm
+          onClose={() => setShowShelterForm(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries(['my-shelter'])
+          }}
+        />
       )}
     </div>
   )

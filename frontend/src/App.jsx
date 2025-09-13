@@ -27,6 +27,8 @@ import AppointmentDetailsPage from './pages/appointments/AppointmentDetailsPage'
 import AdoptionPage from './pages/adoption/AdoptionPage'
 import AdoptionDetailsPage from './pages/adoption/AdoptionDetailsPage'
 import CreateListingPage from './pages/adoption/CreateListingPage'
+import InquiriesPage from './pages/inquiries/InquiriesPage'
+import ShelterOrdersPage from './pages/shelter/ShelterOrdersPage'
 
 import ShopPage from './pages/shop/ShopPage'
 import ProductDetailsPage from './pages/shop/ProductDetailsPage'
@@ -93,6 +95,8 @@ function App() {
         
         <Route path="/adoption" element={<AdoptionPage />} />
         <Route path="/adoption/create" element={<CreateListingPage />} />
+        <Route path="/inquiries" element={<InquiriesPage />} />
+        <Route path="/shelter/orders" element={<ShelterOrdersPage />} />
         
         <Route path="/shop" element={<ShopPage />} />
         <Route path="/shop/product/:id" element={<ProductDetailsPage />} />

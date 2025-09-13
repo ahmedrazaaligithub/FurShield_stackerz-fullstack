@@ -12,6 +12,8 @@ import {
 import { Link } from 'react-router-dom'
 import { petAPI, appointmentAPI, orderAPI } from '../../services/api'
 import ShelterDashboard from './ShelterDashboard'
+import VetDashboard from './VetDashboard'
+import AdminDashboard from './AdminDashboard'
 
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
@@ -52,9 +54,17 @@ const QuickAction = ({ title, description, icon: Icon, href, color }) => (
 export default function DashboardPage() {
   const { user } = useAuth()
   
-  // Redirect shelter users to their specific dashboard
+  // Redirect to role-specific dashboards
+  if (user?.role === 'admin') {
+    return <AdminDashboard />
+  }
+  
   if (user?.role === 'shelter') {
     return <ShelterDashboard />
+  }
+  
+  if (user?.role === 'vet') {
+    return <VetDashboard />
   }
 
   const { data: pets, isLoading: petsLoading } = useQuery({

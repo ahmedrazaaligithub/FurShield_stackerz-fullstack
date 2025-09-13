@@ -39,15 +39,30 @@ export default function BookAppointmentPage() {
   })
   const [errors, setErrors] = useState({})
   const [showAllVets, setShowAllVets] = useState(false)
+  const [filters, setFilters] = useState({
+    location: '',
+    condition: '',
+    specialization: '',
+    radius: '25',
+    verified: 'true'
+  })
+  const [userLocation, setUserLocation] = useState(null)
 
   const { data: pets } = useQuery({
     queryKey: ['pets'],
     queryFn: () => petAPI.getPets()
   })
 
-  const { data: vets } = useQuery({
-    queryKey: ['vets'],
-    queryFn: () => userAPI.getVets()
+  const { data: vets, refetch: refetchVets } = useQuery({
+    queryKey: ['vets', filters],
+    queryFn: () => {
+      const params = { ...filters }
+      if (userLocation && filters.radius) {
+        params.latitude = userLocation.latitude
+        params.longitude = userLocation.longitude
+      }
+      return userAPI.getVets(params)
+    }
   })
 
   const bookAppointmentMutation = useMutation({
@@ -66,6 +81,30 @@ export default function BookAppointmentPage() {
     setFormData(prev => ({ ...prev, [name]: value }))
     if (errors[name]) {
       setErrors(prev => ({ ...prev, [name]: '' }))
+    }
+  }
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target
+    setFilters(prev => ({ ...prev, [name]: value }))
+  }
+
+  const getCurrentLocation = () => {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setUserLocation({
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+          })
+          toast.success('Location detected! Showing nearby vets.')
+        },
+        (error) => {
+          toast.error('Unable to get your location. Please enter manually.')
+        }
+      )
+    } else {
+      toast.error('Geolocation is not supported by this browser.')
     }
   }
 
@@ -183,6 +222,111 @@ export default function BookAppointmentPage() {
           </div>
         </div>
 
+        {/* Vet Search Filters */}
+        <div className="card">
+          <div className="card-header">
+            <h2 className="text-xl font-semibold text-gray-900">Find Veterinarians</h2>
+          </div>
+          <div className="card-content space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <label className="label">Location</label>
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    name="location"
+                    value={filters.location}
+                    onChange={handleFilterChange}
+                    placeholder="City, area, or address"
+                    className="input flex-1"
+                  />
+                  <button
+                    type="button"
+                    onClick={getCurrentLocation}
+                    className="btn btn-outline px-3"
+                    title="Use current location"
+                  >
+                    📍
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <label className="label">Condition/Symptom</label>
+                <select
+                  name="condition"
+                  value={filters.condition}
+                  onChange={handleFilterChange}
+                  className="input"
+                >
+                  <option value="">All conditions</option>
+                  <option value="skin">Skin problems</option>
+                  <option value="dental">Dental issues</option>
+                  <option value="surgery">Surgery needed</option>
+                  <option value="emergency">Emergency care</option>
+                  <option value="cardiology">Heart problems</option>
+                  <option value="orthopedic">Bone/joint issues</option>
+                  <option value="oncology">Cancer treatment</option>
+                  <option value="neurology">Neurological issues</option>
+                  <option value="ophthalmology">Eye problems</option>
+                  <option value="reproduction">Breeding/reproduction</option>
+                  <option value="behavior">Behavioral issues</option>
+                  <option value="exotic">Exotic pets</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="label">Specialization</label>
+                <input
+                  type="text"
+                  name="specialization"
+                  value={filters.specialization}
+                  onChange={handleFilterChange}
+                  placeholder="e.g., Surgery, Dermatology"
+                  className="input"
+                />
+              </div>
+
+              <div>
+                <label className="label">Distance (km)</label>
+                <select
+                  name="radius"
+                  value={filters.radius}
+                  onChange={handleFilterChange}
+                  className="input"
+                >
+                  <option value="5">Within 5 km</option>
+                  <option value="10">Within 10 km</option>
+                  <option value="25">Within 25 km</option>
+                  <option value="50">Within 50 km</option>
+                  <option value="100">Within 100 km</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="label">Verification</label>
+                <select
+                  name="verified"
+                  value={filters.verified}
+                  onChange={handleFilterChange}
+                  className="input"
+                >
+                  <option value="">All vets</option>
+                  <option value="true">Verified only</option>
+                </select>
+              </div>
+            </div>
+
+            {userLocation && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
+                <p className="text-sm text-green-800">
+                  📍 Using your current location to show nearby veterinarians
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Veterinarian Selection */}
         <div className="card">
           <div className="card-header">
@@ -224,12 +368,24 @@ export default function BookAppointmentPage() {
                           Dr. {vet.name}
                         </h3>
                         <p className="text-sm text-gray-600 mb-2">
-                          {vet.specialization || 'General Practice'}
+                          {vet.profile?.specialization || 'General Practice'}
                         </p>
                         
-                        {vet.experience && (
+                        {vet.profile?.experience && (
                           <p className="text-sm text-gray-500 mb-1">
-                            {vet.experience} years experience
+                            {vet.profile.experience} years experience
+                          </p>
+                        )}
+                        
+                        {vet.distance && (
+                          <p className="text-sm text-blue-600 mb-1">
+                            📍 {vet.distance} km away
+                          </p>
+                        )}
+                        
+                        {vet.profile?.consultationFee && (
+                          <p className="text-sm text-green-600 mb-1">
+                            💰 ₹{vet.profile.consultationFee} consultation fee
                           </p>
                         )}
                         
@@ -262,9 +418,14 @@ export default function BookAppointmentPage() {
                         )}
                         
                         <div className="mt-2 flex flex-wrap gap-1">
-                          {vet.languages && vet.languages.map((lang, index) => (
+                          {vet.profile?.languages && vet.profile.languages.map((lang, index) => (
                             <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                               {lang}
+                            </span>
+                          ))}
+                          {vet.profile?.conditions && vet.profile.conditions.slice(0, 3).map((condition, index) => (
+                            <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                              {condition}
                             </span>
                           ))}
                         </div>

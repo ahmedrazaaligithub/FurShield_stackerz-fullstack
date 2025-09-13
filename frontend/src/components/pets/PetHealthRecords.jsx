@@ -10,10 +10,12 @@ import {
   ClipboardDocumentCheckIcon,
   TrashIcon,
   PencilIcon,
-  ExclamationTriangleIcon
+  ExclamationTriangleIcon,
+  ClockIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { uploadImageToCloudinary } from '../../utils/uploadImage'
+import HealthTimeline from './HealthTimeline'
 
 export default function PetHealthRecords({ pet, isOwner }) {
   const [activeTab, setActiveTab] = useState('vaccinations')
@@ -191,6 +193,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
   }
 
   const tabs = [
+    { id: 'timeline', name: 'Timeline', icon: ClockIcon, count: 0 },
     { id: 'vaccinations', name: 'Vaccinations', icon: ShieldCheckIcon, count: healthRecords.vaccinations?.length || 0 },
     { id: 'allergies', name: 'Allergies', icon: ExclamationTriangleIcon, count: healthRecords.allergies?.length || 0 },
     { id: 'medications', name: 'Medications', icon: BeakerIcon, count: healthRecords.medications?.length || 0 },
@@ -473,6 +476,7 @@ export default function PetHealthRecords({ pet, isOwner }) {
 
       {/* Content */}
       <div className="min-h-[400px]">
+        {activeTab === 'timeline' && <HealthTimeline pet={pet} />}
         {activeTab === 'vaccinations' && renderVaccinations()}
         {activeTab === 'allergies' && renderAllergies()}
         {activeTab === 'medications' && renderMedications()}

@@ -12,9 +12,10 @@ import {
   ArrowLeftIcon,
   ClockIcon,
   AcademicCapIcon,
-  HeartIcon
+  HeartIcon,
+  CheckBadgeIcon
 } from '@heroicons/react/24/outline'
-import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
+import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid, CheckBadgeIcon as CheckBadgeIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
 
 export default function VetProfilePage() {
@@ -136,9 +137,17 @@ export default function VetProfilePage() {
             {/* Profile Info */}
             <div className="flex-1 space-y-4">
               <div>
-                <h2 className="text-3xl font-bold text-gray-900">Dr. {vetData.name}</h2>
+                <div className="flex items-center space-x-3 mb-2">
+                  <h2 className="text-3xl font-bold text-gray-900">Dr. {vetData.name}</h2>
+                  {vetData.isVetVerified && (
+                    <div className="flex items-center bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                      <CheckBadgeIconSolid className="h-4 w-4 mr-1" />
+                      Verified
+                    </div>
+                  )}
+                </div>
                 <p className="text-xl text-primary-600 font-medium">
-                  {vetData.specialization || 'General Practice'}
+                  {vetData.profile?.specialization?.join(', ') || vetData.specialization || 'General Practice'}
                 </p>
               </div>
 
@@ -160,10 +169,26 @@ export default function VetProfilePage() {
               )}
 
               {/* Experience */}
-              {vetData.experience && (
+              {(vetData.profile?.experience || vetData.experience) && (
                 <div className="flex items-center text-gray-600">
                   <ClockIcon className="h-5 w-5 mr-2" />
-                  <span>{vetData.experience} years of experience</span>
+                  <span>{vetData.profile?.experience || vetData.experience} years of experience</span>
+                </div>
+              )}
+
+              {/* License Number */}
+              {vetData.profile?.licenseNumber && (
+                <div className="flex items-center text-gray-600">
+                  <AcademicCapIcon className="h-5 w-5 mr-2" />
+                  <span>License: {vetData.profile.licenseNumber}</span>
+                </div>
+              )}
+
+              {/* Clinic Information */}
+              {vetData.profile?.clinicName && (
+                <div className="flex items-center text-gray-600">
+                  <MapPinIcon className="h-5 w-5 mr-2" />
+                  <span>{vetData.profile.clinicName}</span>
                 </div>
               )}
 
@@ -199,13 +224,13 @@ export default function VetProfilePage() {
         {/* About Section */}
         <div className="lg:col-span-2 space-y-6">
           {/* Bio */}
-          {vetData.bio && (
+          {(vetData.profile?.bio || vetData.bio) && (
             <div className="card">
               <div className="card-header">
                 <h3 className="text-xl font-semibold text-gray-900">About</h3>
               </div>
               <div className="card-content">
-                <p className="text-gray-700 leading-relaxed">{vetData.bio}</p>
+                <p className="text-gray-700 leading-relaxed">{vetData.profile?.bio || vetData.bio}</p>
               </div>
             </div>
           )}
@@ -294,14 +319,14 @@ export default function VetProfilePage() {
           </div>
 
           {/* Languages */}
-          {vetData.languages && vetData.languages.length > 0 && (
+          {(vetData.profile?.languages || vetData.languages) && (vetData.profile?.languages?.length > 0 || vetData.languages?.length > 0) && (
             <div className="card">
               <div className="card-header">
                 <h3 className="text-xl font-semibold text-gray-900">Languages</h3>
               </div>
               <div className="card-content">
                 <div className="flex flex-wrap gap-2">
-                  {vetData.languages.map((lang, index) => (
+                  {(vetData.profile?.languages || vetData.languages).map((lang, index) => (
                     <span key={index} className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                       {lang}
                     </span>
@@ -311,20 +336,48 @@ export default function VetProfilePage() {
             </div>
           )}
 
+          {/* Consultation Fee */}
+          {vetData.profile?.consultationFee && (
+            <div className="card">
+              <div className="card-header">
+                <h3 className="text-xl font-semibold text-gray-900">Consultation Fee</h3>
+              </div>
+              <div className="card-content">
+                <div className="text-2xl font-bold text-green-600">
+                  ${vetData.profile.consultationFee}
+                </div>
+                <p className="text-gray-600 text-sm">Per consultation</p>
+              </div>
+            </div>
+          )}
+
           {/* Availability */}
-          {vetData.availability && (
+          {(vetData.profile?.availableHours || vetData.availability) && (
             <div className="card">
               <div className="card-header">
                 <h3 className="text-xl font-semibold text-gray-900">Availability</h3>
               </div>
               <div className="card-content">
                 <div className="space-y-2">
-                  {Object.entries(vetData.availability).map(([day, hours]) => (
-                    <div key={day} className="flex justify-between">
-                      <span className="capitalize text-gray-600">{day}</span>
-                      <span className="text-gray-900">{hours}</span>
-                    </div>
-                  ))}
+                  {vetData.profile?.availableHours ? 
+                    Object.entries(vetData.profile.availableHours).map(([day, dayData]) => (
+                      <div key={day} className="flex justify-between">
+                        <span className="capitalize text-gray-600">{day}</span>
+                        <span className="text-gray-900">
+                          {dayData.available ? 
+                            `${dayData.startTime} - ${dayData.endTime}` : 
+                            'Unavailable'
+                          }
+                        </span>
+                      </div>
+                    )) :
+                    Object.entries(vetData.availability).map(([day, hours]) => (
+                      <div key={day} className="flex justify-between">
+                        <span className="capitalize text-gray-600">{day}</span>
+                        <span className="text-gray-900">{hours}</span>
+                      </div>
+                    ))
+                  }
                 </div>
               </div>
             </div>

@@ -111,21 +111,36 @@ export const petAPI = {
   createPet: (petData) => api.post('/pets', petData),
 
   // Update pet
-  updatePet: (id, petData) => api.patch(`/pets/${id}`, petData),
+  updatePet: (id, petData) => api.put(`/pets/${id}`, petData),
 
   // Delete pet
   deletePet: (id) => api.delete(`/pets/${id}`),
 
   // Upload pet photos
-  uploadPhotos: (id, formData) => api.post(`/pets/${id}/photos`, formData, {
-    headers: { 'Content-Type': 'multipart/form-data' }
-  }),
-
-  // Delete pet photo
-  deletePhoto: (id, photoUrl) => api.delete(`/pets/${id}/photos`, { data: { photoUrl } }),
+  uploadPetPhoto: (id, formData) => api.post(`/pets/${id}/photos`, formData),
 
   // Get user's pets
   getUserPets: (userId) => api.get(`/pets/user/${userId}`),
+  getMyPets: () => api.get('/pets/user'),
+
+  // Get health records
+  getHealthRecords: (id) => api.get(`/pets/${id}/health-records`),
+
+  // Add health record
+  addHealthRecord: (id, data) => api.post(`/pets/${id}/health-records`, data),
+
+  // Enhanced health records
+  addVaccination: (id, data) => api.post(`/health/pets/${id}/vaccinations`, data),
+  addAllergy: (id, data) => api.post(`/health/pets/${id}/allergies`, data),
+  addMedication: (id, data) => api.post(`/health/pets/${id}/medications`, data),
+  addTreatment: (id, data) => api.post(`/health/pets/${id}/treatments`, data),
+  deleteHealthRecord: (id, type, recordId) => api.delete(`/health/pets/${id}/records/${type}/${recordId}`),
+
+  // Insurance management
+  getInsurance: (id) => api.get(`/insurance/pets/${id}/policies`),
+  addInsurance: (id, data) => api.post(`/insurance/pets/${id}/policies`, data),
+  updateInsurance: (id, policyId, data) => api.put(`/insurance/pets/${id}/policies/${policyId}`, data),
+  deleteInsurance: (id, policyId) => api.delete(`/insurance/pets/${id}/policies/${policyId}`),
 
   // Pet feedback endpoints
   getFeedback: (id) => api.get(`/pets/${id}/feedback`),
@@ -140,33 +155,44 @@ export const appointmentAPI = {
   createAppointment: (data) => api.post('/appointments', data),
   updateAppointment: (id, data) => api.put(`/appointments/${id}`, data),
   cancelAppointment: (id, data) => api.put(`/appointments/${id}/cancel`, data),
+  // Vet operations
+  acceptAppointment: (id) => api.put(`/appointments/${id}/accept`),
+  proposeTimeChange: (id, data) => api.put(`/appointments/${id}/propose-time`, data),
+  completeAppointment: (id, data) => api.put(`/appointments/${id}/complete`, data),
   confirmAppointment: (id) => api.put(`/appointments/${id}/confirm`),
   rescheduleAppointment: (id, data) => api.put(`/appointments/${id}/reschedule`, data),
   getAvailableSlots: (vetId, date) => api.get(`/appointments/slots/${vetId}`, { params: { date } }),
-  getAdoptionAppointments: (params = {}) => api.get('/appointments/adoption', { params })
+  // Note: This endpoint doesn't exist - removing to prevent 500 errors
+  // getAdoptionAppointments: (params = {}) => api.get('/appointments/adoption', { params })
 }
 
 export const shelterAPI = {
   getShelters: (params) => api.get('/shelters', { params }),
   getShelter: (id) => api.get(`/shelters/${id}`),
+  getMyShelter: () => api.get('/shelters/me'),
   createShelter: (data) => api.post('/shelters', data),
   updateShelter: (id, data) => api.put(`/shelters/${id}`, data),
   deleteShelter: (id) => api.delete(`/shelters/${id}`),
-  verifyShelter: (id) => api.put(`/shelters/${id}/verify`),
-  rejectShelter: (id, data) => api.put(`/shelters/${id}/reject`, data)
+  verifyShelter: (id) => api.post(`/shelters/${id}/verify`)
 }
 
 export const adoptionAPI = {
+  getListings: (params = {}) => api.get('/adoptions', { params }),
   getAdoptions: (params = {}) => api.get('/adoptions', { params }),
   getAdoption: (id) => api.get(`/adoptions/${id}`),
   createAdoption: (data) => api.post('/adoptions', data),
+  createListing: (data) => api.post('/adoptions', data),
   updateAdoption: (id, data) => api.put(`/adoptions/${id}`, data),
   deleteAdoption: (id) => api.delete(`/adoptions/${id}`),
   submitApplication: (id, data) => api.post(`/adoptions/${id}/apply`, data),
   updateApplicationStatus: (applicationId, status) => 
     api.patch(`/adoptions/applications/${applicationId}/status`, { status }),
   getShelterListings: (shelterId) => api.get(`/adoptions/shelter/${shelterId}`),
-  completeAdoption: (id, inquiryId, data) => api.put(`/adoptions/${id}/complete/${inquiryId}`, data)
+  completeAdoption: (id, inquiryId, data) => api.put(`/adoptions/${id}/complete/${inquiryId}`, data),
+  // Inquiry management
+  createInquiry: (id, data) => api.post(`/adoptions/${id}/inquiries`, data),
+  getInquiries: (params = {}) => api.get('/adoptions/inquiries', { params }),
+  updateInquiryStatus: (id, inquiryId, data) => api.put(`/adoptions/${id}/inquiries/${inquiryId}`, data)
 }
 
 export const productAPI = {
@@ -277,7 +303,38 @@ export const adminAPI = {
   getAuditLogs: (params) => api.get('/admin/audit-logs', { params }),
   getAuditStats: () => api.get('/admin/audit-stats'),
   broadcastNotification: (data) => api.post('/admin/broadcast', data),
-  getSystemHealth: () => api.get('/admin/system-health')
+  getSystemHealth: () => api.get('/admin/system-health'),
+  // Approval APIs
+  getPendingApprovals: () => api.get('/admin/approvals'),
+  approveVet: (id, data) => api.post(`/admin/vets/${id}/approve`, data),
+  rejectVet: (id, data) => api.post(`/admin/vets/${id}/reject`, data),
+  approveShelter: (id, data) => api.post(`/admin/shelters/${id}/approve`, data),
+  rejectShelter: (id, data) => api.post(`/admin/shelters/${id}/reject`, data)
+}
+
+export const documentAPI = {
+  // Get documents for a pet
+  getPetDocuments: (petId, params = {}) => api.get(`/documents/pet/${petId}`, { params }),
+  
+  // Get documents for a user
+  getUserDocuments: (params = {}) => api.get('/documents', { params }),
+  
+  // Get single document
+  getDocument: (id) => api.get(`/documents/${id}`),
+  
+  // Upload documents
+  uploadDocuments: (petId, formData) => api.post(`/documents/pet/${petId}/upload`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }),
+  
+  // Update document metadata
+  updateDocument: (id, data) => api.put(`/documents/${id}`, data),
+  
+  // Delete document
+  deleteDocument: (id) => api.delete(`/documents/${id}`),
+  
+  // Download document
+  downloadDocument: (id) => api.get(`/documents/${id}/download`, { responseType: 'blob' })
 }
 
 export const uploadAPI = {

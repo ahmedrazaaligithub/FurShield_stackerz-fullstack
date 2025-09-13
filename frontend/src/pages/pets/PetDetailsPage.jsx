@@ -23,6 +23,7 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
+import VetHealthRecordForm from '../../components/vets/VetHealthRecordForm'
 
 export default function PetDetailsPage() {
   const { id } = useParams()
@@ -35,6 +36,7 @@ export default function PetDetailsPage() {
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false)
   const [editingFeedback, setEditingFeedback] = useState(null)
   const [editContent, setEditContent] = useState('')
+  const [showVetRecordModal, setShowVetRecordModal] = useState(false)
   
   const isVet = user?.role === 'veterinarian' || user?.role === 'vet'
   const isShelter = user?.role === 'shelter'
@@ -387,6 +389,12 @@ export default function PetDetailsPage() {
   const petData = pet.data.data
   const petHealthRecords = healthRecords?.data?.data || []
   const petAppointments = appointments?.data?.data || []
+  const currentVetAppointment = (isVet && Array.isArray(petAppointments)) 
+    ? petAppointments.find(a => 
+        (a?.vet?._id || a?.vet) === user?.id && ['confirmed', 'in-progress', 'completed'].includes(a?.status)
+      )
+    : null
+  const canVetAddRecord = !!currentVetAppointment
 
   const tabs = [
     { id: 'overview', name: 'Overview' },
@@ -694,6 +702,18 @@ export default function PetDetailsPage() {
         </div>
       )}
 
+      {/* Vet Health Record Modal */}
+      {showVetRecordModal && (
+        <VetHealthRecordForm
+          pet={petData}
+          appointment={currentVetAppointment || { scheduledDate: new Date().toISOString() }}
+          onClose={() => setShowVetRecordModal(false)}
+          onSuccess={() => {
+            queryClient.invalidateQueries(['pet-health-records', id])
+          }}
+        />
+      )}
+
       {activeTab === 'health' && (
         <div className="card">
           <div className="card-header">
@@ -703,6 +723,15 @@ export default function PetDetailsPage() {
                 <button className="btn btn-primary btn-sm">
                   <PlusIcon className="h-4 w-4 mr-2" />
                   Add Record
+                </button>
+              )}
+              {isVet && canVetAddRecord && (
+                <button
+                  onClick={() => setShowVetRecordModal(true)}
+                  className="btn btn-primary btn-sm"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  Add Health Record
                 </button>
               )}
             </div>
@@ -768,8 +797,8 @@ export default function PetDetailsPage() {
                       </span>
                     </div>
                     <p className="text-gray-700 mb-2">
-                      {new Date(appointment.scheduledDate).toLocaleDateString()} at{' '}
-                      {new Date(appointment.scheduledDate).toLocaleTimeString([], { 
+                      {new Date(appointment.appointmentDate || appointment.scheduledDate).toLocaleDateString()} at{' '}
+                      {new Date(appointment.appointmentDate || appointment.scheduledDate).toLocaleTimeString([], { 
                         hour: '2-digit', 
                         minute: '2-digit' 
                       })}

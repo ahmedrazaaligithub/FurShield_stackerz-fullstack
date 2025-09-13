@@ -243,3 +243,58 @@ FurShield/
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+🔹 Shelter ke liye:
+
+🧾 Sawal (Prompt):
+
+"AI Agent, shelter role ke liye in points ko verify karo:
+
+Shelter registration form available hai? data validation lagi hui hai? backend me save ho raha hai?
+
+Login ke baad shelter ka apna dashboard load ho raha hai?
+
+Shelter apne pets ka profile create, edit, delete kar sakta hai? adoption listing form available hai? backend controller properly likha gaya hai?
+
+Feeding, grooming, medical care logs add karne ka UI aur backend structure exist karta hai?
+
+Adopter interest forms shelter ke dashboard pe show ho rahe hain? adoption finalize karne ka process implemented hai?
+
+Kya shelter doosre users ke pets modify nahi kar sakta? Role-based access properly implemented hai?
+
+Sare related APIs, routes, controller logic, frontend forms aur validation check karo. Missing features ko implement karo."
+
+🔹 Admin ke liye:
+
+🧾 Sawal (Prompt):
+
+"AI Agent, admin role ke under ye sab features verify karo:
+
+User, Vet, Shelter ka verification, blocking, management panel available hai? backend logic properly bana hai?
+
+Order management (view all orders, update status, cancel, refund) — admin panel me routes, controller aur DB interaction implemented hain?
+
+Appointment monitoring — system-wide appointments admin dekh sakta hai ya nahi?
+
+System settings, role-based access, permission override ka module sahi se kaam kar raha hai?
+
+Kya admin pet profiles directly modify nahi kar sakta unless override access use kare?
+
+Content moderation and reports ka structure available hai?
+
+Har module ke frontend dashboard, routes, controllers, middleware aur backend logic ko check karo. Agar koi missing hai ya kuch incomplete hai to implement karo aur confirm karo ke admin ka system fully functional hai."
+
+📦 Common Features (All Roles):
+
+"AI Agent, in shared features ko cross-role analyze karo:
+
+Role-based Access: Har user ko sirf apne role ke features hi visible hain? unauthorized access properly block ho raha hai?
+
+Notifications: Email/in-app alerts sahi time par ja rahe hain (appointments, vaccinations etc.)?
+
+Search/Sort/Filter: Kya filtering pets, vets, products ke liye efficient hai?
+
+Responsive UI: Mobile/Tablet/Desktop par proper layout aa raha hai?
+
+Feedback/Rating system sahi kaam kar raha hai?
+
+Ye features har role ke perspective se test karo — aur agar issue ya missing logic mile to fix/implement karo."
