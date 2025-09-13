@@ -337,7 +337,7 @@ export default function AddPetPage() {
                         type="file"
                         multiple
                         accept="image/*"
-                        onChange={handleImageChange}
+                        onChange={handlePhotoChange}
                         className="hidden"
                       />
                       Choose Files
