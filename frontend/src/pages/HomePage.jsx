@@ -106,7 +106,7 @@ export default function HomePage() {
           <div className="text-center">
             <h1 className="text-4xl sm:text-6xl font-bold text-gray-900 mb-6">
               Complete Care for Your
-              <span className="text-primary-600 block">Beloved Pets</span>
+              <span className="text-primary-600 block pt-5">Beloved Pets</span>
             </h1>
             <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
               Manage your pets health, book vet appointments, find adoption opportunities,
