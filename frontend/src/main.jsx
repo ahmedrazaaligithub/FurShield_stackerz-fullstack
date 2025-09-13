@@ -8,7 +8,6 @@ import { AuthProvider } from './contexts/AuthContext.jsx'
 import { SocketProvider } from './contexts/SocketContext.jsx'
 import './styles/index.css'
 import './styles/admin.css'
-
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,7 +17,6 @@ const queryClient = new QueryClient({
     },
   },
 })
-
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <QueryClientProvider client={queryClient}>

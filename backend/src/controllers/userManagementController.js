@@ -1,12 +1,10 @@
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
-
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 20;
     const skip = (page - 1) * limit;
-    
     const filter = { isActive: true };
     if (req.query.search) {
       filter.$or = [
@@ -19,15 +17,12 @@ const getUsers = async (req, res, next) => {
       if (req.query.status === 'active') filter.isActive = true;
       if (req.query.status === 'inactive') filter.isActive = false;
     }
-
     const users = await User.find(filter)
       .select('-password')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
     const total = await User.countDocuments(filter);
-
     res.json({
       success: true,
       data: users,
@@ -42,19 +37,16 @@ const getUsers = async (req, res, next) => {
     next(error);
   }
 };
-
 const manageUser = async (req, res, next) => {
   try {
     const { action, reason } = req.body;
     const user = await User.findById(req.params.userId);
-
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     switch (action) {
       case 'activate':
         user.isActive = true;
@@ -74,9 +66,7 @@ const manageUser = async (req, res, next) => {
           error: 'Invalid action'
         });
     }
-
     await user.save();
-
     await AuditLog.create({
       user: req.user._id,
       action: `user_${action}`,
@@ -86,7 +76,6 @@ const manageUser = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       message: `User ${action}d successfully`
@@ -95,26 +84,21 @@ const manageUser = async (req, res, next) => {
     next(error);
   }
 };
-
 const updateUser = async (req, res, next) => {
   try {
     const { role, status } = req.body;
     const user = await User.findById(req.params.id);
-
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     if (role) user.role = role;
     if (status) {
       user.isActive = status === 'active';
     }
-
     await user.save();
-
     await AuditLog.create({
       user: req.user._id,
       action: 'user_update',
@@ -124,7 +108,6 @@ const updateUser = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       data: user
@@ -133,21 +116,17 @@ const updateUser = async (req, res, next) => {
     next(error);
   }
 };
-
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     user.isActive = false;
     await user.save();
-
     await AuditLog.create({
       user: req.user._id,
       action: 'user_deactivate',
@@ -157,7 +136,6 @@ const deleteUser = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       message: 'User deactivated successfully'
@@ -166,7 +144,6 @@ const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
-
 module.exports = {
   getUsers,
   manageUser,

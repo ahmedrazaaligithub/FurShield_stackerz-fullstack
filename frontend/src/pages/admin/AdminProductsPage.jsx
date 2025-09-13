@@ -4,11 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getProductImageUrl } from '../../utils/imageUtils'
 import { uploadImageToCloudinary } from '../../utils/uploadImage'
 import toast from 'react-hot-toast'
-
-// Image Slider Component
 const ImageSlider = ({ images, productName }) => {
   const [currentIndex, setCurrentIndex] = useState(0)
-
   if (!images || images.length === 0) {
     return (
       <div className="h-10 w-10 bg-gray-200 rounded-lg flex items-center justify-center">
@@ -16,7 +13,6 @@ const ImageSlider = ({ images, productName }) => {
       </div>
     )
   }
-
   if (images.length === 1) {
     return (
       <img 
@@ -26,15 +22,12 @@ const ImageSlider = ({ images, productName }) => {
       />
     )
   }
-
   const nextImage = () => {
     setCurrentIndex((prev) => (prev + 1) % images.length)
   }
-
   const prevImage = () => {
     setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
   }
-
   return (
     <div className="relative h-10 w-10">
       <img 
@@ -66,7 +59,6 @@ const ImageSlider = ({ images, productName }) => {
     </div>
   )
 }
-
 const AdminProductsPage = () => {
   const [products, setProducts] = useState([])
   const [categories, setCategories] = useState([])
@@ -99,20 +91,17 @@ const AdminProductsPage = () => {
   })
   const [imageFiles, setImageFiles] = useState([])
   const [imagePreview, setImagePreview] = useState([])
-
   useEffect(() => {
     fetchProducts()
     fetchCategories()
     fetchStats()
   }, [searchTerm, selectedCategory, selectedStatus])
-
   const fetchProducts = async () => {
     try {
       const params = new URLSearchParams()
       if (searchTerm) params.append('search', searchTerm)
       if (selectedCategory) params.append('category', selectedCategory)
       if (selectedStatus) params.append('status', selectedStatus)
-
       const response = await fetch(`/api/v1/admin/products?${params}`, {
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -128,7 +117,6 @@ const AdminProductsPage = () => {
       setLoading(false)
     }
   }
-
   const fetchCategories = async () => {
     try {
       const response = await fetch('/api/v1/admin/categories', {
@@ -144,7 +132,6 @@ const AdminProductsPage = () => {
       console.error('Error fetching categories:', err)
     }
   }
-
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/v1/admin/product-stats', {
@@ -160,37 +147,28 @@ const AdminProductsPage = () => {
       console.error('Error fetching stats:', err)
     }
   }
-
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files)
     if (files.length > 4) {
       setError('Maximum 4 images allowed')
       return
     }
-
     setImageFiles(files)
-    
-    // Create preview URLs
     const previews = files.map(file => URL.createObjectURL(file))
     setImagePreview(previews)
   }
-
   const removeImage = (index) => {
     const newFiles = imageFiles.filter((_, i) => i !== index)
     const newPreviews = imagePreview.filter((_, i) => i !== index)
     setImageFiles(newFiles)
     setImagePreview(newPreviews)
-    
-    // Also update formData.images if editing existing product
     if (editingProduct) {
       const updatedImages = formData.images.filter((_, i) => i !== index)
       setFormData({...formData, images: updatedImages})
     }
   }
-
   const uploadImages = async () => {
     if (imageFiles.length === 0) return []
-
     const uploadedImages = []
     for (const file of imageFiles) {
       try {
@@ -205,28 +183,20 @@ const AdminProductsPage = () => {
     }
     return uploadedImages
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-
     try {
       const uploadedImages = await uploadImages()
-      
-      // Combine existing images with newly uploaded ones
       let finalImages = []
       if (editingProduct) {
-        // Keep existing images that weren't removed
         finalImages = [...formData.images]
-        // Add newly uploaded images
         if (uploadedImages.length > 0) {
           finalImages = [...finalImages, ...uploadedImages]
         }
       } else {
-        // For new products, just use uploaded images
         finalImages = uploadedImages
       }
-      
       const productData = {
         ...formData,
         price: parseFloat(formData.price),
@@ -238,13 +208,10 @@ const AdminProductsPage = () => {
           lowStockThreshold: parseInt(formData.inventory.lowStockThreshold)
         }
       }
-
       const url = editingProduct 
         ? `/api/v1/admin/products/${editingProduct._id}`
         : '/api/v1/admin/products'
-      
       const method = editingProduct ? 'PUT' : 'POST'
-
       const response = await fetch(url, {
         method,
         headers: {
@@ -253,7 +220,6 @@ const AdminProductsPage = () => {
         },
         body: JSON.stringify(productData)
       })
-
       const data = await response.json()
       if (data.success) {
         setShowModal(false)
@@ -268,7 +234,6 @@ const AdminProductsPage = () => {
       console.error('Error saving product:', err)
     }
   }
-
   const resetForm = () => {
     setFormData({
       name: '',
@@ -291,7 +256,6 @@ const AdminProductsPage = () => {
     setImagePreview([])
     setEditingProduct(null)
   }
-
   const handleEdit = (product) => {
     setEditingProduct(product)
     setFormData({
@@ -311,26 +275,20 @@ const AdminProductsPage = () => {
       isActive: product.isActive,
       isFeatured: product.isFeatured
     })
-    
-    // Set existing images for preview - these are Cloudinary URLs
     if (product.images && product.images.length > 0) {
       setImagePreview(product.images)
     } else {
       setImagePreview([])
     }
     setImageFiles([])
-    
     setShowModal(true)
   }
-
   const handleDeleteClick = (product) => {
     setProductToDelete(product)
     setShowDeleteModal(true)
   }
-
   const handleDeleteConfirm = async () => {
     if (!productToDelete) return
-    
     try {
       const response = await fetch(`/api/v1/admin/products/${productToDelete._id}`, {
         method: 'DELETE',
@@ -338,7 +296,6 @@ const AdminProductsPage = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       })
-      
       const data = await response.json()
       if (data.success) {
         setShowDeleteModal(false)
@@ -353,7 +310,6 @@ const AdminProductsPage = () => {
       console.error('Error deleting product:', err)
     }
   }
-
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -361,15 +317,13 @@ const AdminProductsPage = () => {
       </div>
     )
   }
-
   return (
     <div className="p-6">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-2">Product Management</h1>
         <p className="text-gray-600">Manage products with category linking and image uploads</p>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
@@ -416,14 +370,12 @@ const AdminProductsPage = () => {
           </div>
         </div>
       </div>
-
       {error && (
         <div className="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
           {error}
         </div>
       )}
-
-      {/* Filters and Add Button */}
+      {}
       <div className="bg-white p-6 rounded-lg shadow mb-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="flex flex-col sm:flex-row gap-4 flex-1">
@@ -466,8 +418,7 @@ const AdminProductsPage = () => {
           </button>
         </div>
       </div>
-
-      {/* Products Table */}
+      {}
       <div className="bg-white shadow rounded-lg overflow-hidden">
         <table className="min-w-full divide-y divide-gray-200">
           <thead className="bg-gray-50">
@@ -535,8 +486,7 @@ const AdminProductsPage = () => {
           </tbody>
         </table>
       </div>
-
-      {/* Add/Edit Product Modal */}
+      {}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
@@ -554,7 +504,6 @@ const AdminProductsPage = () => {
                 <XMarkIcon className="h-6 w-6" />
               </button>
             </div>
-
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
@@ -582,7 +531,6 @@ const AdminProductsPage = () => {
                   </select>
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Description *</label>
                 <textarea
@@ -593,7 +541,6 @@ const AdminProductsPage = () => {
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 />
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Price *</label>
@@ -626,7 +573,6 @@ const AdminProductsPage = () => {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Brand</label>
@@ -648,7 +594,6 @@ const AdminProductsPage = () => {
                   />
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Stock Quantity</label>
@@ -677,7 +622,6 @@ const AdminProductsPage = () => {
                   />
                 </div>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Product Images (Max 4)</label>
                 <input
@@ -685,59 +629,17 @@ const AdminProductsPage = () => {
                   multiple
                   accept="image/*"
                   onChange={handleImageChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
                 />
-                {imagePreview.length > 0 && (
-                  <div className="mt-4 grid grid-cols-4 gap-4">
-                    {imagePreview.map((preview, index) => (
-                    <div key={index} className="relative">
-                      <img 
-                        src={preview} 
-                        alt={`Preview ${index + 1}`} 
-                        className="w-full h-24 object-cover rounded-lg" 
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeImage(index)}
-                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
-                      >
-                        <XMarkIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                  </div>
-                )}
               </div>
-
-              <div className="flex items-center space-x-6">
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={formData.isActive}
-                    onChange={(e) => setFormData({...formData, isActive: e.target.checked})}
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Active</span>
-                </label>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                    checked={formData.isFeatured}
-                    onChange={(e) => setFormData({...formData, isFeatured: e.target.checked})}
-                  />
-                  <span className="ml-2 text-sm text-gray-700">Featured</span>
-                </label>
-              </div>
-
-              <div className="flex justify-end space-x-3 pt-6">
+              <div className="flex justify-end space-x-3">
                 <button
                   type="button"
                   onClick={() => {
                     setShowModal(false)
                     resetForm()
                   }}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400"
                 >
                   Cancel
                 </button>
@@ -745,7 +647,7 @@ const AdminProductsPage = () => {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
                 >
-                  {editingProduct ? 'Update Product' : 'Create Product'}
+                  {editingProduct ? 'Update Product' : 'Add Product'}
                 </button>
               </div>
             </form>
@@ -753,7 +655,6 @@ const AdminProductsPage = () => {
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -788,5 +689,4 @@ const AdminProductsPage = () => {
     </div>
   )
 }
-
 export default AdminProductsPage

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const appointmentSchema = new mongoose.Schema({
   pet: {
     type: mongoose.Schema.ObjectId,
@@ -103,18 +102,15 @@ const appointmentSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
 appointmentSchema.virtual('healthRecord', {
   ref: 'HealthRecord',
   localField: '_id',
   foreignField: 'appointment',
   justOne: true
 });
-
 appointmentSchema.index({ pet: 1 });
 appointmentSchema.index({ owner: 1 });
 appointmentSchema.index({ vet: 1 });
 appointmentSchema.index({ appointmentDate: 1 });
 appointmentSchema.index({ status: 1 });
-
 module.exports = mongoose.model('Appointment', appointmentSchema);

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const petSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -84,23 +83,19 @@ const petSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
 petSchema.virtual('healthRecords', {
   ref: 'HealthRecord',
   localField: '_id',
   foreignField: 'pet',
   justOne: false
 });
-
 petSchema.virtual('appointments', {
   ref: 'Appointment',
   localField: '_id',
   foreignField: 'pet',
   justOne: false
 });
-
 petSchema.index({ owner: 1 });
 petSchema.index({ species: 1 });
 petSchema.index({ name: 1, owner: 1 });
-
 module.exports = mongoose.model('Pet', petSchema);

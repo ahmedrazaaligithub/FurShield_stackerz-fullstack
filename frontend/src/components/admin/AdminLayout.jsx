@@ -18,33 +18,28 @@ import {
   ShoppingBagIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const { user, logout } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
-
   const navigation = [
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Users', href: '/admin/users', icon: UsersIcon },
     { name: 'Categories', href: '/admin/categories', icon: TagIcon },
     { name: 'Products', href: '/admin/products', icon: CubeIcon },
-    { name: 'Approve Shelter', href: '/admin/approvals', icon: CheckCircleIcon },
+    { name: 'Approvals', href: '/admin/shelter-approval', icon: CheckCircleIcon },
     { name: 'Payments', href: '/admin/payments', icon: CreditCardIcon },
     { name: 'Audit Logs', href: '/admin/audit', icon: DocumentTextIcon },
   ]
-
   const handleLogout = async () => {
     try {
       await logout()
       navigate('/admin/login')
     } catch (error) {
-      // Silent logout - redirect anyway for security
       navigate('/admin/login')
     }
   }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className={cn(
@@ -95,7 +90,6 @@ const AdminLayout = () => {
           </div>
         </div>
       </div>
-
       <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0">
         <div className="flex-1 flex flex-col min-h-0 border-r border-gray-200 bg-white">
           <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
@@ -115,7 +109,6 @@ const AdminLayout = () => {
                 <HomeIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Dashboard
               </Link>
-
               <Link
                 to="/admin/users"
                 className={cn(
@@ -128,7 +121,6 @@ const AdminLayout = () => {
                 <UsersIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Users
               </Link>
-
               <Link
                 to="/admin/orders"
                 className={cn(
@@ -141,7 +133,6 @@ const AdminLayout = () => {
                 <ShoppingBagIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Orders
               </Link>
-
               <Link
                 to="/admin/categories"
                 className={cn(
@@ -154,7 +145,6 @@ const AdminLayout = () => {
                 <TagIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Categories
               </Link>
-
               <Link
                 to="/admin/products"
                 className={cn(
@@ -167,7 +157,6 @@ const AdminLayout = () => {
                 <CubeIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Products
               </Link>
-
               <Link
                 to="/admin/shelter-approval"
                 className={cn(
@@ -178,9 +167,8 @@ const AdminLayout = () => {
                 )}
               >
                 <CheckCircleIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
-                Approve Shelter
+                Approvals
               </Link>
-
               <Link
                 to="/admin/payments"
                 className={cn(
@@ -193,7 +181,6 @@ const AdminLayout = () => {
                 <CreditCardIcon className="mr-3 flex-shrink-0 h-6 w-6 text-gray-400 group-hover:text-gray-500" />
                 Payments
               </Link>
-
               <Link
                 to="/admin/audit-logs"
                 className={cn(
@@ -210,7 +197,6 @@ const AdminLayout = () => {
           </div>
         </div>
       </div>
-
       <div className="md:pl-64 flex flex-col flex-1">
         <div className="sticky top-0 z-10 md:hidden pl-1 pt-1 sm:pl-3 sm:pt-3 bg-gray-50">
           <button
@@ -221,7 +207,6 @@ const AdminLayout = () => {
             <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
-
         <div className="sticky top-0 z-10 flex-shrink-0 flex h-16 bg-white shadow">
           <div className="flex-1 px-4 flex justify-between">
             <div className="flex-1 flex">
@@ -240,7 +225,6 @@ const AdminLayout = () => {
               >
                 <BellIcon className="h-6 w-6" />
               </button>
-
               <div className="ml-3 relative">
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2">
@@ -261,7 +245,6 @@ const AdminLayout = () => {
             </div>
           </div>
         </div>
-
         <main className="flex-1">
           <div className="py-6">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8">
@@ -273,5 +256,4 @@ const AdminLayout = () => {
     </div>
   )
 }
-
 export default AdminLayout

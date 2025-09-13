@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { ChevronDownIcon } from '@heroicons/react/24/outline'
-
 const countries = [
   { code: 'US', name: 'United States', dialCode: '+1', flag: '🇺🇸' },
   { code: 'PK', name: 'Pakistan', dialCode: '+92', flag: '🇵🇰' },
@@ -20,7 +19,6 @@ const countries = [
   { code: 'AE', name: 'UAE', dialCode: '+971', flag: '🇦🇪' },
   { code: 'SA', name: 'Saudi Arabia', dialCode: '+966', flag: '🇸🇦' }
 ]
-
 export default function PhoneInput({ 
   value = '', 
   onChange, 
@@ -32,9 +30,7 @@ export default function PhoneInput({
   const [selectedCountry, setSelectedCountry] = useState(countries[0])
   const [phoneNumber, setPhoneNumber] = useState('')
   const [isDropdownOpen, setIsDropdownOpen] = useState(false)
-
   useEffect(() => {
-    // Parse existing value if provided
     if (value) {
       const country = countries.find(c => value.startsWith(c.dialCode))
       if (country) {
@@ -45,12 +41,8 @@ export default function PhoneInput({
       }
     }
   }, [value])
-
   const formatPhoneNumber = (number, countryCode) => {
-    // Remove all non-digit characters
     const digits = number.replace(/\D/g, '')
-    
-    // Format based on country
     if (countryCode === 'US' || countryCode === 'CA') {
       if (digits.length <= 3) return digits
       if (digits.length <= 6) return `(${digits.slice(0, 3)}) ${digits.slice(3)}`
@@ -60,37 +52,29 @@ export default function PhoneInput({
       if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
       return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6, 10)}`
     } else {
-      // Generic formatting for other countries
       if (digits.length <= 3) return digits
       if (digits.length <= 6) return `${digits.slice(0, 3)} ${digits.slice(3)}`
       return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`
     }
   }
-
   const handlePhoneChange = (e) => {
     const inputValue = e.target.value
     const formattedNumber = formatPhoneNumber(inputValue, selectedCountry.code)
     setPhoneNumber(formattedNumber)
-    
-    // Combine country code with phone number
     const fullNumber = selectedCountry.dialCode + ' ' + formattedNumber.replace(/\D/g, '')
     onChange?.(fullNumber)
   }
-
   const handleCountrySelect = (country) => {
     setSelectedCountry(country)
     setIsDropdownOpen(false)
-    
-    // Update full number with new country code
     const digits = phoneNumber.replace(/\D/g, '')
     const fullNumber = country.dialCode + ' ' + digits
     onChange?.(fullNumber)
   }
-
   return (
     <div className="relative">
       <div className={`flex ${className}`}>
-        {/* Country Selector */}
+        {}
         <div className="relative">
           <button
             type="button"
@@ -105,8 +89,7 @@ export default function PhoneInput({
             </span>
             <ChevronDownIcon className="h-4 w-4 text-gray-400" />
           </button>
-
-          {/* Dropdown */}
+          {}
           {isDropdownOpen && (
             <div className="absolute top-full left-0 mt-1 w-64 bg-white border border-gray-300 rounded-md shadow-lg z-50 max-h-60 overflow-y-auto">
               {countries.map((country) => (
@@ -124,8 +107,7 @@ export default function PhoneInput({
             </div>
           )}
         </div>
-
-        {/* Phone Number Input */}
+        {}
         <input
           type="tel"
           value={phoneNumber}
@@ -137,13 +119,11 @@ export default function PhoneInput({
           }`}
         />
       </div>
-
-      {/* Error Message */}
+      {}
       {error && (
         <p className="mt-1 text-sm text-red-600">{error}</p>
       )}
-
-      {/* Click outside to close dropdown */}
+      {}
       {isDropdownOpen && (
         <div
           className="fixed inset-0 z-40"

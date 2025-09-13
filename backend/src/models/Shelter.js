@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const shelterSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
@@ -106,24 +105,20 @@ const shelterSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
 shelterSchema.virtual('adoptionListings', {
   ref: 'AdoptionListing',
   localField: '_id',
   foreignField: 'shelter',
   justOne: false
 });
-
 shelterSchema.virtual('ratings', {
   ref: 'Rating',
   localField: '_id',
   foreignField: 'target',
   justOne: false
 });
-
 shelterSchema.index({ location: '2dsphere' });
 shelterSchema.index({ user: 1 });
 shelterSchema.index({ isVerified: 1 });
 shelterSchema.index({ 'address.city': 1 });
-
 module.exports = mongoose.model('Shelter', shelterSchema);

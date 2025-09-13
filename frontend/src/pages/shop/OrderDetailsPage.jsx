@@ -20,7 +20,6 @@ import {
   CogIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-
 export default function OrderDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -29,13 +28,11 @@ export default function OrderDetailsPage() {
   const [showCancelModal, setShowCancelModal] = useState(false)
   const [cancelReason, setCancelReason] = useState('')
   const queryClient = useQueryClient()
-
   const { data: order, isLoading, error } = useQuery({
     queryKey: ['order', id],
     queryFn: () => orderAPI.getOrder(id),
     enabled: !!id
   })
-
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending':
@@ -54,7 +51,6 @@ export default function OrderDetailsPage() {
         return <ClockIcon className="h-5 w-5 text-gray-500" />
     }
   }
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
@@ -73,15 +69,12 @@ export default function OrderDetailsPage() {
         return 'bg-gray-100 text-gray-800'
     }
   }
-
   const handlePrint = () => {
     window.print()
   }
-
   const handleEmailReceipt = () => {
     toast.success('Receipt sent to your email!')
   }
-
   const cancelOrderMutation = useMutation({
     mutationFn: (data) => orderAPI.cancelOrder(id, data),
     onSuccess: () => {
@@ -95,7 +88,6 @@ export default function OrderDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to cancel order')
     }
   })
-
   const handleCancelOrder = () => {
     if (!cancelReason.trim()) {
       toast.error('Please provide a reason for cancellation')
@@ -103,7 +95,6 @@ export default function OrderDetailsPage() {
     }
     cancelOrderMutation.mutate({ reason: cancelReason })
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -111,7 +102,6 @@ export default function OrderDetailsPage() {
       </div>
     )
   }
-
   if (error || !order?.data?.data) {
     return (
       <div className="text-center py-12">
@@ -124,13 +114,11 @@ export default function OrderDetailsPage() {
       </div>
     )
   }
-
   const orderData = order.data.data
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Modern Header with Gradient */}
+        {}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
             <div className="flex items-center space-x-4">
@@ -151,7 +139,6 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </div>
-            
             <div className="flex flex-wrap gap-3">
               {user?.role === 'admin' && (
                 <button
@@ -179,11 +166,10 @@ export default function OrderDetailsPage() {
             </div>
           </div>
         </div>
-
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-          {/* Main Content */}
+          {}
           <div className="xl:col-span-2 space-y-8">
-            {/* Order Status - Modern Card */}
+            {}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center">
@@ -221,8 +207,7 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </div>
-
-            {/* Order Items - Enhanced */}
+            {}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center">
@@ -266,8 +251,7 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </div>
-
-            {/* Shipping Address - Modern */}
+            {}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-purple-500 to-pink-600 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center">
@@ -297,10 +281,9 @@ export default function OrderDetailsPage() {
               </div>
             </div>
           </div>
-
-          {/* Sidebar */}
+          {}
           <div className="space-y-8">
-            {/* Order Summary - Premium Design */}
+            {}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-indigo-500 to-blue-600 px-6 py-4">
                 <h2 className="text-xl font-bold text-white">Order Summary</h2>
@@ -340,8 +323,7 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </div>
-
-            {/* Payment Information - Enhanced */}
+            {}
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
               <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-6 py-4">
                 <h2 className="text-xl font-bold text-white flex items-center">
@@ -380,8 +362,7 @@ export default function OrderDetailsPage() {
                 </div>
               </div>
             </div>
-
-          {/* Order Timeline */}
+          {}
           {orderData.timeline && orderData.timeline.length > 0 && (
             <div className="card">
               <div className="card-header">
@@ -417,8 +398,7 @@ export default function OrderDetailsPage() {
               </div>
             </div>
           )}
-
-            {/* Action Buttons - Modern */}
+            {}
             <div className="space-y-4">
               {(orderData.status === 'pending' || orderData.status === 'confirmed') && (
                 <button 
@@ -441,8 +421,7 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       </div>
-
-      {/* Cancel Order Modal */}
+      {}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -456,13 +435,11 @@ export default function OrderDetailsPage() {
                   <XCircleIcon className="h-6 w-6" />
                 </button>
               </div>
-
               <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
                 <p className="text-sm text-red-800">
                   <strong>Warning:</strong> This action cannot be undone. Your order will be cancelled and you will receive a confirmation email.
                 </p>
               </div>
-
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Reason for cancellation *
@@ -475,7 +452,6 @@ export default function OrderDetailsPage() {
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
                 />
               </div>
-
               <div className="flex space-x-3">
                 <button
                   onClick={() => setShowCancelModal(false)}
@@ -495,8 +471,7 @@ export default function OrderDetailsPage() {
           </div>
         </div>
       )}
-
-      {/* Admin Status Update Modal */}
+      {}
       {showStatusUpdate && (
         <OrderStatusUpdate
           order={orderData}

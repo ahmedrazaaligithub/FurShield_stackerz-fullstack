@@ -12,7 +12,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
   <div className="flex items-center space-x-4 p-4 border-b border-gray-200">
     <div className="flex-shrink-0">
@@ -28,13 +27,11 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
         </div>
       )}
     </div>
-    
     <div className="flex-1 min-w-0">
       <h3 className="text-lg font-medium text-gray-900 truncate">{item.product.name}</h3>
       <p className="text-sm text-gray-600">{item.product.category}</p>
       <p className="text-lg font-bold text-gray-900 mt-1">${item.product.price}</p>
     </div>
-    
     <div className="flex items-center space-x-2">
       <button
         onClick={() => onUpdateQuantity(item.product._id, item.quantity - 1)}
@@ -52,7 +49,6 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
         <PlusIcon className="h-4 w-4" />
       </button>
     </div>
-    
     <div className="text-right">
       <p className="text-lg font-bold text-gray-900">
         ${(item.product.price * item.quantity).toFixed(2)}
@@ -66,16 +62,13 @@ const CartItem = ({ item, onUpdateQuantity, onRemove }) => (
     </div>
   </div>
 )
-
 export default function CartPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-
   const { data: cart, isLoading } = useQuery({
     queryKey: ['cart'],
     queryFn: cartAPI.getCart
   })
-
   const updateQuantityMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartAPI.updateQuantity(productId, quantity),
     onSuccess: () => {
@@ -85,7 +78,6 @@ export default function CartPage() {
       toast.error(error.response?.data?.error || 'Failed to update quantity')
     }
   })
-
   const removeItemMutation = useMutation({
     mutationFn: cartAPI.removeFromCart,
     onSuccess: () => {
@@ -96,7 +88,6 @@ export default function CartPage() {
       toast.error(error.response?.data?.error || 'Failed to remove item')
     }
   })
-
   const clearCartMutation = useMutation({
     mutationFn: cartAPI.clearCart,
     onSuccess: () => {
@@ -107,22 +98,18 @@ export default function CartPage() {
       toast.error(error.response?.data?.error || 'Failed to clear cart')
     }
   })
-
   const handleUpdateQuantity = (productId, quantity) => {
     if (quantity < 1) return
     updateQuantityMutation.mutate({ productId, quantity })
   }
-
   const handleRemoveItem = (productId) => {
     removeItemMutation.mutate(productId)
   }
-
   const handleClearCart = () => {
     if (window.confirm('Are you sure you want to clear your cart?')) {
       clearCartMutation.mutate()
     }
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -130,17 +117,14 @@ export default function CartPage() {
       </div>
     )
   }
-
   const cartData = cart?.data?.data
   const items = cartData?.items || []
   const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const tax = 0 // No tax
+  const tax = 0 
   const shipping = subtotal > 50 ? 0 : 9.99
   const total = subtotal + tax + shipping
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-     
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Shopping Cart</h1>
@@ -148,7 +132,6 @@ export default function CartPage() {
             {items.length} item{items.length !== 1 ? 's' : ''} in your cart
           </p>
         </div>
-        
         {items.length > 0 && (
           <button
             onClick={handleClearCart}
@@ -164,7 +147,6 @@ export default function CartPage() {
           </button>
         )}
       </div>
-
       {items.length === 0 ? (
         <div className="text-center py-12">
           <ShoppingCartIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -179,7 +161,6 @@ export default function CartPage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
           <div className="lg:col-span-2">
             <div className="card">
               <div className="card-header">
@@ -197,8 +178,6 @@ export default function CartPage() {
               </div>
             </div>
           </div>
-
-       
           <div className="space-y-6">
             <div className="card">
               <div className="card-header">
@@ -209,32 +188,27 @@ export default function CartPage() {
                   <span className="text-gray-600">Subtotal</span>
                   <span className="text-gray-900">${subtotal.toFixed(2)}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span className="text-gray-600">Tax</span>
                   <span className="text-gray-900">${tax.toFixed(2)}</span>
                 </div>
-                
                 <div className="flex justify-between">
                   <span className="text-gray-600">Shipping</span>
                   <span className="text-gray-900">
                     {shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`}
                   </span>
                 </div>
-                
                 {subtotal < 50 && (
                   <div className="text-sm text-gray-500">
                     Add ${(50 - subtotal).toFixed(2)} more for free shipping
                   </div>
                 )}
-                
                 <div className="border-t pt-4">
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total</span>
                     <span>${total.toFixed(2)}</span>
                   </div>
                 </div>
-                
                 <button
                   onClick={() => navigate('/checkout')}
                   className="btn btn-primary w-full btn-lg"
@@ -244,8 +218,6 @@ export default function CartPage() {
                 </button>
               </div>
             </div>
-
-          
             <div className="card">
               <div className="card-header">
                 <h3 className="text-lg font-semibold text-gray-900">Promo Code</h3>
@@ -261,8 +233,6 @@ export default function CartPage() {
                 </div>
               </div>
             </div>
-
-           
             <button
               onClick={() => navigate('/shop')}
               className="btn btn-outline w-full"

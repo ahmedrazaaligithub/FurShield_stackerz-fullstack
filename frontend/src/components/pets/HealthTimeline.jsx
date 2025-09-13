@@ -8,7 +8,6 @@ import {
   ChevronDownIcon,
   ChevronUpIcon
 } from '@heroicons/react/24/outline'
-
 const getRecordIcon = (type) => {
   switch (type) {
     case 'vaccination':
@@ -23,7 +22,6 @@ const getRecordIcon = (type) => {
       return CalendarIcon
   }
 }
-
 const getRecordColor = (type) => {
   switch (type) {
     case 'vaccination':
@@ -38,7 +36,6 @@ const getRecordColor = (type) => {
       return 'bg-gray-100 text-gray-600 border-gray-200'
   }
 }
-
 const formatDate = (dateString) => {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
@@ -47,12 +44,10 @@ const formatDate = (dateString) => {
     day: 'numeric'
   })
 }
-
 const TimelineItem = ({ record, isLast }) => {
   const [isExpanded, setIsExpanded] = useState(false)
   const Icon = getRecordIcon(record.type)
   const colorClass = getRecordColor(record.type)
-
   const getRecordTitle = () => {
     switch (record.type) {
       case 'vaccination':
@@ -67,7 +62,6 @@ const TimelineItem = ({ record, isLast }) => {
         return 'Health Record'
     }
   }
-
   const getRecordDate = () => {
     switch (record.type) {
       case 'vaccination':
@@ -82,7 +76,6 @@ const TimelineItem = ({ record, isLast }) => {
         return record.createdAt
     }
   }
-
   const renderDetails = () => {
     switch (record.type) {
       case 'vaccination':
@@ -167,25 +160,22 @@ const TimelineItem = ({ record, isLast }) => {
         return null
     }
   }
-
   return (
     <div className="relative">
-      {/* Timeline line */}
+      {}
       {!isLast && (
         <div className="absolute left-6 top-12 w-0.5 h-full bg-gray-200"></div>
       )}
-      
-      {/* Timeline item */}
+      {}
       <div className="flex items-start space-x-4">
-        {/* Icon */}
+        {}
         <div className={`flex-shrink-0 w-12 h-12 rounded-full border-2 flex items-center justify-center ${colorClass}`}>
           <Icon className="h-6 w-6" />
         </div>
-        
-        {/* Content */}
+        {}
         <div className="flex-1 min-w-0">
           <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
-            {/* Header */}
+            {}
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <h4 className="font-semibold text-gray-900">{getRecordTitle()}</h4>
@@ -205,13 +195,11 @@ const TimelineItem = ({ record, isLast }) => {
                 )}
               </button>
             </div>
-            
-            {/* Expanded Details */}
+            {}
             {isExpanded && (
               <div className="mt-4 pt-4 border-t border-gray-100">
                 {renderDetails()}
-                
-                {/* Documents */}
+                {}
                 {record.data.documents && record.data.documents.length > 0 && (
                   <div className="mt-3">
                     <p className="text-sm font-medium text-gray-700 mb-2">Documents:</p>
@@ -238,15 +226,10 @@ const TimelineItem = ({ record, isLast }) => {
     </div>
   )
 }
-
 export default function HealthTimeline({ pet }) {
   const [filter, setFilter] = useState('all')
-  
-  // Combine all health records into a single timeline
   const getAllRecords = () => {
     const records = []
-    
-    // Add vaccinations
     if (pet.healthRecords?.vaccinations) {
       pet.healthRecords.vaccinations.forEach(vaccination => {
         records.push({
@@ -257,8 +240,6 @@ export default function HealthTimeline({ pet }) {
         })
       })
     }
-    
-    // Add allergies
     if (pet.healthRecords?.allergies) {
       pet.healthRecords.allergies.forEach(allergy => {
         records.push({
@@ -269,8 +250,6 @@ export default function HealthTimeline({ pet }) {
         })
       })
     }
-    
-    // Add medications
     if (pet.healthRecords?.medications) {
       pet.healthRecords.medications.forEach(medication => {
         records.push({
@@ -281,8 +260,6 @@ export default function HealthTimeline({ pet }) {
         })
       })
     }
-    
-    // Add treatments
     if (pet.healthRecords?.treatments) {
       pet.healthRecords.treatments.forEach(treatment => {
         records.push({
@@ -293,16 +270,12 @@ export default function HealthTimeline({ pet }) {
         })
       })
     }
-    
-    // Sort by date (newest first)
     return records.sort((a, b) => b.sortDate - a.sortDate)
   }
-  
   const allRecords = getAllRecords()
   const filteredRecords = filter === 'all' 
     ? allRecords 
     : allRecords.filter(record => record.type === filter)
-  
   const filterOptions = [
     { value: 'all', label: 'All Records', count: allRecords.length },
     { value: 'vaccination', label: 'Vaccinations', count: allRecords.filter(r => r.type === 'vaccination').length },
@@ -310,14 +283,12 @@ export default function HealthTimeline({ pet }) {
     { value: 'medication', label: 'Medications', count: allRecords.filter(r => r.type === 'medication').length },
     { value: 'treatment', label: 'Treatments', count: allRecords.filter(r => r.type === 'treatment').length }
   ]
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <h3 className="text-xl font-semibold text-gray-900">Health Timeline</h3>
-        
-        {/* Filter */}
+        {}
         <div className="flex items-center space-x-2">
           <label className="text-sm font-medium text-gray-700">Filter:</label>
           <select
@@ -333,8 +304,7 @@ export default function HealthTimeline({ pet }) {
           </select>
         </div>
       </div>
-      
-      {/* Timeline */}
+      {}
       <div className="space-y-6">
         {filteredRecords.length > 0 ? (
           filteredRecords.map((record, index) => (

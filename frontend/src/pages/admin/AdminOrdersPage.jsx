@@ -23,7 +23,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 export default function AdminOrdersPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
@@ -32,7 +31,6 @@ export default function AdminOrdersPage() {
   const [showStatusUpdate, setShowStatusUpdate] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const queryClient = useQueryClient()
-
   const { data: ordersData, isLoading, error } = useQuery({
     queryKey: ['admin-orders', { 
       page: currentPage, 
@@ -50,10 +48,8 @@ export default function AdminOrdersPage() {
     refetchOnWindowFocus: false,
     staleTime: 30000
   })
-
   const orders = ordersData?.data?.data || []
   const pagination = ordersData?.data?.pagination || {}
-
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending':
@@ -71,7 +67,6 @@ export default function AdminOrdersPage() {
         return <ClockIcon className="h-4 w-4 text-gray-500" />
     }
   }
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
@@ -89,7 +84,6 @@ export default function AdminOrdersPage() {
         return 'bg-gray-100 text-gray-800'
     }
   }
-
   const getPaymentStatusColor = (status) => {
     switch (status) {
       case 'paid':
@@ -104,21 +98,16 @@ export default function AdminOrdersPage() {
         return 'bg-gray-100 text-gray-800'
     }
   }
-
   const handleOrderClick = (order) => {
     setSelectedOrder(order)
   }
-
   const handleStatusUpdate = (order) => {
     setSelectedOrder(order)
     setShowStatusUpdate(true)
   }
-
   const handleSearch = (e) => {
     e.preventDefault()
-    // Search is handled by the query key change
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -126,7 +115,6 @@ export default function AdminOrdersPage() {
       </div>
     )
   }
-
   if (error) {
     return (
       <div className="text-center py-12">
@@ -136,10 +124,9 @@ export default function AdminOrdersPage() {
       </div>
     )
   }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Orders Management</h1>
@@ -149,11 +136,10 @@ export default function AdminOrdersPage() {
           Total Orders: {pagination.total || 0}
         </div>
       </div>
-
-      {/* Filters and Search */}
+      {}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
+          {}
           <form onSubmit={handleSearch} className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
             <input
@@ -164,8 +150,7 @@ export default function AdminOrdersPage() {
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </form>
-
-          {/* Status Filter */}
+          {}
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -179,8 +164,7 @@ export default function AdminOrdersPage() {
             <option value="delivered">Delivered</option>
             <option value="cancelled">Cancelled</option>
           </select>
-
-          {/* Payment Filter */}
+          {}
           <select
             value={paymentFilter}
             onChange={(e) => setPaymentFilter(e.target.value)}
@@ -192,8 +176,7 @@ export default function AdminOrdersPage() {
             <option value="failed">Failed</option>
             <option value="refunded">Refunded</option>
           </select>
-
-          {/* Clear Filters */}
+          {}
           <button
             onClick={() => {
               setSearchTerm('')
@@ -206,8 +189,7 @@ export default function AdminOrdersPage() {
           </button>
         </div>
       </div>
-
-      {/* Orders Table */}
+      {}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -252,7 +234,6 @@ export default function AdminOrdersPage() {
                       </div>
                     )}
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-8 w-8">
@@ -278,7 +259,6 @@ export default function AdminOrdersPage() {
                       </div>
                     </div>
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
                       {order.items?.length || 0} items
@@ -288,13 +268,11 @@ export default function AdminOrdersPage() {
                       {order.items?.length > 2 && '...'}
                     </div>
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-semibold text-gray-900">
                       ${order.total?.toFixed(2) || '0.00'}
                     </div>
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       {getStatusIcon(order.status)}
@@ -306,7 +284,6 @@ export default function AdminOrdersPage() {
                       </span>
                     </div>
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={cn(
                       'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium',
@@ -315,7 +292,6 @@ export default function AdminOrdersPage() {
                       {order.paymentStatus}
                     </span>
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {new Date(order.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
@@ -323,7 +299,6 @@ export default function AdminOrdersPage() {
                       year: 'numeric'
                     })}
                   </td>
-                  
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
@@ -347,7 +322,6 @@ export default function AdminOrdersPage() {
             </tbody>
           </table>
         </div>
-
         {orders.length === 0 && (
           <div className="text-center py-12">
             <ShoppingBagIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -356,8 +330,7 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </div>
-
-      {/* Pagination */}
+      {}
       {pagination.pages > 1 && (
         <div className="flex items-center justify-between bg-white px-6 py-3 border border-gray-200 rounded-lg">
           <div className="text-sm text-gray-700">
@@ -384,8 +357,7 @@ export default function AdminOrdersPage() {
           </div>
         </div>
       )}
-
-      {/* Order Details Modal */}
+      {}
       {selectedOrder && !showStatusUpdate && (
         <OrderDetailsModal
           order={selectedOrder}
@@ -393,8 +365,7 @@ export default function AdminOrdersPage() {
           onUpdateStatus={() => setShowStatusUpdate(true)}
         />
       )}
-
-      {/* Status Update Modal */}
+      {}
       {showStatusUpdate && selectedOrder && (
         <OrderStatusUpdate
           order={selectedOrder}
@@ -411,7 +382,7 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col">
-        {/* Header - Fixed */}
+        {}
         <div className="flex-shrink-0 px-4 sm:px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
           <div className="flex items-center justify-between">
             <div className="min-w-0 flex-1">
@@ -449,12 +420,11 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
             </div>
           </div>
         </div>
-
-        {/* Content - Scrollable */}
+        {}
         <div className="flex-1 overflow-y-auto">
           <div className="p-4 sm:p-6">
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 sm:gap-6">
-              {/* Customer Information */}
+              {}
               <div className="xl:col-span-1 space-y-4 sm:space-y-6">
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 sm:p-5 border border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
@@ -479,7 +449,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                         <p className="text-sm text-gray-600 truncate">{order.user?.email}</p>
                       </div>
                     </div>
-                    
                     {order.shippingAddress && (
                       <div className="mt-4 p-3 bg-white rounded-lg border border-gray-100">
                         <h4 className="font-medium text-gray-900 mb-2 flex items-center text-sm">
@@ -504,8 +473,7 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                     )}
                   </div>
                 </div>
-
-                {/* Order Status */}
+                {}
                 <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 sm:p-5 border border-gray-200">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <ClockIcon className="h-5 w-5 mr-2 text-purple-600" />
@@ -523,7 +491,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                         <span className="font-semibold capitalize text-gray-900">{order.status}</span>
                       </div>
                     </div>
-                    
                     <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
                       <span className="text-gray-600 font-medium">Payment</span>
                       <span className={cn(
@@ -536,7 +503,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                         {order.paymentStatus}
                       </span>
                     </div>
-
                     {order.shipping?.trackingNumber && (
                       <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
                         <span className="text-gray-600 font-medium">Tracking</span>
@@ -545,7 +511,6 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                         </span>
                       </div>
                     )}
-
                     {order.estimatedDelivery && (
                       <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-100">
                         <span className="text-gray-600 font-medium">Est. Delivery</span>
@@ -557,10 +522,9 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                   </div>
                 </div>
               </div>
-
-              {/* Order Items and Summary */}
+              {}
               <div className="xl:col-span-2 space-y-4 sm:space-y-6">
-                {/* Order Items */}
+                {}
                 <div className="bg-white border border-gray-200 rounded-xl p-4 sm:p-5 shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <ShoppingBagIcon className="h-5 w-5 mr-2 text-indigo-600" />
@@ -597,8 +561,7 @@ function OrderDetailsModal({ order, onClose, onUpdateStatus }) {
                     ))}
                   </div>
                 </div>
-
-                {/* Order Summary */}
+                {}
                 <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-4 sm:p-5 shadow-sm">
                   <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
                     <CreditCardIcon className="h-5 w-5 mr-2 text-green-600" />

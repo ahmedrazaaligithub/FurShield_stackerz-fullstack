@@ -18,7 +18,6 @@ import {
   ClipboardDocumentCheckIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-
 const documentTypes = [
   { value: 'vet-certificate', label: 'Vet Certificate', icon: ShieldCheckIcon, color: 'text-green-600' },
   { value: 'lab-report', label: 'Lab Report', icon: BeakerIcon, color: 'text-blue-600' },
@@ -29,7 +28,6 @@ const documentTypes = [
   { value: 'prescription', label: 'Prescription', icon: DocumentTextIcon, color: 'text-orange-600' },
   { value: 'other', label: 'Other', icon: FolderIcon, color: 'text-gray-600' }
 ]
-
 const categories = [
   { value: 'medical', label: 'Medical' },
   { value: 'insurance', label: 'Insurance' },
@@ -37,12 +35,10 @@ const categories = [
   { value: 'identification', label: 'Identification' },
   { value: 'other', label: 'Other' }
 ]
-
 export default function PetDocumentsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [selectedFiles, setSelectedFiles] = useState([])
   const [uploadData, setUploadData] = useState({
@@ -63,22 +59,16 @@ export default function PetDocumentsPage() {
     claimNumber: ''
   })
   const [filter, setFilter] = useState('all')
-
-  // Fetch pet data
   const { data: pet, isLoading: petLoading } = useQuery({
     queryKey: ['pet', id],
     queryFn: () => petAPI.getPet(id),
     enabled: !!id
   })
-
-  // Fetch documents
   const { data: documentsData, isLoading: documentsLoading } = useQuery({
     queryKey: ['pet-documents', id, filter],
     queryFn: () => documentAPI.getPetDocuments(id, { type: filter === 'all' ? undefined : filter }),
     enabled: !!id
   })
-
-  // Upload mutation
   const uploadMutation = useMutation({
     mutationFn: ({ petId, formData }) => documentAPI.uploadDocuments(petId, formData),
     onSuccess: () => {
@@ -91,8 +81,6 @@ export default function PetDocumentsPage() {
       toast.error(error.response?.data?.error || 'Failed to upload documents')
     }
   })
-
-  // Delete mutation
   const deleteMutation = useMutation({
     mutationFn: documentAPI.deleteDocument,
     onSuccess: () => {
@@ -103,12 +91,9 @@ export default function PetDocumentsPage() {
       toast.error(error.response?.data?.error || 'Failed to delete document')
     }
   })
-
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files)
     setSelectedFiles(files)
-    
-    // Auto-fill title if only one file
     if (files.length === 1) {
       setUploadData(prev => ({
         ...prev,
@@ -116,32 +101,23 @@ export default function PetDocumentsPage() {
       }))
     }
   }
-
   const handleUpload = async (e) => {
     e.preventDefault()
-    
     if (selectedFiles.length === 0) {
       toast.error('Please select at least one file')
       return
     }
-
     const formData = new FormData()
-    
-    // Add files
     selectedFiles.forEach(file => {
       formData.append('documents', file)
     })
-    
-    // Add metadata
     Object.keys(uploadData).forEach(key => {
       if (uploadData[key]) {
         formData.append(key, uploadData[key])
       }
     })
-
     uploadMutation.mutate({ petId: id, formData })
   }
-
   const resetUploadForm = () => {
     setSelectedFiles([])
     setUploadData({
@@ -162,17 +138,14 @@ export default function PetDocumentsPage() {
       claimNumber: ''
     })
   }
-
   const getDocumentIcon = (type) => {
     const docType = documentTypes.find(dt => dt.value === type)
     return docType ? docType.icon : DocumentTextIcon
   }
-
   const getDocumentColor = (type) => {
     const docType = documentTypes.find(dt => dt.value === type)
     return docType ? docType.color : 'text-gray-600'
   }
-
   const formatFileSize = (bytes) => {
     if (bytes === 0) return '0 Bytes'
     const k = 1024
@@ -180,11 +153,9 @@ export default function PetDocumentsPage() {
     const i = Math.floor(Math.log(bytes) / Math.log(k))
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
-
   const isExpired = (expiryDate) => {
     return expiryDate && new Date(expiryDate) < new Date()
   }
-
   if (petLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -192,13 +163,11 @@ export default function PetDocumentsPage() {
       </div>
     )
   }
-
   const documents = documentsData?.data?.data || []
   const filteredDocuments = filter === 'all' ? documents : documents.filter(doc => doc.type === filter)
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
@@ -214,7 +183,6 @@ export default function PetDocumentsPage() {
             <p className="text-gray-600">Manage medical records, certificates, and reports</p>
           </div>
         </div>
-        
         <button
           onClick={() => setShowUploadModal(true)}
           className="btn btn-primary"
@@ -223,8 +191,7 @@ export default function PetDocumentsPage() {
           Upload Documents
         </button>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="flex items-center space-x-4 bg-white p-4 rounded-xl border">
         <label className="text-sm font-medium text-gray-700">Filter by type:</label>
         <select
@@ -243,8 +210,7 @@ export default function PetDocumentsPage() {
           })}
         </select>
       </div>
-
-      {/* Documents Grid */}
+      {}
       {documentsLoading ? (
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" />
@@ -255,10 +221,9 @@ export default function PetDocumentsPage() {
             const Icon = getDocumentIcon(document.type)
             const colorClass = getDocumentColor(document.type)
             const expired = isExpired(document.expiryDate)
-            
             return (
               <div key={document._id} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
-                {/* Header */}
+                {}
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className={`p-2 rounded-lg bg-gray-50 ${colorClass}`}>
@@ -271,15 +236,13 @@ export default function PetDocumentsPage() {
                       </p>
                     </div>
                   </div>
-                  
                   {expired && (
                     <span className="px-2 py-1 bg-red-100 text-red-800 text-xs rounded-full">
                       Expired
                     </span>
                   )}
                 </div>
-
-                {/* Details */}
+                {}
                 <div className="space-y-2 text-sm text-gray-600 mb-4">
                   <p>Size: {formatFileSize(document.size)}</p>
                   <p>Uploaded: {new Date(document.createdAt).toLocaleDateString()}</p>
@@ -295,15 +258,13 @@ export default function PetDocumentsPage() {
                     <p>Issued by: {document.issuedBy}</p>
                   )}
                 </div>
-
-                {/* Description */}
+                {}
                 {document.description && (
                   <p className="text-sm text-gray-600 mb-4 line-clamp-2">
                     {document.description}
                   </p>
                 )}
-
-                {/* Tags */}
+                {}
                 {document.tags && document.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-4">
                     {document.tags.map((tag, index) => (
@@ -313,8 +274,7 @@ export default function PetDocumentsPage() {
                     ))}
                   </div>
                 )}
-
-                {/* Actions */}
+                {}
                 <div className="flex space-x-2">
                   <a
                     href={document.url}
@@ -356,16 +316,14 @@ export default function PetDocumentsPage() {
           </button>
         </div>
       )}
-
-      {/* Upload Modal */}
+      {}
       {showUploadModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <h3 className="text-xl font-bold text-gray-900 mb-4">Upload Documents</h3>
-
               <form onSubmit={handleUpload} className="space-y-4">
-                {/* File Selection */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select Files *
@@ -391,8 +349,7 @@ export default function PetDocumentsPage() {
                     </div>
                   )}
                 </div>
-
-                {/* Document Type */}
+                {}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -411,7 +368,6 @@ export default function PetDocumentsPage() {
                       ))}
                     </select>
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Category
@@ -429,8 +385,7 @@ export default function PetDocumentsPage() {
                     </select>
                   </div>
                 </div>
-
-                {/* Title and Description */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Title *
@@ -443,7 +398,6 @@ export default function PetDocumentsPage() {
                     required
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Description
@@ -455,8 +409,7 @@ export default function PetDocumentsPage() {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
-
-                {/* Dates */}
+                {}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -469,7 +422,6 @@ export default function PetDocumentsPage() {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                     />
                   </div>
-
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Expiry Date
@@ -482,8 +434,7 @@ export default function PetDocumentsPage() {
                     />
                   </div>
                 </div>
-
-                {/* Issued By */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Issued By
@@ -496,8 +447,7 @@ export default function PetDocumentsPage() {
                     placeholder="Veterinarian, clinic, or organization name"
                   />
                 </div>
-
-                {/* Conditional Fields */}
+                {}
                 {(uploadData.type === 'vet-certificate' || uploadData.type === 'medical-report') && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -511,7 +461,6 @@ export default function PetDocumentsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Clinic
@@ -525,7 +474,6 @@ export default function PetDocumentsPage() {
                     </div>
                   </div>
                 )}
-
                 {uploadData.type === 'lab-report' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -539,7 +487,6 @@ export default function PetDocumentsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Results Summary
@@ -553,7 +500,6 @@ export default function PetDocumentsPage() {
                     </div>
                   </div>
                 )}
-
                 {uploadData.type === 'insurance-document' && (
                   <div className="grid grid-cols-2 gap-4">
                     <div>
@@ -567,7 +513,6 @@ export default function PetDocumentsPage() {
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
-
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Policy Number
@@ -581,8 +526,7 @@ export default function PetDocumentsPage() {
                     </div>
                   </div>
                 )}
-
-                {/* Tags */}
+                {}
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Tags
@@ -595,8 +539,7 @@ export default function PetDocumentsPage() {
                     placeholder="Separate tags with commas"
                   />
                 </div>
-
-                {/* Actions */}
+                {}
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"

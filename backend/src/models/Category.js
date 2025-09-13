@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const categorySchema = new mongoose.Schema({
   name: {
     type: String,
@@ -36,21 +35,16 @@ const categorySchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
-// Create slug from name before saving
 categorySchema.pre('save', function(next) {
   if (this.isModified('name')) {
     this.slug = this.name.toLowerCase().replace(/[^a-zA-Z0-9]/g, '-').replace(/-+/g, '-').trim('-');
   }
   next();
 });
-
-// Virtual for product count
 categorySchema.virtual('productCount', {
   ref: 'Product',
   localField: '_id',
   foreignField: 'category',
   count: true
 });
-
 module.exports = mongoose.model('Category', categorySchema);

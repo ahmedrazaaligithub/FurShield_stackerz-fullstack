@@ -13,7 +13,6 @@ import ReviewModal from './ReviewModal'
 import DeleteConfirmModal from './DeleteConfirmModal'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
 import toast from 'react-hot-toast'
-
 export default function ReviewList({ product }) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
@@ -21,18 +20,14 @@ export default function ReviewList({ product }) {
   const [editingReview, setEditingReview] = useState(null)
   const [deletingReview, setDeletingReview] = useState(null)
   const [currentPage, setCurrentPage] = useState(1)
-
   const { data: reviewsData, isLoading } = useQuery({
     queryKey: ['product-reviews', product._id, currentPage],
     queryFn: () => reviewAPI.getProductReviews(product._id, { page: currentPage, limit: 10 }),
     staleTime: 30000
   })
-
-
   const reviews = reviewsData?.data?.data?.reviews || []
   const stats = reviewsData?.data?.data?.stats || { averageRating: 0, totalReviews: 0, distribution: {} }
   const pagination = reviewsData?.data?.data?.pagination || {}
-
   const handleWriteReview = () => {
     if (!user) {
       toast.error('Please login to write a review')
@@ -41,17 +36,13 @@ export default function ReviewList({ product }) {
     setEditingReview(null)
     setShowReviewModal(true)
   }
-
   const handleEditReview = (review) => {
     setEditingReview(review)
     setShowReviewModal(true)
   }
-
   const handleDeleteReview = (review) => {
     setDeletingReview(review)
   }
-
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -59,7 +50,6 @@ export default function ReviewList({ product }) {
       day: 'numeric'
     })
   }
-
   const renderStars = (rating) => {
     return (
       <div className="flex items-center">
@@ -73,16 +63,13 @@ export default function ReviewList({ product }) {
       </div>
     )
   }
-
   const renderRatingDistribution = () => {
     const { distribution, totalReviews } = stats
-    
     return (
       <div className="space-y-2">
         {[5, 4, 3, 2, 1].map((rating) => {
           const count = distribution[rating] || 0
           const percentage = totalReviews > 0 ? (count / totalReviews) * 100 : 0
-          
           return (
             <div key={rating} className="flex items-center space-x-3 text-sm">
               <span className="w-8 text-gray-600">{rating}★</span>
@@ -99,7 +86,6 @@ export default function ReviewList({ product }) {
       </div>
     )
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center py-8">
@@ -107,7 +93,6 @@ export default function ReviewList({ product }) {
       </div>
     )
   }
-
   return (
     <div className="mt-12 border-t pt-8">
       <div className="flex items-center justify-between mb-8">
@@ -119,13 +104,12 @@ export default function ReviewList({ product }) {
           Write a Review
         </button>
       </div>
-
       {stats.totalReviews > 0 ? (
         <>
-          {/* Rating Summary */}
+          {}
           <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              {/* Overall Rating */}
+              {}
               <div className="text-center">
                 <div className="text-5xl font-bold text-gray-900 mb-2">
                   {stats.averageRating}
@@ -137,16 +121,14 @@ export default function ReviewList({ product }) {
                   Based on {stats.totalReviews} review{stats.totalReviews !== 1 ? 's' : ''}
                 </p>
               </div>
-
-              {/* Rating Distribution */}
+              {}
               <div>
                 <h3 className="font-semibold text-gray-900 mb-4">Rating Breakdown</h3>
                 {renderRatingDistribution()}
               </div>
             </div>
           </div>
-
-          {/* Reviews List */}
+          {}
           <div className="space-y-6">
             {reviews.map((review) => (
               <div key={review._id} className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
@@ -180,8 +162,7 @@ export default function ReviewList({ product }) {
                       </div>
                     </div>
                   </div>
-
-                  {/* Action Buttons */}
+                  {}
                   {user && user.id === review.user?._id && (
                     <div className="flex space-x-2">
                       <button
@@ -201,17 +182,14 @@ export default function ReviewList({ product }) {
                     </div>
                   )}
                 </div>
-
                 <div className="mb-4">
                   <h5 className="font-semibold text-gray-900 mb-2">{review.title}</h5>
                   <p className="text-gray-700 leading-relaxed">{review.comment}</p>
                 </div>
-
               </div>
             ))}
           </div>
-
-          {/* Pagination */}
+          {}
           {pagination.pages > 1 && (
             <div className="flex justify-center mt-8">
               <div className="flex space-x-2">
@@ -246,8 +224,7 @@ export default function ReviewList({ product }) {
           </button>
         </div>
       )}
-
-      {/* Review Modal */}
+      {}
       {showReviewModal && (
         <ReviewModal
           product={product}
@@ -258,8 +235,7 @@ export default function ReviewList({ product }) {
           }}
         />
       )}
-
-      {/* Delete Confirmation Modal */}
+      {}
       {deletingReview && (
         <DeleteConfirmModal
           review={deletingReview}

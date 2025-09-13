@@ -18,7 +18,6 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
 import { useAuth } from '../../contexts/AuthContext'
 import VetDirectoryPage from '../vets/VetDirectoryPage'
-
 const AppointmentCard = ({ appointment }) => (
   <Link to={`/appointments/${appointment._id}`} className="block">
     <div className="card hover:shadow-glow transition-all duration-300 group">
@@ -47,7 +46,6 @@ const AppointmentCard = ({ appointment }) => (
             {appointment.status}
           </span>
         </div>
-        
         <div className="space-y-2 text-sm text-gray-600">
           <div className="flex items-center">
             <ClockIcon className="h-4 w-4 mr-2" />
@@ -66,13 +64,11 @@ const AppointmentCard = ({ appointment }) => (
             </div>
           )}
         </div>
-        
         {appointment.reason && (
           <p className="text-gray-700 text-sm mt-3 line-clamp-2">
             {appointment.reason}
           </p>
         )}
-        
         <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
           <span>Created {new Date(appointment.createdAt).toLocaleDateString()}</span>
           {appointment.estimatedDuration && (
@@ -83,7 +79,6 @@ const AppointmentCard = ({ appointment }) => (
     </div>
   </Link>
 )
-
 const VetCard = ({ vet }) => (
   <div className="card hover:shadow-glow transition-all duration-300 group">
     <div className="p-6">
@@ -101,7 +96,6 @@ const VetCard = ({ vet }) => (
             </div>
           )}
         </div>
-        
         <div className="flex-1 min-w-0">
           <div className="flex items-center space-x-2 mb-1">
             <h3 className="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
@@ -111,11 +105,9 @@ const VetCard = ({ vet }) => (
               <ShieldCheckIcon className="h-5 w-5 text-green-500" title="Verified Veterinarian" />
             )}
           </div>
-          
           <p className="text-sm text-gray-600 mb-2">
             {vet.profile?.specialization || 'General Practice'}
           </p>
-          
           <div className="flex items-center space-x-4 mb-3">
             <div className="flex items-center space-x-1">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -131,12 +123,10 @@ const VetCard = ({ vet }) => (
                 ({vet.averageRating || 4.5}/5)
               </span>
             </div>
-            
             <span className="text-sm text-gray-500">
               {vet.profile?.experience || 5}+ years exp
             </span>
           </div>
-          
           <div className="space-y-1 text-sm text-gray-600">
             {vet.profile?.location && (
               <div className="flex items-center">
@@ -152,7 +142,6 @@ const VetCard = ({ vet }) => (
             )}
           </div>
         </div>
-        
         <div className="flex-shrink-0 flex flex-col space-y-2">
           <Link
             to={`/profile/${vet._id}`}
@@ -168,7 +157,6 @@ const VetCard = ({ vet }) => (
           </Link>
         </div>
       </div>
-      
       {vet.profile?.bio && (
         <div className="mt-4 pt-4 border-t border-gray-200">
           <p className="text-sm text-gray-700 line-clamp-2">
@@ -179,15 +167,12 @@ const VetCard = ({ vet }) => (
     </div>
   </div>
 )
-
 const AvailableVetsSection = () => {
   const { data: vets, isLoading: vetsLoading } = useQuery({
     queryKey: ['available-vets'],
     queryFn: () => userAPI.getVets({ limit: 10, verified: true })
   })
-
   const availableVets = vets?.data?.data || []
-
   if (vetsLoading) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -195,7 +180,6 @@ const AvailableVetsSection = () => {
       </div>
     )
   }
-
   return (
     <div className="space-y-6">
       <div className="text-center">
@@ -203,7 +187,6 @@ const AvailableVetsSection = () => {
         <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments yet</h3>
         <p className="text-gray-600 mb-8">Choose from our verified veterinarians to book your first appointment</p>
       </div>
-      
       {availableVets.length > 0 ? (
         <>
           <div className="flex items-center justify-between">
@@ -212,13 +195,11 @@ const AvailableVetsSection = () => {
               View All Vets →
             </Link>
           </div>
-          
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {availableVets.map((vet) => (
               <VetCard key={vet._id} vet={vet} />
             ))}
           </div>
-          
           <div className="text-center">
             <Link to="/appointments/book" className="btn btn-primary">
               <PlusIcon className="h-4 w-4 mr-2" />
@@ -238,17 +219,12 @@ const AvailableVetsSection = () => {
     </div>
   )
 }
-
 export default function AppointmentsPage() {
   const { user } = useAuth()
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-
-  // Debug user role
   console.log('User object:', user)
   console.log('User role:', user?.role)
-  
-  // If user is a veterinarian, show vet directory instead
   if (user?.role === 'veterinarian' || user?.role === 'vet') {
     return (
       <div className="space-y-6">
@@ -260,7 +236,6 @@ export default function AppointmentsPage() {
       </div>
     )
   }
-
   const { data: appointments, isLoading, error } = useQuery({
     queryKey: ['appointments', { status: statusFilter, type: typeFilter }],
     queryFn: () => appointmentAPI.getAppointments({
@@ -268,12 +243,10 @@ export default function AppointmentsPage() {
       type: typeFilter || undefined
     })
   })
-
   const filteredAppointments = appointments?.data?.data || []
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Appointments</h1>
@@ -286,8 +259,7 @@ export default function AppointmentsPage() {
           Book Appointment
         </Link>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="card p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <select
@@ -301,7 +273,6 @@ export default function AppointmentsPage() {
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
-          
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -316,8 +287,7 @@ export default function AppointmentsPage() {
           </select>
         </div>
       </div>
-
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />
@@ -332,7 +302,7 @@ export default function AppointmentsPage() {
         <AvailableVetsSection />
       ) : (
         <>
-          {/* Results Summary */}
+          {}
           <div className="flex items-center justify-between">
             <p className="text-gray-600">
               {filteredAppointments.length} appointment{filteredAppointments.length !== 1 ? 's' : ''}
@@ -342,8 +312,7 @@ export default function AppointmentsPage() {
               <span>Sort by: Date</span>
             </div>
           </div>
-
-          {/* Appointments Grid */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredAppointments.map((appointment) => (
               <AppointmentCard key={appointment._id} appointment={appointment} />
@@ -351,8 +320,7 @@ export default function AppointmentsPage() {
           </div>
         </>
       )}
-
-      {/* Quick Stats */}
+      {}
       {filteredAppointments.length > 0 && (
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>

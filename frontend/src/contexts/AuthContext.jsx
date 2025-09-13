@@ -1,9 +1,7 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
 import { authAPI } from '../services/api'
 import toast from 'react-hot-toast'
-
 const AuthContext = createContext()
-
 const authReducer = (state, action) => {
   switch (action.type) {
     case 'SET_LOADING':
@@ -20,24 +18,20 @@ const authReducer = (state, action) => {
       return state
   }
 }
-
 const initialState = {
   user: null,
   token: localStorage.getItem('token'),
   loading: true,
   error: null
 }
-
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
-
   useEffect(() => {
     const initAuth = async () => {
       const token = localStorage.getItem('token')
       if (token) {
         try {
           const response = await authAPI.getMe()
-          // Ensure we're getting the user data correctly
           const userData = response.data.data
           console.log('AuthContext - User data from API:', userData)
           console.log('AuthContext - emailVerified:', userData.emailVerified)
@@ -52,20 +46,16 @@ export const AuthProvider = ({ children }) => {
         dispatch({ type: 'SET_LOADING', payload: false })
       }
     }
-
     initAuth()
   }, [])
-
   const login = async (email, password) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true })
       const response = await authAPI.login({ email, password })
       const { user, accessToken } = response.data.data
-      
       localStorage.setItem('token', accessToken)
       dispatch({ type: 'SET_TOKEN', payload: accessToken })
       dispatch({ type: 'SET_USER', payload: user })
-      
       toast.success(`Welcome back, ${user.name}!`)
       return { success: true, user }
     } catch (error) {
@@ -75,17 +65,14 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
   const register = async (userData) => {
     try {
       dispatch({ type: 'SET_LOADING', payload: true })
       const response = await authAPI.register(userData)
       const { user, accessToken } = response.data.data
-      
       localStorage.setItem('token', accessToken)
       dispatch({ type: 'SET_TOKEN', payload: accessToken })
       dispatch({ type: 'SET_USER', payload: user })
-      
       toast.success('Registration successful! Please check your email to verify your account.')
       return { success: true }
     } catch (error) {
@@ -95,18 +82,15 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
   const logout = () => {
     localStorage.removeItem('token')
     sessionStorage.clear()
     dispatch({ type: 'LOGOUT' })
-    // Force clear all cached data
     if (window.queryClient) {
       window.queryClient.clear()
     }
     toast.success('Logged out successfully')
   }
-
   const forgotPassword = async (email) => {
     try {
       await authAPI.forgotPassword({ email })
@@ -118,15 +102,12 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
   const resetPassword = async (token, password) => {
     try {
       const response = await authAPI.resetPassword(token, { password })
       const { accessToken } = response.data.data
-      
       localStorage.setItem('token', accessToken)
       dispatch({ type: 'SET_TOKEN', payload: accessToken })
-      
       toast.success('Password reset successful')
       return { success: true }
     } catch (error) {
@@ -135,41 +116,28 @@ export const AuthProvider = ({ children }) => {
       return { success: false, error: message }
     }
   }
-
   const verifyEmail = async (token) => {
     try {
       await authAPI.verifyEmail(token)
-      
-      // Force refresh user data from server
       const userData = await authAPI.getMe()
       const updatedUser = userData.data.data
-      
-      // Update all user state
       dispatch({ type: 'SET_USER', payload: updatedUser })
-      
-      // Update localStorage token to ensure fresh data
       const currentToken = localStorage.getItem('token')
       if (currentToken) {
-        // Force a small delay to ensure backend has updated
         setTimeout(() => {
           window.dispatchEvent(new CustomEvent('userUpdated'))
           window.dispatchEvent(new CustomEvent('forceUserRefresh'))
         }, 100)
       }
-      
       return { success: true }
     } catch (error) {
       const message = error.response?.data?.error || 'Email verification failed'
       return { success: false, error: message }
     }
   }
-
   const updateProfile = (userData) => {
-    // This function is called from ProfilePage to update the user state
-    // It receives the updated user data directly from the API response
     dispatch({ type: 'SET_USER', payload: userData })
   }
-
   const value = {
     ...state,
     login,
@@ -180,14 +148,12 @@ export const AuthProvider = ({ children }) => {
     verifyEmail,
     updateProfile
   }
-
   return (
     <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   )
 }
-
 export const useAuth = () => {
   const context = useContext(AuthContext)
   if (!context) {

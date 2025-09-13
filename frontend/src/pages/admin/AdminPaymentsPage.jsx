@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const PaymentRow = ({ payment, onUpdateStatus }) => {
   const getStatusIcon = (status) => {
     switch (status) {
@@ -28,7 +27,6 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
         return <ClockIcon className="h-5 w-5 text-gray-500" />
     }
   }
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
@@ -42,7 +40,6 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
         return 'badge-secondary'
     }
   }
-
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
@@ -89,13 +86,11 @@ const PaymentRow = ({ payment, onUpdateStatus }) => {
     </tr>
   )
 }
-
 export default function AdminPaymentsPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [typeFilter, setTypeFilter] = useState('')
-
   const { data: payments, isLoading } = useQuery({
     queryKey: ['admin-payments', { search: searchQuery, status: statusFilter, type: typeFilter }],
     queryFn: () => adminAPI.getPayments({
@@ -104,12 +99,10 @@ export default function AdminPaymentsPage() {
       type: typeFilter || undefined
     })
   })
-
   const { data: paymentStats } = useQuery({
     queryKey: ['admin-payment-stats'],
     queryFn: adminAPI.getPaymentStats
   })
-
   const updatePaymentMutation = useMutation({
     mutationFn: ({ id, status }) => adminAPI.updatePaymentStatus(id, status),
     onSuccess: () => {
@@ -121,23 +114,19 @@ export default function AdminPaymentsPage() {
       toast.error(error.response?.data?.error || 'Failed to update payment')
     }
   })
-
   const handleUpdateStatus = (id, status) => {
     updatePaymentMutation.mutate({ id, status })
   }
-
   const paymentList = payments?.data?.data || []
   const stats = paymentStats?.data?.data || {}
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Payment Management</h1>
         <p className="text-gray-600 mt-1">Monitor and manage platform payments</p>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card">
           <div className="card-content">
@@ -152,7 +141,6 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -166,7 +154,6 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -180,7 +167,6 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -195,8 +181,7 @@ export default function AdminPaymentsPage() {
           </div>
         </div>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="card p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -209,7 +194,6 @@ export default function AdminPaymentsPage() {
               className="input pl-10"
             />
           </div>
-          
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -220,7 +204,6 @@ export default function AdminPaymentsPage() {
             <option value="completed">Completed</option>
             <option value="failed">Failed</option>
           </select>
-          
           <select
             value={typeFilter}
             onChange={(e) => setTypeFilter(e.target.value)}
@@ -234,8 +217,7 @@ export default function AdminPaymentsPage() {
           </select>
         </div>
       </div>
-
-      {/* Payments Table */}
+      {}
       <div className="card">
         <div className="card-header">
           <div className="flex items-center justify-between">
@@ -246,7 +228,6 @@ export default function AdminPaymentsPage() {
             </div>
           </div>
         </div>
-        
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <LoadingSpinner size="lg" />

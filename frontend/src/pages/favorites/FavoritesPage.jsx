@@ -22,46 +22,32 @@ import {
 import { userAPI, petAPI } from '../../services/api'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { cn } from '../../utils/cn'
-
 export default function FavoritesPage() {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [activeTab, setActiveTab] = useState('veterinarians')
-  
-  // Get favorite pets from localStorage (mock data since backend not running)
   const [favoritePets, setFavoritePets] = useState(() => {
     const saved = localStorage.getItem('favoritePets')
     return saved ? new Set(JSON.parse(saved)) : new Set()
   })
-
-  // Listen for localStorage changes to update favorites in real-time
   useEffect(() => {
     const handleStorageChange = () => {
       const saved = localStorage.getItem('favoritePets')
       setFavoritePets(saved ? new Set(JSON.parse(saved)) : new Set())
     }
-
     window.addEventListener('storage', handleStorageChange)
-    
-    // Also listen for custom event for same-tab updates
     window.addEventListener('favoritesUpdated', handleStorageChange)
-
     return () => {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('favoritesUpdated', handleStorageChange)
     }
   }, [])
-
-  // Fetch all pets to get data for favorited ones
   const { data: allPets } = useQuery({
     queryKey: ['pets'],
     queryFn: () => petAPI.getPets({}),
     enabled: favoritePets.size > 0
   })
-
-  // Filter pets to get only favorited ones
   const favoritePetsData = allPets?.data?.data?.filter(pet => favoritePets.has(pet._id)) || []
-
   const handleRemovePetFavorite = (petId) => {
     setFavoritePets(prev => {
       const newFavorites = new Set(prev)
@@ -72,14 +58,12 @@ export default function FavoritesPage() {
       return newFavorites
     })
   }
-
   const tabs = [
     { id: 'veterinarians', name: 'Veterinarians', icon: HeartIconSolid, count: 0 },
     { id: 'products', name: 'Products', icon: ShoppingBagIcon, count: 0 },
     { id: 'pets', name: 'Pets', icon: HomeIcon, count: favoritePets.size },
     { id: 'shelters', name: 'Shelters', icon: BuildingStorefrontIcon, count: 0 }
   ]
-
   const { data: favorites, isLoading, refetch } = useQuery({
     queryKey: ['favorites'],
     queryFn: () => userAPI.getFavoriteVets(),
@@ -88,50 +72,38 @@ export default function FavoritesPage() {
     staleTime: 0,
     cacheTime: 0
   })
-
-  // Force refetch when component mounts
   useEffect(() => {
     refetch()
   }, [refetch])
-
   const removeFavoriteMutation = useMutation({
     mutationFn: (vetId) => userAPI.removeFavoriteVet(vetId),
     onSuccess: () => {
       queryClient.invalidateQueries(['favorites'])
       queryClient.refetchQueries(['favorites'])
       toast.success('Removed from favorites')
-      refetch() // Force immediate refetch
+      refetch() 
     },
     onError: (error) => {
       console.error('Remove favorite error:', error)
       toast.error(error.response?.data?.error || 'Failed to remove from favorites')
     }
   })
-
-  // Fix data structure - favoriteVets is coming as {data: Array(2)} not Array(2)
   const favoriteVetsData = favorites?.data?.data?.data || []
-  
   console.log('Favorites API response:', favorites)
   console.log('Favorite vets data structure:', favorites?.data?.data)
   console.log('Favorite vets array:', favoriteVetsData)
   console.log('Favorites length:', favoriteVetsData.length)
   console.log('Is loading:', isLoading)
-
   const handleChatVet = (vetId) => {
-    // TODO: Implement chat functionality
     console.log('Chat with vet:', vetId)
   }
-
   const handleViewProfile = (vetId) => {
     navigate(`/vets/${vetId}`)
   }
-
   const handleRemoveFavorite = async (vetId, event) => {
     event.preventDefault()
     event.stopPropagation()
-    
     console.log('Remove favorite clicked for vet:', vetId)
-    
     if (window.confirm('Are you sure you want to remove this veterinarian from your favorites?')) {
       console.log('Removing vet from favorites:', vetId)
       removeFavoriteMutation.mutate(vetId)
@@ -139,20 +111,16 @@ export default function FavoritesPage() {
       console.log('Removal cancelled')
     }
   }
-
   if (isLoading) {
     return <LoadingSpinner />
   }
-
-  // Add manual refresh button for debugging
   const handleManualRefresh = () => {
     console.log('Manual refresh triggered')
     refetch()
   }
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="text-center mb-8">
         <h1 className="text-3xl font-bold text-gray-900 flex items-center justify-center">
           <HeartIconSolid className="h-8 w-8 text-red-500 mr-3" />
@@ -160,8 +128,7 @@ export default function FavoritesPage() {
         </h1>
         <p className="text-gray-600 mt-2">Your saved items across all categories</p>
       </div>
-
-      {/* Tabs */}
+      {}
       <div className="border-b border-gray-200 mb-6">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => {
@@ -191,8 +158,7 @@ export default function FavoritesPage() {
           })}
         </nav>
       </div>
-
-      {/* Tab Content */}
+      {}
       {activeTab === 'veterinarians' && (
         <>
           {favoriteVetsData.length === 0 ? (
@@ -214,7 +180,7 @@ export default function FavoritesPage() {
           {favoriteVetsData.map(vet => (
             <div key={vet._id} className="card hover:shadow-lg transition-shadow relative">
               <div className="card-content p-6">
-                {/* Profile Header */}
+                {}
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="flex-shrink-0">
                     {vet.avatar ? (
@@ -247,8 +213,7 @@ export default function FavoritesPage() {
                     </button>
                   </div>
                 </div>
-
-                {/* Rating */}
+                {}
                 {vet.rating && (
                   <div className="flex items-center mb-3">
                     <div className="flex items-center">
@@ -265,20 +230,17 @@ export default function FavoritesPage() {
                     </div>
                   </div>
                 )}
-
-                {/* Experience */}
+                {}
                 {(vet.experience || vet.profile?.experience) && (
                   <p className="text-sm text-gray-600 mb-3">
                     {vet.experience || vet.profile?.experience} years of experience
                   </p>
                 )}
-
-                {/* Bio */}
+                {}
                 <p className="text-sm text-gray-700 mb-4 line-clamp-3">
                   {vet.bio || `Dr. ${vet.name} is a dedicated veterinary professional committed to providing exceptional care for your beloved pets.`}
                 </p>
-
-                {/* Languages */}
+                {}
                 {vet.languages && vet.languages.length > 0 && (
                   <div className="mb-4">
                     <div className="flex flex-wrap gap-1">
@@ -293,8 +255,7 @@ export default function FavoritesPage() {
                     </div>
                   </div>
                 )}
-
-                {/* Action Buttons */}
+                {}
                 <div className="flex space-x-2">
                   <button
                     onClick={() => handleChatVet(vet._id)}
@@ -315,8 +276,7 @@ export default function FavoritesPage() {
           ))}
         </div>
       )}
-
-      {/* Stats */}
+      {}
       {favoriteVetsData.length > 0 && (
         <div className="card">
           <div className="card-content p-6">
@@ -333,8 +293,7 @@ export default function FavoritesPage() {
       )}
           </>
       )}
-
-      {/* Products Tab */}
+      {}
       {activeTab === 'products' && (
         <div className="text-center py-12">
           <ShoppingBagIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -350,8 +309,7 @@ export default function FavoritesPage() {
           </button>
         </div>
       )}
-
-      {/* Pets Tab */}
+      {}
       {activeTab === 'pets' && (
         <>
           {favoritePets.size === 0 ? (
@@ -395,7 +353,6 @@ export default function FavoritesPage() {
                       </span>
                     </div>
                   </div>
-                  
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-2">
                       <h3 className="text-lg font-semibold text-gray-900">
@@ -409,7 +366,6 @@ export default function FavoritesPage() {
                         <HeartIconSolid className="h-6 w-6 text-red-500" />
                       </button>
                     </div>
-                    
                     <div className="space-y-2 text-sm text-gray-600">
                       <p><span className="font-medium">Species:</span> {pet.species}</p>
                       <p><span className="font-medium">Breed:</span> {pet.breed}</p>
@@ -418,7 +374,6 @@ export default function FavoritesPage() {
                         <p><span className="font-medium">Weight:</span> {pet.weight} lbs</p>
                       )}
                     </div>
-                    
                     {pet.medicalConditions?.length > 0 && (
                       <div className="mt-3">
                         <p className="text-xs text-gray-500 mb-1">Medical Conditions:</p>
@@ -436,7 +391,6 @@ export default function FavoritesPage() {
                         </div>
                       </div>
                     )}
-                    
                     <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
                       <span>Added {new Date(pet.createdAt).toLocaleDateString()}</span>
                       <div className="flex items-center space-x-2">
@@ -444,7 +398,6 @@ export default function FavoritesPage() {
                         <span>Next checkup due</span>
                       </div>
                     </div>
-
                     <div className="mt-4">
                       <button
                         onClick={() => navigate(`/pets/${pet._id}`)}
@@ -460,8 +413,7 @@ export default function FavoritesPage() {
           )}
         </>
       )}
-
-      {/* Shelters Tab */}
+      {}
       {activeTab === 'shelters' && (
         <div className="text-center py-12">
           <BuildingStorefrontIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />

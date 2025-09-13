@@ -15,10 +15,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const OrderCard = ({ order, onStatusUpdate }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
@@ -29,7 +27,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
       default: return 'bg-gray-100 text-gray-800'
     }
   }
-
   const getStatusIcon = (status) => {
     switch (status) {
       case 'pending': return CalendarIcon
@@ -40,9 +37,7 @@ const OrderCard = ({ order, onStatusUpdate }) => {
       default: return ShoppingBagIcon
     }
   }
-
   const StatusIcon = getStatusIcon(order.status)
-
   return (
     <div className="card">
       <div className="card-content">
@@ -61,7 +56,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
             {order.status}
           </span>
         </div>
-
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div>
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide">Order Date</label>
@@ -76,7 +70,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
             </p>
           </div>
         </div>
-
         <div className="mb-4">
           <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2 block">
             Items ({order.items?.length || 0})
@@ -110,7 +103,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
             )}
           </div>
         </div>
-
         {order.shippingAddress && (
           <div className="mb-4">
             <label className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-1 block">
@@ -121,7 +113,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
             </p>
           </div>
         )}
-
         <div className="flex space-x-2">
           {order.status === 'pending' && (
             <>
@@ -140,7 +131,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
               </button>
             </>
           )}
-          
           {order.status === 'processing' && (
             <button
               onClick={() => onStatusUpdate(order._id, 'shipped')}
@@ -150,7 +140,6 @@ const OrderCard = ({ order, onStatusUpdate }) => {
               Mark as Shipped
             </button>
           )}
-
           {order.status === 'shipped' && (
             <button
               onClick={() => onStatusUpdate(order._id, 'delivered')}
@@ -165,12 +154,10 @@ const OrderCard = ({ order, onStatusUpdate }) => {
     </div>
   )
 }
-
 export default function ShelterOrdersPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('all')
-
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ['shelter-orders', user?.id, statusFilter],
     queryFn: () => orderAPI.getOrders({ 
@@ -179,7 +166,6 @@ export default function ShelterOrdersPage() {
     }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
   const updateStatusMutation = useMutation({
     mutationFn: ({ orderId, status }) => 
       orderAPI.updateOrderStatus(orderId, { status }),
@@ -191,13 +177,10 @@ export default function ShelterOrdersPage() {
       toast.error(error.response?.data?.error || 'Failed to update order status')
     }
   })
-
   const handleStatusUpdate = (orderId, status) => {
     updateStatusMutation.mutate({ orderId, status })
   }
-
   const ordersData = orders?.data?.data || []
-
   const stats = {
     total: ordersData.length,
     pending: ordersData.filter(o => o.status === 'pending').length,
@@ -206,11 +189,9 @@ export default function ShelterOrdersPage() {
     delivered: ordersData.filter(o => o.status === 'delivered').length,
     cancelled: ordersData.filter(o => o.status === 'cancelled').length
   }
-
   const totalRevenue = ordersData
     .filter(o => o.status === 'delivered')
     .reduce((sum, order) => sum + (order.totalAmount || 0), 0)
-
   if (user?.role !== 'shelter') {
     return (
       <div className="text-center py-12">
@@ -220,18 +201,16 @@ export default function ShelterOrdersPage() {
       </div>
     )
   }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Customer Orders</h1>
         <p className="text-gray-600 mt-1">
           Manage and fulfill customer orders for your products
         </p>
       </div>
-
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
         <div className="card p-4">
           <div className="text-center">
@@ -270,8 +249,7 @@ export default function ShelterOrdersPage() {
           </div>
         </div>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="card p-4">
         <div className="flex flex-wrap gap-2">
           {['all', 'pending', 'processing', 'shipped', 'delivered', 'cancelled'].map((status) => (
@@ -288,8 +266,7 @@ export default function ShelterOrdersPage() {
           ))}
         </div>
       </div>
-
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />

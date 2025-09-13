@@ -1,8 +1,6 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-
-// Create upload directories if they don't exist
 const createUploadDirs = () => {
   const dirs = [
     'uploads/profiles',
@@ -10,7 +8,6 @@ const createUploadDirs = () => {
     'uploads/products',
     'uploads/temp'
   ];
-  
   dirs.forEach(dir => {
     const fullPath = path.join(__dirname, '../..', dir);
     if (!fs.existsSync(fullPath)) {
@@ -18,10 +15,7 @@ const createUploadDirs = () => {
     }
   });
 };
-
 createUploadDirs();
-
-// Configure storage for different upload types
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const typeMap = {
@@ -31,15 +25,12 @@ const storage = multer.diskStorage({
       'product': 'products',
       'temp': 'temp'
     };
-    
     const uploadType = req.body.type || req.query.type || req.params.type || 'temp';
     const folderName = typeMap[uploadType] || 'temp';
     const uploadPath = path.join(__dirname, '../..', 'uploads', folderName);
-    
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
-    
     cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
@@ -49,30 +40,23 @@ const storage = multer.diskStorage({
     cb(null, `${uniqueSuffix}_${name}${ext}`);
   }
 });
-
-// File filter for image uploads
 const imageFilter = (req, file, cb) => {
   const allowedTypes = /jpeg|jpg|png|gif|webp|svg/;
   const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
   const mimetype = allowedTypes.test(file.mimetype);
-  
   if (mimetype && extname) {
     return cb(null, true);
   } else {
     cb(new Error('Only image files are allowed'));
   }
 };
-
-// Create multer upload instances
 const uploadImage = multer({
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB
+    fileSize: 10 * 1024 * 1024 
   },
   fileFilter: imageFilter
 });
-
-// Middleware for handling single image upload
 const uploadSingleImage = (fieldName = 'image') => {
   return (req, res, next) => {
     uploadImage.single(fieldName)(req, res, (err) => {
@@ -86,8 +70,6 @@ const uploadSingleImage = (fieldName = 'image') => {
     });
   };
 };
-
-// Middleware for handling multiple image uploads
 const uploadMultipleImages = (fieldName = 'images', maxCount = 10) => {
   return (req, res, next) => {
     uploadImage.array(fieldName, maxCount)(req, res, (err) => {
@@ -101,7 +83,6 @@ const uploadMultipleImages = (fieldName = 'images', maxCount = 10) => {
     });
   };
 };
-
 module.exports = {
   uploadSingleImage,
   uploadMultipleImages,

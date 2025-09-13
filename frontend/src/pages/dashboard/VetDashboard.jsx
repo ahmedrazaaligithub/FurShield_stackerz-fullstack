@@ -15,7 +15,6 @@ import {
 import { Link } from 'react-router-dom'
 import { appointmentAPI, petAPI, userAPI } from '../../services/api'
 import toast from 'react-hot-toast'
-
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group">
@@ -35,19 +34,14 @@ const StatCard = ({ title, value, icon: Icon, color, href }) => (
     </div>
   </Link>
 )
-
 export default function VetDashboard() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('pending')
-
-  // Fetch vet appointments
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
     queryKey: ['vet-appointments', user?.id],
     queryFn: () => appointmentAPI.getAppointments({ vetId: user?.id }),
     enabled: !!user?.id && user?.role === 'vet'
   })
-
-  // Fetch today's appointments
   const { data: todayAppointments } = useQuery({
     queryKey: ['today-appointments', user?.id],
     queryFn: () => appointmentAPI.getAppointments({ 
@@ -56,12 +50,9 @@ export default function VetDashboard() {
     }),
     enabled: !!user?.id && user?.role === 'vet'
   })
-
-  // Filter appointments by status
   const pendingAppointments = appointments?.data?.data?.filter(a => a.status === 'pending') || []
   const confirmedAppointments = appointments?.data?.data?.filter(a => a.status === 'confirmed') || []
   const completedAppointments = appointments?.data?.data?.filter(a => a.status === 'completed') || []
-
   const stats = [
     {
       title: 'Today\'s Appointments',
@@ -96,7 +87,6 @@ export default function VetDashboard() {
       href: '/appointments?status=completed'
     }
   ]
-
   const handleAcceptAppointment = async (appointmentId) => {
     try {
       await appointmentAPI.acceptAppointment(appointmentId)
@@ -105,7 +95,6 @@ export default function VetDashboard() {
       toast.error('Failed to accept appointment')
     }
   }
-
   const handleRejectAppointment = async (appointmentId) => {
     try {
       await appointmentAPI.cancelAppointment(appointmentId, { reason: 'Vet unavailable' })
@@ -114,7 +103,6 @@ export default function VetDashboard() {
       toast.error('Failed to reject appointment')
     }
   }
-
   if (user?.role !== 'vet') {
     return (
       <div className="text-center py-12">
@@ -124,7 +112,6 @@ export default function VetDashboard() {
       </div>
     )
   }
-
   if (!user?.isVetVerified) {
     return (
       <div className="text-center py-12">
@@ -143,10 +130,9 @@ export default function VetDashboard() {
       </div>
     )
   }
-
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {}
       <div className="bg-gradient-to-r from-blue-600 to-teal-600 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -160,21 +146,18 @@ export default function VetDashboard() {
           <CheckBadgeIcon className="h-16 w-16 text-white/20" />
         </div>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
-
-      {/* Appointments Section */}
+      {}
       <div className="card">
         <div className="card-header">
           <h2 className="text-xl font-semibold text-gray-900">Appointment Management</h2>
         </div>
-        
-        {/* Tabs */}
+        {}
         <div className="border-b border-gray-200">
           <nav className="-mb-px flex space-x-8 px-6">
             {['pending', 'confirmed', 'completed'].map((status) => (
@@ -196,7 +179,6 @@ export default function VetDashboard() {
             ))}
           </nav>
         </div>
-
         <div className="card-content">
           {appointmentsLoading ? (
             <div className="flex justify-center py-8">
@@ -252,7 +234,6 @@ export default function VetDashboard() {
                   </div>
                 )
               )}
-
               {activeTab === 'confirmed' && (
                 confirmedAppointments.length > 0 ? (
                   confirmedAppointments.map((appointment) => (
@@ -288,7 +269,6 @@ export default function VetDashboard() {
                   </div>
                 )
               )}
-
               {activeTab === 'completed' && (
                 completedAppointments.length > 0 ? (
                   completedAppointments.map((appointment) => (
@@ -329,21 +309,18 @@ export default function VetDashboard() {
           )}
         </div>
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Link to="/appointments" className="card p-6 hover:shadow-lg transition-shadow">
           <CalendarIcon className="h-8 w-8 text-blue-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">View All Appointments</h3>
           <p className="text-sm text-gray-600">Manage your appointment schedule</p>
         </Link>
-        
         <Link to="/patients" className="card p-6 hover:shadow-lg transition-shadow">
           <UserGroupIcon className="h-8 w-8 text-green-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">Patient Records</h3>
           <p className="text-sm text-gray-600">Access patient medical histories</p>
         </Link>
-        
         <Link to="/profile" className="card p-6 hover:shadow-lg transition-shadow">
           <DocumentTextIcon className="h-8 w-8 text-purple-600 mb-3" />
           <h3 className="font-semibold text-gray-900 mb-1">Update Profile</h3>

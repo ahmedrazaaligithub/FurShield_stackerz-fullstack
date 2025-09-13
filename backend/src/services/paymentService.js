@@ -1,12 +1,10 @@
 const PaymentProvider = require('../models/PaymentProvider');
 const { logger } = require('../utils/logger');
-
 class PaymentService {
   constructor() {
     this.providers = new Map();
     this.loadProviders();
   }
-
   async loadProviders() {
     try {
       const providers = await PaymentProvider.find({ isActive: true });
@@ -17,7 +15,6 @@ class PaymentService {
       logger.error('Failed to load payment providers:', error);
     }
   }
-
   async addProvider(providerData) {
     try {
       const provider = await PaymentProvider.create(providerData);
@@ -28,7 +25,6 @@ class PaymentService {
       throw error;
     }
   }
-
   async removeProvider(providerId) {
     try {
       await PaymentProvider.findByIdAndUpdate(providerId, { isActive: false });
@@ -38,21 +34,17 @@ class PaymentService {
       throw error;
     }
   }
-
   getProvider(providerId) {
     return this.providers.get(providerId);
   }
-
   getAllProviders() {
     return Array.from(this.providers.values());
   }
-
   async processPayment(providerId, paymentData) {
     const provider = this.getProvider(providerId);
     if (!provider) {
       throw new Error('Payment provider not found');
     }
-
     try {
       switch (provider.name.toLowerCase()) {
         case 'stripe':
@@ -68,10 +60,8 @@ class PaymentService {
       throw error;
     }
   }
-
   async processStripePayment(provider, paymentData) {
     const stripe = require('stripe')(provider.secretKey);
-    
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(paymentData.amount * 100),
       currency: paymentData.currency || 'usd',
@@ -79,7 +69,6 @@ class PaymentService {
       confirm: true,
       return_url: paymentData.returnUrl
     });
-
     return {
       success: paymentIntent.status === 'succeeded',
       transactionId: paymentIntent.id,
@@ -87,16 +76,12 @@ class PaymentService {
       amount: paymentIntent.amount / 100
     };
   }
-
   async processPayPalPayment(provider, paymentData) {
     const paypal = require('@paypal/checkout-server-sdk');
-    
     const environment = provider.sandboxMode 
       ? new paypal.core.SandboxEnvironment(provider.publicKey, provider.secretKey)
       : new paypal.core.LiveEnvironment(provider.publicKey, provider.secretKey);
-    
     const client = new paypal.core.PayPalHttpClient(environment);
-
     const request = new paypal.orders.OrdersCreateRequest();
     request.prefer("return=representation");
     request.requestBody({
@@ -108,9 +93,7 @@ class PaymentService {
         }
       }]
     });
-
     const order = await client.execute(request);
-    
     return {
       success: order.result.status === 'CREATED',
       transactionId: order.result.id,
@@ -119,12 +102,9 @@ class PaymentService {
       approvalUrl: order.result.links.find(link => link.rel === 'approve').href
     };
   }
-
   async processMockPayment(provider, paymentData) {
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
     const success = Math.random() > 0.1;
-    
     return {
       success,
       transactionId: 'mock_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
@@ -133,13 +113,11 @@ class PaymentService {
       message: success ? 'Payment processed successfully' : 'Payment failed - insufficient funds'
     };
   }
-
   async refundPayment(providerId, transactionId, amount) {
     const provider = this.getProvider(providerId);
     if (!provider) {
       throw new Error('Payment provider not found');
     }
-
     try {
       switch (provider.name.toLowerCase()) {
         case 'stripe':
@@ -155,15 +133,12 @@ class PaymentService {
       throw error;
     }
   }
-
   async refundStripePayment(provider, transactionId, amount) {
     const stripe = require('stripe')(provider.secretKey);
-    
     const refund = await stripe.refunds.create({
       payment_intent: transactionId,
       amount: amount ? Math.round(amount * 100) : undefined
     });
-
     return {
       success: refund.status === 'succeeded',
       refundId: refund.id,
@@ -171,7 +146,6 @@ class PaymentService {
       status: refund.status
     };
   }
-
   async refundPayPalPayment(provider, transactionId, amount) {
     return {
       success: true,
@@ -180,10 +154,8 @@ class PaymentService {
       status: 'completed'
     };
   }
-
   async refundMockPayment(provider, transactionId, amount) {
     await new Promise(resolve => setTimeout(resolve, 1000));
-    
     return {
       success: true,
       refundId: 'mock_refund_' + Date.now(),
@@ -192,5 +164,4 @@ class PaymentService {
     };
   }
 }
-
 module.exports = new PaymentService();

@@ -19,34 +19,26 @@ import {
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 export default function UserProfilePage() {
   const { userId } = useParams()
   const navigate = useNavigate()
   const { user: currentUser } = useAuth()
   const [activeTab, setActiveTab] = useState('about')
-
-  // Fetch user profile data
   const { data: profileData, isLoading: profileLoading, error: profileError } = useQuery({
     queryKey: ['user-profile', userId],
     queryFn: () => userAPI.getUserProfile(userId),
     enabled: !!userId
   })
-
-  // Fetch user's pets
   const { data: userPets, isLoading: petsLoading } = useQuery({
     queryKey: ['user-pets', userId],
     queryFn: () => petAPI.getUserPets(userId),
     enabled: !!userId
   })
-
-  // Fetch user ratings
   const { data: userRatings, isLoading: ratingsLoading } = useQuery({
     queryKey: ['user-ratings', userId],
     queryFn: () => ratingAPI.getUserRatings(userId),
     enabled: !!userId
   })
-
   if (profileLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -54,7 +46,6 @@ export default function UserProfilePage() {
       </div>
     )
   }
-
   if (profileError || !profileData?.data?.data) {
     return (
       <div className="text-center py-12">
@@ -68,18 +59,15 @@ export default function UserProfilePage() {
       </div>
     )
   }
-
   const userData = profileData.data.data
   const pets = userPets?.data?.data || []
   const ratings = userRatings?.data?.data || []
   const isOwnProfile = currentUser?.id === userId
-
   const tabs = [
     { id: 'about', name: 'About' },
     { id: 'pets', name: `Pets (${pets.length})` },
     { id: 'reviews', name: `Reviews (${ratings.length})` }
   ]
-
   const renderStars = (rating) => {
     return (
       <div className="flex items-center space-x-1">
@@ -95,10 +83,9 @@ export default function UserProfilePage() {
       </div>
     )
   }
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate(-1)}
@@ -111,8 +98,7 @@ export default function UserProfilePage() {
           <p className="text-gray-600">View user details and activity</p>
         </div>
       </div>
-
-      {/* Profile Card */}
+      {}
       <div className="card">
         <div className="p-6">
           <div className="flex items-start space-x-6">
@@ -129,7 +115,6 @@ export default function UserProfilePage() {
                 </div>
               )}
             </div>
-            
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -161,7 +146,6 @@ export default function UserProfilePage() {
                       )}
                     </div>
                   </div>
-                  
                   <div className="flex items-center space-x-4 mt-2">
                     <div className="flex items-center space-x-2">
                       {renderStars(userData.averageRating || 0)}
@@ -170,7 +154,6 @@ export default function UserProfilePage() {
                       </span>
                     </div>
                   </div>
-                  
                   <div className="flex items-center space-x-6 mt-3 text-sm text-gray-600">
                     <div className="flex items-center space-x-1">
                       <HeartIcon className="h-4 w-4" />
@@ -188,7 +171,6 @@ export default function UserProfilePage() {
                     )}
                   </div>
                 </div>
-                
                 {!isOwnProfile && (
                   <div className="flex space-x-3">
                     <button className="btn btn-outline">
@@ -202,8 +184,7 @@ export default function UserProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Tabs */}
+      {}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => (
@@ -222,11 +203,10 @@ export default function UserProfilePage() {
           ))}
         </nav>
       </div>
-
-      {/* Tab Content */}
+      {}
       {activeTab === 'about' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Basic Information */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
@@ -258,8 +238,7 @@ export default function UserProfilePage() {
               )}
             </div>
           </div>
-
-          {/* Statistics */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Statistics</h3>
@@ -289,7 +268,6 @@ export default function UserProfilePage() {
           </div>
         </div>
       )}
-
       {activeTab === 'pets' && (
         <div className="card">
           <div className="card-header">
@@ -339,7 +317,6 @@ export default function UserProfilePage() {
           </div>
         </div>
       )}
-
       {activeTab === 'reviews' && (
         <div className="card">
           <div className="card-header">

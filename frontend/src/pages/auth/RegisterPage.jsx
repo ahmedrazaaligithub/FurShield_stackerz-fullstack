@@ -4,23 +4,19 @@ import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import PhoneInput from '../../components/ui/PhoneInput'
 import { EyeIcon, EyeSlashIcon, PlusIcon, XMarkIcon } from '@heroicons/react/24/outline'
-
 const roles = [
   { value: 'owner', label: 'Pet Owner', description: 'I have pets and need care services' },
   { value: 'vet', label: 'Veterinarian', description: 'I provide veterinary services' },
   { value: 'shelter', label: 'Shelter/Rescue', description: 'I run a pet shelter or rescue' }
 ]
-
 const specializations = [
   'general', 'surgery', 'dermatology', 'cardiology', 'neurology', 
   'oncology', 'orthopedic', 'ophthalmology', 'dentistry', 'emergency',
   'exotic', 'behavior', 'internal-medicine', 'reproduction'
 ]
-
 const languages = [
   'English', 'Urdu', 'Punjabi', 'Sindhi', 'Pashto', 'Balochi', 'Arabic', 'Persian'
 ]
-
 const daysOfWeek = [
   { key: 'monday', label: 'Monday' },
   { key: 'tuesday', label: 'Tuesday' },
@@ -30,7 +26,6 @@ const daysOfWeek = [
   { key: 'saturday', label: 'Saturday' },
   { key: 'sunday', label: 'Sunday' }
 ]
-
 export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -40,7 +35,6 @@ export default function RegisterPage() {
     role: 'owner',
     phone: '',
     address: '',
-    // Vet-specific fields
     licenseNumber: '',
     specialization: [],
     experience: '',
@@ -63,10 +57,8 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-
   const { register } = useAuth()
   const navigate = useNavigate()
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -74,7 +66,6 @@ export default function RegisterPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const handleSpecializationChange = (spec) => {
     setFormData(prev => ({
       ...prev,
@@ -83,7 +74,6 @@ export default function RegisterPage() {
         : [...prev.specialization, spec]
     }))
   }
-
   const handleLanguageChange = (lang) => {
     setFormData(prev => ({
       ...prev,
@@ -92,7 +82,6 @@ export default function RegisterPage() {
         : [...prev.languages, lang]
     }))
   }
-
   const handleAvailabilityChange = (day, field, value) => {
     setFormData(prev => ({
       ...prev,
@@ -105,29 +94,24 @@ export default function RegisterPage() {
       }
     }))
   }
-
   const handlePhoneChange = (phoneValue) => {
     setFormData(prev => ({ ...prev, phone: phoneValue }))
     if (errors.phone) {
       setErrors(prev => ({ ...prev, phone: '' }))
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.name.trim()) {
       newErrors.name = 'Name is required'
     } else if (formData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters'
     }
-    
     if (!formData.email) {
       newErrors.email = 'Email is required'
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email'
     }
-    
     if (!formData.password) {
       newErrors.password = 'Password is required'
     } else if (formData.password.length < 10) {
@@ -135,19 +119,16 @@ export default function RegisterPage() {
     } else if (!/^(?=.{10,64}$)(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s]).*$/.test(formData.password)) {
       newErrors.password = 'Password must contain uppercase, lowercase, number and special character'
     }
-    
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password'
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
     }
-    
     if (!formData.phone.trim()) {
       newErrors.phone = 'Phone number is required'
     } else if (!/^\+[1-9]\d{6,14}$/.test(formData.phone.replace(/\s/g, ''))) {
       newErrors.phone = 'Please enter a valid phone number'
     }
-    
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required'
     } else if (formData.address.trim().length < 5) {
@@ -155,47 +136,38 @@ export default function RegisterPage() {
     } else if (formData.address.trim().length > 200) {
       newErrors.address = 'Address cannot be more than 200 characters'
     }
-
-    // Vet-specific validation
     if (formData.role === 'vet') {
       if (!formData.licenseNumber.trim()) {
         newErrors.licenseNumber = 'License number is required'
       } else if (formData.licenseNumber.trim().length < 5) {
         newErrors.licenseNumber = 'License number must be at least 5 characters'
       }
-
       if (formData.specialization.length === 0) {
         newErrors.specialization = 'At least one specialization is required'
       }
-
       if (!formData.experience) {
         newErrors.experience = 'Years of experience is required'
       } else if (formData.experience < 0 || formData.experience > 50) {
         newErrors.experience = 'Experience must be between 0 and 50 years'
       }
-
       if (!formData.clinicName.trim()) {
         newErrors.clinicName = 'Clinic name is required'
       } else if (formData.clinicName.trim().length < 2) {
         newErrors.clinicName = 'Clinic name must be at least 2 characters'
       }
-
       if (!formData.clinicAddress.trim()) {
         newErrors.clinicAddress = 'Clinic address is required'
       } else if (formData.clinicAddress.trim().length < 5) {
         newErrors.clinicAddress = 'Clinic address must be at least 5 characters'
       }
-
       if (!formData.consultationFee) {
         newErrors.consultationFee = 'Consultation fee is required'
       } else if (formData.consultationFee < 0 || formData.consultationFee > 10000) {
         newErrors.consultationFee = 'Consultation fee must be between 0 and 10000'
       }
-
       if (formData.languages.length === 0) {
         newErrors.languages = 'At least one language is required'
       }
-
       if (!formData.bio.trim()) {
         newErrors.bio = 'Bio is required'
       } else if (formData.bio.trim().length < 50) {
@@ -203,26 +175,18 @@ export default function RegisterPage() {
       } else if (formData.bio.trim().length > 1000) {
         newErrors.bio = 'Bio cannot be more than 1000 characters'
       }
-
-      // Check if at least one day is available
       const hasAvailableDay = Object.values(formData.availableHours).some(day => day.available)
       if (!hasAvailableDay) {
         newErrors.availableHours = 'At least one day must be available'
       }
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     setLoading(true)
-    
-    // Filter out vet-specific fields if role is not 'vet'
     const submitData = { ...formData }
     if (formData.role !== 'vet') {
       delete submitData.licenseNumber
@@ -235,15 +199,12 @@ export default function RegisterPage() {
       delete submitData.languages
       delete submitData.bio
     }
-    
     const result = await register(submitData)
     setLoading(false)
-    
     if (result.success) {
       navigate('/dashboard')
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -261,7 +222,6 @@ export default function RegisterPage() {
             Join thousands of pet owners and professionals
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -283,7 +243,6 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.name}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="email" className="label">
                 Email address
@@ -303,7 +262,6 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="role" className="label">
                 I am a
@@ -327,7 +285,6 @@ export default function RegisterPage() {
                 ))}
               </div>
             </div>
-
             <div>
               <label htmlFor="phone" className="label">
                 Phone Number
@@ -341,7 +298,6 @@ export default function RegisterPage() {
                 className="w-full"
               />
             </div>
-
             <div>
               <label htmlFor="address" className="label">
                 Address
@@ -360,7 +316,6 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.address}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="password" className="label">
                 Password
@@ -393,7 +348,6 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="confirmPassword" className="label">
                 Confirm Password
@@ -426,12 +380,10 @@ export default function RegisterPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.confirmPassword}</p>
               )}
             </div>
-
-            {/* Vet-specific fields */}
+            {}
             {formData.role === 'vet' && (
               <div className="space-y-6 border-t pt-6">
                 <h3 className="text-lg font-medium text-gray-900">Professional Information</h3>
-                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="licenseNumber" className="label">
@@ -451,7 +403,6 @@ export default function RegisterPage() {
                       <p className="mt-1 text-sm text-red-600">{errors.licenseNumber}</p>
                     )}
                   </div>
-
                   <div>
                     <label htmlFor="experience" className="label">
                       Years of Experience *
@@ -473,7 +424,6 @@ export default function RegisterPage() {
                     )}
                   </div>
                 </div>
-
                 <div>
                   <label className="label">Specializations *</label>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -493,7 +443,6 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-600">{errors.specialization}</p>
                   )}
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label htmlFor="clinicName" className="label">
@@ -513,7 +462,6 @@ export default function RegisterPage() {
                       <p className="mt-1 text-sm text-red-600">{errors.clinicName}</p>
                     )}
                   </div>
-
                   <div>
                     <label htmlFor="consultationFee" className="label">
                       Consultation Fee (PKR) *
@@ -535,7 +483,6 @@ export default function RegisterPage() {
                     )}
                   </div>
                 </div>
-
                 <div>
                   <label htmlFor="clinicAddress" className="label">
                     Clinic Address *
@@ -554,7 +501,6 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-600">{errors.clinicAddress}</p>
                   )}
                 </div>
-
                 <div>
                   <label className="label">Languages Spoken *</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
@@ -574,7 +520,6 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-600">{errors.languages}</p>
                   )}
                 </div>
-
                 <div>
                   <label className="label">Available Hours *</label>
                   <div className="space-y-3">
@@ -589,7 +534,6 @@ export default function RegisterPage() {
                           />
                           <span className="text-sm font-medium">{day.label}</span>
                         </label>
-                        
                         {formData.availableHours[day.key].available && (
                           <div className="flex items-center space-x-2">
                             <input
@@ -614,7 +558,6 @@ export default function RegisterPage() {
                     <p className="mt-1 text-sm text-red-600">{errors.availableHours}</p>
                   )}
                 </div>
-
                 <div>
                   <label htmlFor="bio" className="label">
                     Professional Bio *
@@ -639,7 +582,6 @@ export default function RegisterPage() {
               </div>
             )}
           </div>
-
           <div>
             <button
               type="submit"
@@ -652,7 +594,6 @@ export default function RegisterPage() {
               {loading ? 'Creating account...' : 'Create account'}
             </button>
           </div>
-
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Already have an account?{' '}

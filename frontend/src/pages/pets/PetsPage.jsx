@@ -15,7 +15,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
-
 const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
   <div className="card hover:shadow-glow transition-all duration-300 group relative">
     <Link to={`/pets/${pet._id}`} className="block">
@@ -42,14 +41,12 @@ const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
           </span>
         </div>
       </div>
-      
       <div className="p-6">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors">
             {pet.name}
           </h3>
         </div>
-        
         <div className="space-y-2 text-sm text-gray-600">
           <p><span className="font-medium">Species:</span> {pet.species}</p>
           <p><span className="font-medium">Breed:</span> {pet.breed}</p>
@@ -58,7 +55,6 @@ const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
             <p><span className="font-medium">Weight:</span> {pet.weight} lbs</p>
           )}
         </div>
-        
         {pet.medicalConditions?.length > 0 && (
           <div className="mt-3">
             <p className="text-xs text-gray-500 mb-1">Medical Conditions:</p>
@@ -76,7 +72,6 @@ const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
             </div>
           </div>
         )}
-        
         <div className="mt-4 flex items-center justify-between text-xs text-gray-500">
           <span>Added {new Date(pet.createdAt).toLocaleDateString()}</span>
           <div className="flex items-center space-x-2">
@@ -86,8 +81,7 @@ const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
         </div>
       </div>
     </Link>
-    
-    {/* Favorite Button */}
+    {}
     <button
       onClick={(e) => {
         e.preventDefault()
@@ -105,7 +99,6 @@ const PetCard = ({ pet, onToggleFavorite, isFavorite }) => (
     </button>
   </div>
 )
-
 export default function PetsPage() {
   const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
@@ -116,13 +109,10 @@ export default function PetsPage() {
     return saved ? new Set(JSON.parse(saved)) : new Set()
   })
   const queryClient = useQueryClient()
-  
   const isVet = user?.role === 'veterinarian' || user?.role === 'vet'
-
   const { data: pets, isLoading, error } = useQuery({
     queryKey: ['pets', { search: searchTerm, species: speciesFilter, health: healthFilter }],
     queryFn: () => {
-      // Use appropriate endpoint based on user role
       if (user?.role === 'shelter' || user?.role === 'owner') {
         return petAPI.getMyPets()
       } else {
@@ -135,8 +125,6 @@ export default function PetsPage() {
     },
     enabled: !!user
   })
-
-  // Mock favorite pets functionality (since backend is not running)
   const handleToggleFavorite = (petId) => {
     const newFavorites = new Set(favoritePets)
     if (newFavorites.has(petId)) {
@@ -146,22 +134,14 @@ export default function PetsPage() {
       newFavorites.add(petId)
       toast.success('Added to favorites')
     }
-    
-    // Save to localStorage for persistence across pages
     localStorage.setItem('favoritePets', JSON.stringify([...newFavorites]))
-    
-    // Update state
     setFavoritePets(newFavorites)
-    
-    // Dispatch custom event to notify other components
     window.dispatchEvent(new CustomEvent('favoritesUpdated'))
   }
-
   const filteredPets = pets?.data?.data || []
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -176,8 +156,7 @@ export default function PetsPage() {
           Add Pet
         </Link>
       </div>
-
-      {/* Search and Filters */}
+      {}
       <div className="card p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
@@ -192,7 +171,6 @@ export default function PetsPage() {
               />
             </div>
           </div>
-          
           <div className="flex gap-4">
             <select
               value={speciesFilter}
@@ -208,7 +186,6 @@ export default function PetsPage() {
               <option value="reptile">Reptiles</option>
               <option value="other">Other</option>
             </select>
-            
             <select
               value={healthFilter}
               onChange={(e) => setHealthFilter(e.target.value)}
@@ -222,8 +199,7 @@ export default function PetsPage() {
           </div>
         </div>
       </div>
-
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />
@@ -255,7 +231,7 @@ export default function PetsPage() {
         </div>
       ) : (
         <>
-          {/* Results Summary */}
+          {}
           <div className="flex items-center justify-between">
             <p className="text-gray-600">
               {filteredPets.length} pet{filteredPets.length !== 1 ? 's' : ''} found
@@ -265,8 +241,7 @@ export default function PetsPage() {
               <span>Sort by: Name</span>
             </div>
           </div>
-
-          {/* Pets Grid */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredPets.map((pet) => (
               <PetCard 
@@ -279,8 +254,7 @@ export default function PetsPage() {
           </div>
         </>
       )}
-
-      {/* Quick Stats */}
+      {}
       {filteredPets.length > 0 && (
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Stats</h3>

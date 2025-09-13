@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const documentSchema = new mongoose.Schema({
   owner: {
     type: mongoose.Schema.ObjectId,
@@ -90,21 +89,15 @@ const documentSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
-// Indexes for better performance
 documentSchema.index({ owner: 1 });
 documentSchema.index({ pet: 1 });
 documentSchema.index({ type: 1 });
 documentSchema.index({ category: 1 });
 documentSchema.index({ createdAt: -1 });
 documentSchema.index({ issuedDate: -1 });
-
-// Virtual for file extension
 documentSchema.virtual('fileExtension').get(function() {
   return this.originalName.split('.').pop().toLowerCase();
 });
-
-// Virtual for formatted file size
 documentSchema.virtual('formattedSize').get(function() {
   const bytes = this.size;
   if (bytes === 0) return '0 Bytes';
@@ -113,10 +106,7 @@ documentSchema.virtual('formattedSize').get(function() {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 });
-
-// Check if document is expired
 documentSchema.virtual('isExpired').get(function() {
   return this.expiryDate && this.expiryDate < new Date();
 });
-
 module.exports = mongoose.model('Document', documentSchema);

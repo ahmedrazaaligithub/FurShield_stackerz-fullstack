@@ -7,27 +7,22 @@ import { HeartIcon, ShoppingBagIcon, StarIcon } from '@heroicons/react/24/outlin
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import FavoriteButton from '../../components/common/FavoriteButton';
-
 export default function FavoritesPage() {
   const { user } = useAuth();
   const [page, setPage] = useState(1);
   const limit = 12;
-
   const { data, isLoading, error } = useQuery({
     queryKey: ['favorites', page],
     queryFn: () => favoritesAPI.getFavorites({ page, limit }),
     enabled: !!user,
     select: (data) => data.data
   });
-
   const favorites = data?.favorites || [];
   const pagination = data?.pagination || {};
-
   const renderStars = (rating) => {
     const stars = [];
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 !== 0;
-
     for (let i = 0; i < 5; i++) {
       if (i < fullStars) {
         stars.push(
@@ -50,7 +45,6 @@ export default function FavoritesPage() {
     }
     return stars;
   };
-
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -68,7 +62,6 @@ export default function FavoritesPage() {
       </div>
     );
   }
-
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -76,7 +69,6 @@ export default function FavoritesPage() {
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center">
@@ -87,11 +79,10 @@ export default function FavoritesPage() {
       </div>
     );
   }
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Header */}
+        {}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center mb-4">
             <HeartIcon className="h-12 w-12 text-red-500 mr-3" />
@@ -106,7 +97,6 @@ export default function FavoritesPage() {
             }
           </p>
         </div>
-
         {favorites.length === 0 ? (
           <div className="text-center py-16">
             <div className="bg-white rounded-2xl shadow-xl p-12 max-w-md mx-auto">
@@ -123,16 +113,15 @@ export default function FavoritesPage() {
           </div>
         ) : (
           <>
-            {/* Products Grid */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
               {favorites.map((favorite) => {
                 const product = favorite.product;
                 if (!product) return null;
-
                 return (
                   <div key={favorite._id} className="group">
                     <div className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden border border-gray-100">
-                      {/* Product Image */}
+                      {}
                       <div className="relative aspect-square overflow-hidden">
                         <Link to={`/shop/product/${product._id}`}>
                           <img
@@ -141,16 +130,14 @@ export default function FavoritesPage() {
                             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           />
                         </Link>
-                        
-                        {/* Favorite Button */}
+                        {}
                         <div className="absolute top-3 right-3">
                           <FavoriteButton 
                             productId={product._id}
                             className="bg-white/90 backdrop-blur-sm shadow-lg"
                           />
                         </div>
-
-                        {/* Discount Badge */}
+                        {}
                         {product.compareAtPrice && product.compareAtPrice > product.price && (
                           <div className="absolute top-3 left-3">
                             <span className="bg-red-500 text-white px-2 py-1 rounded-lg text-sm font-semibold">
@@ -159,16 +146,14 @@ export default function FavoritesPage() {
                           </div>
                         )}
                       </div>
-
-                      {/* Product Info */}
+                      {}
                       <div className="p-6">
                         <Link to={`/shop/product/${product._id}`}>
                           <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2 hover:text-blue-600 transition-colors">
                             {product.name}
                           </h3>
                         </Link>
-
-                        {/* Rating */}
+                        {}
                         {product.ratings?.average > 0 && (
                           <div className="flex items-center mb-3">
                             <div className="flex items-center">
@@ -179,8 +164,7 @@ export default function FavoritesPage() {
                             </span>
                           </div>
                         )}
-
-                        {/* Price */}
+                        {}
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center space-x-2">
                             <span className="text-2xl font-bold text-gray-900">
@@ -193,8 +177,7 @@ export default function FavoritesPage() {
                             )}
                           </div>
                         </div>
-
-                        {/* Stock Status */}
+                        {}
                         <div className="mb-4">
                           {product.inventory?.quantity > 0 ? (
                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
@@ -206,8 +189,7 @@ export default function FavoritesPage() {
                             </span>
                           )}
                         </div>
-
-                        {/* View Product Button */}
+                        {}
                         <Link
                           to={`/shop/product/${product._id}`}
                           className="w-full inline-flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 font-semibold"
@@ -220,8 +202,7 @@ export default function FavoritesPage() {
                 );
               })}
             </div>
-
-            {/* Pagination */}
+            {}
             {pagination.pages > 1 && (
               <div className="flex justify-center mt-12">
                 <div className="flex items-center space-x-2">
@@ -232,7 +213,6 @@ export default function FavoritesPage() {
                   >
                     Previous
                   </button>
-                  
                   {Array.from({ length: pagination.pages }, (_, i) => i + 1).map((pageNum) => (
                     <button
                       key={pageNum}
@@ -246,7 +226,6 @@ export default function FavoritesPage() {
                       {pageNum}
                     </button>
                   ))}
-                  
                   <button
                     onClick={() => setPage(page + 1)}
                     disabled={page === pagination.pages}

@@ -1,18 +1,11 @@
 const Joi = require('joi');
-
 const passwordRegex = /^(?=.{10,64}$)(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[^\w\s]).*$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const phoneRegex = /^\+?[1-9][\d\s]{6,14}$/;
-
-// Function to normalize international phone numbers
 const normalizePhoneNumber = (phone) => {
   if (!phone) return phone;
-  
-  // Remove all spaces to create clean format for database storage
-  // Frontend sends "+92 3213265524", we store as "+923213265524"
   return phone.replace(/\s+/g, '');
 };
-
 const registerSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   email: Joi.string().pattern(emailRegex).required(),
@@ -23,8 +16,6 @@ const registerSchema = Joi.object({
   role: Joi.string().valid('owner', 'vet', 'shelter', 'admin').default('owner'),
   phone: Joi.string().pattern(phoneRegex).required(),
   address: Joi.string().min(5).max(200).required(),
-  
-  // Vet-specific fields
   licenseNumber: Joi.when('role', {
     is: 'vet',
     then: Joi.string().min(5).max(50).required(),
@@ -111,12 +102,10 @@ const registerSchema = Joi.object({
     otherwise: Joi.forbidden()
   })
 });
-
 const loginSchema = Joi.object({
   email: Joi.string().pattern(emailRegex).required(),
   password: Joi.string().required()
 });
-
 const petSchema = Joi.object({
   name: Joi.string().min(1).max(50).required(),
   species: Joi.string().valid('dog', 'cat', 'bird', 'rabbit', 'fish', 'reptile', 'hamster', 'guinea-pig', 'other').required(),
@@ -141,7 +130,6 @@ const petSchema = Joi.object({
     nextDue: Joi.date().optional()
   })).optional()
 });
-
 const documentSchema = Joi.object({
   type: Joi.string().valid('vet-certificate', 'lab-report', 'insurance-document', 'vaccination-record', 'medical-report', 'x-ray', 'prescription', 'other').required(),
   category: Joi.string().valid('medical', 'insurance', 'legal', 'identification', 'other').optional(),
@@ -162,7 +150,6 @@ const documentSchema = Joi.object({
     claimNumber: Joi.string().optional()
   }).optional()
 });
-
 const appointmentSchema = Joi.object({
   petId: Joi.string().required(),
   vetId: Joi.string().required(),
@@ -170,8 +157,6 @@ const appointmentSchema = Joi.object({
   reason: Joi.string().max(200).required(),
   notes: Joi.string().max(500).optional()
 });
-
-// Shelter validation
 const shelterCreateSchema = Joi.object({
   name: Joi.string().min(2).max(100).required(),
   description: Joi.string().max(1000).allow(''),
@@ -210,7 +195,6 @@ const shelterCreateSchema = Joi.object({
     wishList: Joi.array().items(Joi.string()).optional()
   }).optional()
 });
-
 const shelterUpdateSchema = Joi.object({
   name: Joi.string().min(2).max(100).optional(),
   description: Joi.string().max(1000).allow(''),
@@ -251,22 +235,18 @@ const shelterUpdateSchema = Joi.object({
   isVerified: Joi.boolean().optional(),
   isActive: Joi.boolean().optional()
 });
-
-// Health record validation (vet-only)
 const healthRecordSchema = Joi.object({
   type: Joi.string().valid('checkup', 'vaccination', 'surgery', 'treatment', 'emergency', 'lab-result', 'other').required(),
   title: Joi.string().min(1).max(100).required(),
   description: Joi.string().min(1).max(1000).required(),
   diagnosis: Joi.string().max(1000).optional(),
   treatment: Joi.string().max(2000).optional(),
-  // Symptoms array with severity
   symptoms: Joi.array().items(Joi.object({
     name: Joi.string().min(1).max(100).required(),
     severity: Joi.string().valid('mild', 'moderate', 'severe').default('mild'),
     duration: Joi.string().max(100).allow(''),
     notes: Joi.string().max(300).allow('')
   })).optional(),
-  // Medications
   medications: Joi.array().items(Joi.object({
     name: Joi.string().min(1).max(100).required(),
     dosage: Joi.string().max(100).allow(''),
@@ -274,7 +254,6 @@ const healthRecordSchema = Joi.object({
     duration: Joi.string().max(100).allow(''),
     instructions: Joi.string().max(500).allow('')
   })).optional(),
-  // Vitals
   vitals: Joi.object({
     temperature: Joi.number().min(80).max(120).optional(),
     weight: Joi.number().min(0).max(500).optional(),
@@ -282,7 +261,6 @@ const healthRecordSchema = Joi.object({
     respiratoryRate: Joi.number().min(0).max(200).optional(),
     bloodPressure: Joi.string().max(20).optional()
   }).optional(),
-  // Lab Results
   labResults: Joi.array().items(Joi.object({
     testName: Joi.string().min(1).max(100).required(),
     result: Joi.string().max(500).allow(''),
@@ -294,8 +272,7 @@ const healthRecordSchema = Joi.object({
   followUpNotes: Joi.string().max(500).allow(''),
   isPrivate: Joi.boolean().optional(),
   tags: Joi.array().items(Joi.string().max(30)).optional()
-}).unknown(false); // disallow unexpected fields
-
+}).unknown(false); 
 const adoptionListingSchema = Joi.object({
   petId: Joi.string().required(),
   title: Joi.string().min(5).max(100).required(),
@@ -314,14 +291,12 @@ const adoptionListingSchema = Joi.object({
   temperament: Joi.array().items(Joi.string().max(50)).optional(),
   photos: Joi.array().items(Joi.string()).optional()
 });
-
 const ratingSchema = Joi.object({
   targetId: Joi.string().required(),
   targetType: Joi.string().valid('vet', 'shelter').required(),
   rating: Joi.number().min(1).max(5).required(),
   comment: Joi.string().max(300).optional()
 });
-
 const paymentProviderSchema = Joi.object({
   name: Joi.string().min(2).max(50).required(),
   publicKey: Joi.string().required(),
@@ -329,7 +304,6 @@ const paymentProviderSchema = Joi.object({
   sandboxMode: Joi.boolean().default(true),
   config: Joi.object().optional()
 });
-
 module.exports = {
   registerSchema,
   loginSchema,

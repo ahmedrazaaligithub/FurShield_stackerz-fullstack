@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-
 export default function LoginPage() {
   const [formData, setFormData] = useState({
     email: '',
@@ -12,13 +11,10 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  
   const from = location.state?.from?.pathname || '/dashboard'
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -26,39 +22,30 @@ export default function LoginPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.email) {
       newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email'
     }
-    
     if (!formData.password) {
       newErrors.password = 'Password is required'
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     setLoading(true)
     const result = await login(formData.email, formData.password)
     setLoading(false)
-    
     if (result.success && result.user) {
       const redirectPath = result.user.role === 'admin' ? '/admin' : from
       navigate(redirectPath, { replace: true })
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -76,7 +63,6 @@ export default function LoginPage() {
             Sign in to your account to continue
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -98,7 +84,6 @@ export default function LoginPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="password" className="label">
                 Password
@@ -132,7 +117,6 @@ export default function LoginPage() {
               )}
             </div>
           </div>
-
           <div className="flex items-center justify-between">
             <div className="text-sm">
               <Link
@@ -143,7 +127,6 @@ export default function LoginPage() {
               </Link>
             </div>
           </div>
-
           <div>
             <button
               type="submit"
@@ -156,7 +139,6 @@ export default function LoginPage() {
               {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
-
           <div className="text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}

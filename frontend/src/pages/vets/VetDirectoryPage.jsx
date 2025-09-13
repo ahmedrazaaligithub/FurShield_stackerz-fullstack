@@ -12,47 +12,34 @@ import {
   EnvelopeIcon
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
-
 export default function VetDirectoryPage() {
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedSpecialization, setSelectedSpecialization] = useState('')
-
   const { data: vets, isLoading } = useQuery({
     queryKey: ['vets'],
     queryFn: () => userAPI.getVets()
   })
-
   const availableVets = vets?.data?.data || []
-
-  // Filter vets based on search and specialization
   const filteredVets = availableVets.filter(vet => {
     const matchesSearch = vet.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          vet.specialization?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesSpecialization = !selectedSpecialization || vet.specialization === selectedSpecialization
     return matchesSearch && matchesSpecialization
   })
-
-  // Get unique specializations for filter
   const specializations = [...new Set(availableVets.map(vet => vet.specialization).filter(Boolean))]
-
   const handleChatVet = (vetId) => {
-    // TODO: Implement chat functionality
     console.log('Chat with vet:', vetId)
   }
-
   const handleViewProfile = (vetId) => {
     navigate(`/vets/${vetId}`)
   }
-
   if (isLoading) {
     return <LoadingSpinner />
   }
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-
-      {/* Search and Filters */}
+      {}
       <div className="card">
         <div className="card-content">
           <div className="flex flex-col md:flex-row gap-4">
@@ -80,13 +67,12 @@ export default function VetDirectoryPage() {
           </div>
         </div>
       </div>
-
-      {/* Veterinarians Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredVets.map(vet => (
           <div key={vet._id} className="card hover:shadow-lg transition-shadow">
             <div className="card-content p-6">
-              {/* Profile Header */}
+              {}
               <div className="flex items-center space-x-4 mb-4">
                 <div className="flex-shrink-0">
                   {vet.avatar ? (
@@ -110,8 +96,7 @@ export default function VetDirectoryPage() {
                   </p>
                 </div>
               </div>
-
-              {/* Rating */}
+              {}
               {vet.rating && (
                 <div className="flex items-center mb-3">
                   <div className="flex items-center">
@@ -128,20 +113,17 @@ export default function VetDirectoryPage() {
                   </div>
                 </div>
               )}
-
-              {/* Experience */}
+              {}
               {vet.experience && (
                 <p className="text-sm text-gray-600 mb-3">
                   {vet.experience} years of experience
                 </p>
               )}
-
-              {/* Bio */}
+              {}
               <p className="text-sm text-gray-700 mb-4 line-clamp-3">
                 {vet.bio || `Dr. ${vet.name} is a dedicated veterinary professional committed to providing exceptional care for your beloved pets.`}
               </p>
-
-              {/* Contact Info */}
+              {}
               <div className="space-y-2 mb-4">
                 {vet.phone && (
                   <div className="flex items-center text-sm text-gray-600">
@@ -162,8 +144,7 @@ export default function VetDirectoryPage() {
                   </div>
                 )}
               </div>
-
-              {/* Languages */}
+              {}
               {vet.languages && vet.languages.length > 0 && (
                 <div className="mb-4">
                   <div className="flex flex-wrap gap-1">
@@ -175,8 +156,7 @@ export default function VetDirectoryPage() {
                   </div>
                 </div>
               )}
-
-              {/* Action Buttons */}
+              {}
               <div className="flex space-x-2">
                 <button
                   onClick={() => handleChatVet(vet._id)}
@@ -196,8 +176,7 @@ export default function VetDirectoryPage() {
           </div>
         ))}
       </div>
-
-      {/* Empty State */}
+      {}
       {filteredVets.length === 0 && (
         <div className="text-center py-12">
           <UserIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />

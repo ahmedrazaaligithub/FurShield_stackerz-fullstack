@@ -8,27 +8,21 @@ import {
   BellIcon,
   UserCircleIcon, 
   ChevronDownIcon,
-  Cog6ToothIcon,
   HeartIcon,
   ArrowRightOnRectangleIcon
 } from '@heroicons/react/24/outline'
 import { Menu, Transition } from '@headlessui/react'
 import { Fragment } from 'react'
-
 export const Header = ({ onMenuClick, onNotificationClick }) => {
   const { user, logout } = useAuth()
   const { unreadCount } = useSocket()
   const [avatarKey, setAvatarKey] = useState(0)
-
-  // Force avatar re-render when user changes
   useEffect(() => {
     setAvatarKey(prev => prev + 1)
   }, [user?.avatar])
-
   const handleLogout = async () => {
     await logout()
   }
-
   return (
     <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-40">
       <div className="px-4 sm:px-6 lg:px-8">
@@ -40,7 +34,6 @@ export const Header = ({ onMenuClick, onNotificationClick }) => {
             >
               <Bars3Icon className="h-6 w-6" />
             </button>
-            
             <Link to="/dashboard" className="flex items-center ml-4 lg:ml-0">
               <div className="flex-shrink-0 flex items-center">
                 <div className="h-8 w-8 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -50,7 +43,6 @@ export const Header = ({ onMenuClick, onNotificationClick }) => {
               </div>
             </Link>
           </div>
-
           <div className="flex items-center space-x-4">
             <button
               onClick={onNotificationClick}
@@ -63,7 +55,6 @@ export const Header = ({ onMenuClick, onNotificationClick }) => {
                 </span>
               )}
             </button>
-
             <Menu as="div" className="relative">
               <Menu.Button className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500">
                 {user?.avatar ? (
@@ -90,7 +81,6 @@ export const Header = ({ onMenuClick, onNotificationClick }) => {
                 </div>
                 <ChevronDownIcon className="h-4 w-4 text-gray-400" />
               </Menu.Button>
-
               <Transition
                 as={Fragment}
                 enter="transition ease-out duration-100"
@@ -125,19 +115,6 @@ export const Header = ({ onMenuClick, onNotificationClick }) => {
                         >
                           <HeartIcon className="h-4 w-4 mr-3" />
                           My Favorites
-                        </Link>
-                      )}
-                    </Menu.Item>
-                    <Menu.Item>
-                      {({ active }) => (
-                        <Link
-                          to="/settings"
-                          className={`${
-                            active ? 'bg-gray-100' : ''
-                          } flex items-center px-4 py-2 text-sm text-gray-700`}
-                        >
-                          <Cog6ToothIcon className="h-4 w-4 mr-3" />
-                          Settings
                         </Link>
                       )}
                     </Menu.Item>

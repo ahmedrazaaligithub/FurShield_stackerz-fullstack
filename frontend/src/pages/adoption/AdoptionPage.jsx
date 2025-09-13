@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { useAuth } from '../../contexts/AuthContext'
 import { cn } from '../../utils/cn'
-
 const AdoptionCard = ({ listing }) => (
   <Link to={`/adoption/${listing._id}`} className="block">
     <div className="card hover:shadow-glow transition-all duration-300 group">
@@ -44,12 +43,10 @@ const AdoptionCard = ({ listing }) => (
           </span>
         </div>
       </div>
-      
       <div className="p-6">
         <h3 className="text-xl font-semibold text-gray-900 group-hover:text-primary-600 transition-colors mb-2">
           {listing.title || listing.pet?.name}
         </h3>
-        
         <div className="space-y-2 text-sm text-gray-600 mb-4">
           <div className="flex items-center">
             <span className="font-medium w-16">Species:</span>
@@ -70,17 +67,14 @@ const AdoptionCard = ({ listing }) => (
             </div>
           )}
         </div>
-        
         <p className="text-gray-700 text-sm mb-4 line-clamp-3">
           {listing.description}
         </p>
-        
         {listing.specialNeeds && (
           <div className="mb-4">
             <span className="badge badge-warning text-xs">Special Needs</span>
           </div>
         )}
-        
         <div className="flex items-center justify-between text-xs text-gray-500">
           <div className="flex items-center">
             <CalendarIcon className="h-4 w-4 mr-1" />
@@ -94,7 +88,6 @@ const AdoptionCard = ({ listing }) => (
     </div>
   </Link>
 )
-
 export default function AdoptionPage() {
   const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState('')
@@ -102,7 +95,6 @@ export default function AdoptionPage() {
   const [ageFilter, setAgeFilter] = useState('')
   const [locationFilter, setLocationFilter] = useState('')
   const [specialNeedsFilter, setSpecialNeedsFilter] = useState(false)
-
   const { data: listings, isLoading, error } = useQuery({
     queryKey: ['adoption-listings', { 
       search: searchTerm, 
@@ -120,12 +112,10 @@ export default function AdoptionPage() {
       status: 'available'
     })
   })
-
   const filteredListings = listings?.data?.data || []
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Pet Adoption</h1>
@@ -140,8 +130,7 @@ export default function AdoptionPage() {
           </Link>
         )}
       </div>
-
-      {/* Search and Filters */}
+      {}
       <div className="card p-6">
         <div className="space-y-4">
           <div className="flex flex-col lg:flex-row gap-4">
@@ -158,7 +147,6 @@ export default function AdoptionPage() {
               </div>
             </div>
           </div>
-          
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <select
               value={speciesFilter}
@@ -172,7 +160,6 @@ export default function AdoptionPage() {
               <option value="rabbit">Rabbits</option>
               <option value="other">Other</option>
             </select>
-            
             <select
               value={ageFilter}
               onChange={(e) => setAgeFilter(e.target.value)}
@@ -183,7 +170,6 @@ export default function AdoptionPage() {
               <option value="adult">Adult (2-7 years)</option>
               <option value="senior">Senior (7+ years)</option>
             </select>
-            
             <input
               type="text"
               placeholder="Location"
@@ -191,7 +177,6 @@ export default function AdoptionPage() {
               onChange={(e) => setLocationFilter(e.target.value)}
               className="input"
             />
-            
             <label className="flex items-center space-x-2 p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
               <input
                 type="checkbox"
@@ -204,8 +189,7 @@ export default function AdoptionPage() {
           </div>
         </div>
       </div>
-
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />
@@ -236,7 +220,7 @@ export default function AdoptionPage() {
         </div>
       ) : (
         <>
-          {/* Results Summary */}
+          {}
           <div className="flex items-center justify-between">
             <p className="text-gray-600">
               {filteredListings.length} pet{filteredListings.length !== 1 ? 's' : ''} available for adoption
@@ -246,8 +230,7 @@ export default function AdoptionPage() {
               <span>Sort by: Most Recent</span>
             </div>
           </div>
-
-          {/* Adoption Grid */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredListings.map((listing) => (
               <AdoptionCard key={listing._id} listing={listing} />
@@ -255,8 +238,7 @@ export default function AdoptionPage() {
           </div>
         </>
       )}
-
-      {/* Call to Action */}
+      {}
       <div className="card p-8 text-center bg-gradient-to-r from-primary-50 to-secondary-50">
         <HeartIcon className="h-12 w-12 text-primary-600 mx-auto mb-4" />
         <h3 className="text-xl font-semibold text-gray-900 mb-2">
@@ -275,8 +257,7 @@ export default function AdoptionPage() {
           </Link>
         </div>
       </div>
-
-      {/* Statistics */}
+      {}
       {filteredListings.length > 0 && (
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Adoption Statistics</h3>

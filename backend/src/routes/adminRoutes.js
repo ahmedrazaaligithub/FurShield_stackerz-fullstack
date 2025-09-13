@@ -1,6 +1,4 @@
 const express = require('express');
-
-// Import from separate controller files
 const { getDashboardStats, getSystemHealth } = require('../controllers/dashboardController');
 const { getUsers, manageUser, updateUser, deleteUser } = require('../controllers/userManagementController');
 const { 
@@ -37,12 +35,9 @@ const {
 const { protect, authorize } = require('../middlewares/auth');
 const { validate } = require('../middlewares/validation');
 const { paymentProviderSchema } = require('../utils/validation');
-
 const router = express.Router();
-
 router.use(protect);
 router.use(authorize('admin'));
-
 router.get('/dashboard', getDashboardStats);
 router.get('/users', getUsers);
 router.put('/users/:id', updateUser);
@@ -63,26 +58,19 @@ router.delete('/users/:userId', (req, res, next) => {
   req.body = { action: 'deactivate', reason: 'Admin deletion' };
   manageUser(req, res, next);
 });
-
-// Approval routes
 router.get('/approvals', getPendingApprovals);
 router.post('/shelters/:id/approve', approveShelter);
 router.post('/shelters/:id/reject', rejectShelter);
 router.post('/vets/:id/approve', approveVet);
 router.post('/vets/:id/reject', rejectVet);
-
-// Category routes
 router.get('/categories', getCategories);
 router.post('/categories', createCategory);
 router.put('/categories/:id', updateCategory);
 router.delete('/categories/:id', deleteCategory);
 router.get('/category-stats', getCategoryStats);
-
-// Product routes
 router.get('/products', getAllProductsAdmin);
 router.post('/products', createProductAdmin);
 router.put('/products/:id', updateProductAdmin);
 router.delete('/products/:id', deleteProductAdmin);
 router.get('/product-stats', getProductStats);
-
 module.exports = router;

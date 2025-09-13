@@ -11,15 +11,12 @@ const cookieParser = require('cookie-parser');
 const morgan = require('morgan');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
-
 const mongoose = require('mongoose');
-
 const { logger } = require('./utils/logger');
 const { connectDB } = require('./config/database');
 const { initializeSocket } = require('./sockets/socketHandler');
 const { seedAdminUser } = require('./utils/seedAdmin');
 const errorHandler = require('./middlewares/errorHandler');
-
 const authRoutes = require('./routes/authRoutes');
 const userRoutes = require('./routes/userRoutes');
 const petRoutes = require('./routes/petRoutes');
@@ -38,7 +35,6 @@ const aiRoutes = require('./routes/aiRoutes');
 const chatRoutes = require('./routes/chatRoutes');
 const feedbackRoutes = require('./routes/feedbackRoutes');
 const documentRoutes = require('./routes/documentRoutes');
-
 const app = express();
 const server = createServer(app);
 const io = new Server(server, {
@@ -48,13 +44,11 @@ const io = new Server(server, {
     credentials: true
   }
 });
-
 connectDB().then(() => {
   seedAdminUser().catch(error => {
     logger.error('Failed to seed admin user:', error);
   });
 });
-
 const limiter = rateLimit({
   windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS) || 15 * 60 * 1000,
   max: parseInt(process.env.RATE_LIMIT_MAX) || (process.env.NODE_ENV === 'development' ? 1000 : 100),
@@ -62,11 +56,9 @@ const limiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    // Skip rate limiting for admin routes in development
     return process.env.NODE_ENV === 'development' && req.path.startsWith('/api/v1/admin');
   }
 });
-
 app.use(helmet({
   contentSecurityPolicy: {
     directives: {
@@ -80,14 +72,12 @@ app.use(helmet({
   },
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
-
 app.use(cors({
   origin: process.env.CLIENT_URL || 'http://localhost:5173',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Cookie']
 }));
-
 app.use(limiter);
 app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
 app.use(express.json({ 
@@ -98,7 +88,6 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 app.use(xss());
 app.use(mongoSanitize());
-
 app.use('/uploads', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.CLIENT_URL || 'http://localhost:5173');
   res.header('Access-Control-Allow-Methods', 'GET');
@@ -115,7 +104,6 @@ app.use('/uploads', (req, res, next) => {
     }
   }
 }));
-
 app.use('/public', (req, res, next) => {
   res.header('Access-Control-Allow-Origin', process.env.CLIENT_URL || 'http://localhost:5173');
   res.header('Access-Control-Allow-Methods', 'GET');
@@ -123,7 +111,6 @@ app.use('/public', (req, res, next) => {
   res.header('Cross-Origin-Resource-Policy', 'cross-origin');
   next();
 }, express.static(path.join(__dirname, '../public')));
-
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/pets', petRoutes);
@@ -142,17 +129,12 @@ app.use('/api/v1/documents', documentRoutes);
 app.use('/api/v1/ai', aiRoutes);
 app.use('/api/v1/chat', chatRoutes);
 app.use('/api/v1', feedbackRoutes);
-
 app.get('/api/v1/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
-
 app.use(errorHandler);
-
 initializeSocket(io);
-
 const PORT = process.env.PORT || 5000;
-
 server.listen(PORT, () => {
   logger.info(`Server running on port ${PORT}`);
 }).on('error', (err) => {

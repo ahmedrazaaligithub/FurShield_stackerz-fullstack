@@ -1,14 +1,12 @@
 const ChatMessage = require('../models/ChatMessage');
 const Appointment = require('../models/Appointment');
 const User = require('../models/User');
-
 const getChatHistory = async (req, res, next) => {
   try {
     const { chatRoom } = req.params;
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const skip = (page - 1) * limit;
-
     const messages = await ChatMessage.find({ 
       chatRoom,
       isDeleted: false
@@ -18,12 +16,10 @@ const getChatHistory = async (req, res, next) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
     const total = await ChatMessage.countDocuments({ 
       chatRoom,
       isDeleted: false
     });
-
     res.json({
       success: true,
       data: messages.reverse(),
@@ -38,18 +34,15 @@ const getChatHistory = async (req, res, next) => {
     next(error);
   }
 };
-
 const sendMessage = async (req, res, next) => {
   try {
     const { chatRoom, content, type, recipientId, appointmentId, petId } = req.body;
-
     if (!content || content.trim().length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Message content is required'
       });
     }
-
     const recipient = await User.findById(recipientId);
     if (!recipient) {
       return res.status(404).json({
@@ -57,7 +50,6 @@ const sendMessage = async (req, res, next) => {
         error: 'Recipient not found'
       });
     }
-
     if (appointmentId) {
       const appointment = await Appointment.findById(appointmentId);
       if (!appointment) {
@@ -66,17 +58,14 @@ const sendMessage = async (req, res, next) => {
           error: 'Appointment not found'
         });
       }
-
       const isOwner = appointment.owner.toString() === req.user.id;
       const isVet = appointment.vet.toString() === req.user.id;
-
       if (!isOwner && !isVet) {
         return res.status(403).json({
           success: false,
           error: 'Not authorized to send messages in this chat'
         });
       }
-
       if (isVet && !appointment.vetAccepted) {
         return res.status(403).json({
           success: false,
@@ -84,7 +73,6 @@ const sendMessage = async (req, res, next) => {
         });
       }
     }
-
     const message = await ChatMessage.create({
       sender: req.user.id,
       recipient: recipientId,
@@ -94,12 +82,10 @@ const sendMessage = async (req, res, next) => {
       appointment: appointmentId,
       pet: petId
     });
-
     await message.populate([
       { path: 'sender', select: 'name avatar role' },
       { path: 'recipient', select: 'name avatar role' }
     ]);
-
     res.status(201).json({
       success: true,
       data: message
@@ -108,11 +94,9 @@ const sendMessage = async (req, res, next) => {
     next(error);
   }
 };
-
 const markMessagesAsRead = async (req, res, next) => {
   try {
     const { chatRoom } = req.params;
-
     await ChatMessage.updateMany(
       { 
         chatRoom,
@@ -124,7 +108,6 @@ const markMessagesAsRead = async (req, res, next) => {
         readAt: new Date()
       }
     );
-
     res.json({
       success: true,
       message: 'Messages marked as read'
@@ -133,29 +116,24 @@ const markMessagesAsRead = async (req, res, next) => {
     next(error);
   }
 };
-
 const deleteMessage = async (req, res, next) => {
   try {
     const message = await ChatMessage.findById(req.params.messageId);
-
     if (!message) {
       return res.status(404).json({
         success: false,
         error: 'Message not found'
       });
     }
-
     if (message.sender.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to delete this message'
       });
     }
-
     message.isDeleted = true;
     message.deletedAt = new Date();
     await message.save();
-
     res.json({
       success: true,
       message: 'Message deleted successfully'
@@ -164,44 +142,37 @@ const deleteMessage = async (req, res, next) => {
     next(error);
   }
 };
-
 const editMessage = async (req, res, next) => {
   try {
     const { content } = req.body;
     const message = await ChatMessage.findById(req.params.messageId);
-
     if (!message) {
       return res.status(404).json({
         success: false,
         error: 'Message not found'
       });
     }
-
     if (message.sender.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to edit this message'
       });
     }
-
     if (!content || content.trim().length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Message content is required'
       });
     }
-
     message.originalContent = message.content;
     message.content = content.trim();
     message.isEdited = true;
     message.editedAt = new Date();
     await message.save();
-
     await message.populate([
       { path: 'sender', select: 'name avatar role' },
       { path: 'recipient', select: 'name avatar role' }
     ]);
-
     res.json({
       success: true,
       data: message
@@ -210,7 +181,6 @@ const editMessage = async (req, res, next) => {
     next(error);
   }
 };
-
 const getUnreadCount = async (req, res, next) => {
   try {
     const unreadCount = await ChatMessage.countDocuments({
@@ -218,7 +188,6 @@ const getUnreadCount = async (req, res, next) => {
       isRead: false,
       isDeleted: false
     });
-
     res.json({
       success: true,
       data: { unreadCount }
@@ -227,7 +196,6 @@ const getUnreadCount = async (req, res, next) => {
     next(error);
   }
 };
-
 const getChatRooms = async (req, res, next) => {
   try {
     const chatRooms = await ChatMessage.aggregate([
@@ -283,7 +251,6 @@ const getChatRooms = async (req, res, next) => {
         $sort: { 'lastMessage.createdAt': -1 }
       }
     ]);
-
     res.json({
       success: true,
       data: chatRooms
@@ -292,7 +259,6 @@ const getChatRooms = async (req, res, next) => {
     next(error);
   }
 };
-
 module.exports = {
   getChatHistory,
   sendMessage,

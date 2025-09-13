@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -74,7 +73,7 @@ const userSchema = new mongoose.Schema({
     bio: String,
     location: String,
     website: String,
-    specialization: [String], // Array of specializations for vets
+    specialization: [String], 
     licenseNumber: String,
     experience: Number,
     clinicName: String,
@@ -85,7 +84,7 @@ const userSchema = new mongoose.Schema({
         enum: ['Point']
       },
       coordinates: {
-        type: [Number], // [longitude, latitude]
+        type: [Number], 
         index: '2dsphere'
       }
     },
@@ -100,7 +99,7 @@ const userSchema = new mongoose.Schema({
     },
     consultationFee: Number,
     languages: [String],
-    conditions: [String] // Conditions/specialties they treat
+    conditions: [String] 
   },
   favoriteVets: [{
     type: mongoose.Schema.Types.ObjectId,
@@ -111,64 +110,36 @@ const userSchema = new mongoose.Schema({
   toJSON: { 
     virtuals: true,
     transform: function(doc, ret) {
-      // Ensure isEmailVerified is always included
       ret.isEmailVerified = doc.isEmailVerified;
       return ret;
     }
   },
   toObject: { virtuals: true }
 });
-
-// userSchema.virtual('isLocked').get(function() {
-//   return !!(this.lockUntil && this.lockUntil > Date.now());
-// });
-
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) {
     next();
   }
-  
   const salt = await bcrypt.genSalt(12);
   this.password = await bcrypt.hash(this.password, salt);
 });
-
 userSchema.methods.getSignedJwtToken = function() {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRE
   });
 };
-
 userSchema.methods.getRefreshToken = function() {
   return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: process.env.JWT_REFRESH_EXPIRE
   });
 };
-
 userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
-
-// userSchema.methods.incLoginAttempts = function() {
-//   if (this.lockUntil && this.lockUntil < Date.now()) {
-//     return this.updateOne({
-//       $unset: { lockUntil: 1, loginAttempts: 1 }
-//     });
-//   }
-  
-//   const updates = { $inc: { loginAttempts: 1 } };
-  
-//   if (this.loginAttempts + 1 >= 5 && !this.isLocked) {
-//     updates.$set = { lockUntil: Date.now() + 2 * 60 * 60 * 1000 };
-//   }
-  
-//   return this.updateOne(updates);
-// };
-
 userSchema.index({ email: 1 });
 userSchema.index({ role: 1 });
 userSchema.index({ isVerified: 1 });
 userSchema.index({ 'profile.coordinates': '2dsphere' });
 userSchema.index({ 'profile.specialization': 1 });
 userSchema.index({ 'profile.location': 1 });
-
 module.exports = mongoose.model('User', userSchema);

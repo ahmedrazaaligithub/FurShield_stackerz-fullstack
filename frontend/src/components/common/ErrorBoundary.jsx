@@ -1,16 +1,13 @@
 import React from 'react';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
     this.state = { hasError: false, error: null, errorInfo: null };
   }
-
   static getDerivedStateFromError(error) {
     return { hasError: true };
   }
-
   componentDidCatch(error, errorInfo) {
     console.error('ErrorBoundary caught an error:', error, errorInfo);
     this.setState({
@@ -18,7 +15,6 @@ class ErrorBoundary extends React.Component {
       errorInfo: errorInfo
     });
   }
-
   render() {
     if (this.state.hasError) {
       return (
@@ -30,15 +26,12 @@ class ErrorBoundary extends React.Component {
                   <ExclamationTriangleIcon className="w-8 h-8 text-red-600" />
                 </div>
               </div>
-              
               <h2 className="text-2xl font-bold text-gray-900 mb-4">
                 Something went wrong
               </h2>
-              
               <p className="text-gray-600 mb-6">
                 We encountered an unexpected error. Please try refreshing the page or go back to the previous page.
               </p>
-              
               <div className="space-y-3">
                 <button
                   onClick={() => window.location.reload()}
@@ -46,7 +39,6 @@ class ErrorBoundary extends React.Component {
                 >
                   Refresh Page
                 </button>
-                
                 <button
                   onClick={() => window.history.back()}
                   className="w-full bg-gray-100 text-gray-700 px-6 py-3 rounded-xl hover:bg-gray-200 transition-colors font-semibold"
@@ -54,7 +46,6 @@ class ErrorBoundary extends React.Component {
                   Go Back
                 </button>
               </div>
-              
               {process.env.NODE_ENV === 'development' && this.state.error && (
                 <details className="mt-6 text-left">
                   <summary className="cursor-pointer text-sm text-gray-500 hover:text-gray-700">
@@ -76,9 +67,7 @@ class ErrorBoundary extends React.Component {
         </div>
       );
     }
-
     return this.props.children;
   }
 }
-
 export default ErrorBoundary;

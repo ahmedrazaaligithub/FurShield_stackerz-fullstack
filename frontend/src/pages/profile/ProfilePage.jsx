@@ -13,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import toast from "react-hot-toast";
 import { uploadImageToCloudinary } from "../../utils/uploadImage";
-
 export default function ProfilePage() {
   const { user, updateProfile } = useAuth();
   const queryClient = useQueryClient();
@@ -25,32 +24,24 @@ export default function ProfilePage() {
     address: "",
     bio: "",
   });
-
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ["profile"],
     queryFn: userAPI.getProfile,
     initialData: { data: { data: user } },
   });
-
-  // Listen for user updates from AuthContext and custom events
   useEffect(() => {
     refetch();
   }, [user, refetch]);
-
   useEffect(() => {
     const handleUserUpdate = () => {
       refetch();
     };
-    
     const handleForceRefresh = () => {
-      // Force refetch user data from server
       queryClient.invalidateQueries(['profile']);
       refetch();
     };
-    
     window.addEventListener('userUpdated', handleUserUpdate);
     window.addEventListener('forceUserRefresh', handleForceRefresh);
-    
     return () => {
       window.removeEventListener('userUpdated', handleUserUpdate);
       window.removeEventListener('forceUserRefresh', handleForceRefresh);
@@ -61,8 +52,6 @@ export default function ProfilePage() {
   console.log('currentUser----->', profile?.data?.data || user);
   console.log('emailVerified----->', (profile?.data?.data || user)?.emailVerified);
   console.log('isEmailVerified----->', (profile?.data?.data || user)?.isEmailVerified);
-
-  // Update form data when profile data is available
   useEffect(() => {
     const currentUser = profile?.data?.data || user;
     if (currentUser) {
@@ -75,8 +64,6 @@ export default function ProfilePage() {
       });
     }
   }, [profile, user]);
-  
-
   const updateMutation = useMutation({
     mutationFn: userAPI.updateProfile,
     onSuccess: (data) => {
@@ -89,14 +76,12 @@ export default function ProfilePage() {
       toast.error(error.response?.data?.error || "Failed to update profile");
     },
   });
-
   const avatarMutation = useMutation({
     mutationFn: userAPI.uploadAvatar,
     onSuccess: (data) => {
       const updatedUser = data.data.data;
       queryClient.setQueryData(["profile"], data);
       updateProfile(updatedUser);
-      // Force re-render by updating local state
       queryClient.invalidateQueries(["profile"]);
       toast.success("Avatar updated successfully");
     },
@@ -104,17 +89,14 @@ export default function ProfilePage() {
       toast.error(error.response?.data?.error || "Failed to upload avatar");
     },
   });
-
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
     updateMutation.mutate(formData);
   };
-
   const handleCancel = () => {
     const currentUser = profile?.data?.data || user;
     setFormData({
@@ -126,7 +108,6 @@ export default function ProfilePage() {
     });
     setIsEditing(false);
   };
-
   const handleAvatarChange = async (e) => {
     if (!e) return;
     uploadImageToCloudinary(e.target.files[0]).then((data) => {
@@ -134,7 +115,6 @@ export default function ProfilePage() {
       e.target.value = null;
     })
   };
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -142,9 +122,7 @@ export default function ProfilePage() {
       </div>
     );
   }
-
   const currentUser = profile?.data?.data || user;
-
   return (
     <div className="max-w-4xl mx-auto space-y-8">
       <div className="flex items-center justify-between">
@@ -159,9 +137,8 @@ export default function ProfilePage() {
           </button>
         )}
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Avatar Section */}
+        {}
         <div className="lg:col-span-1">
           <div className="card p-6 text-center">
             <div className="relative inline-block">
@@ -190,43 +167,11 @@ export default function ProfilePage() {
                   accept="image/*"
                   onChange={handleAvatarChange}
                   className="hidden"
-                  disabled={avatarMutation.isPending}
                 />
               </label>
-
-              {avatarMutation.isPending && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                  <LoadingSpinner size="sm" />
-                </div>
-              )}
-            </div>
-
-            <h2 className="text-xl font-semibold text-gray-900 mt-4">
-              {currentUser?.name}
-            </h2>
-            <p className="text-gray-600 capitalize">{currentUser?.role}</p>
-            {currentUser?.isVetVerified && (
-              <div className="mt-2">
-                <span className="badge badge-success">
-                  Verified Veterinarian
-                </span>
-              </div>
-            )}
-            <div className="mt-4">
-              {currentUser?.bio ? (
-                <p className="text-sm text-gray-700 italic">
-                  "{currentUser.bio}"
-                </p>
-              ) : (
-                <p className="text-sm text-gray-500 italic">
-                  Add a bio to tell others about yourself
-                </p>
-              )}
             </div>
           </div>
         </div>
-
-        {/* Profile Information */}
         <div className="lg:col-span-2">
           <div className="card">
             <div className="card-header">
@@ -249,7 +194,6 @@ export default function ProfilePage() {
                         required
                       />
                     </div>
-
                     <div>
                       <label className="label">Email</label>
                       <input
@@ -261,7 +205,6 @@ export default function ProfilePage() {
                         required
                       />
                     </div>
-
                     <div>
                       <label className="label">Phone</label>
                       <input
@@ -273,7 +216,6 @@ export default function ProfilePage() {
                         required
                       />
                     </div>
-
                     <div>
                       <label className="label">Role</label>
                       <input
@@ -284,7 +226,6 @@ export default function ProfilePage() {
                       />
                     </div>
                   </div>
-
                   <div>
                     <label className="label">Address</label>
                     <textarea
@@ -296,7 +237,6 @@ export default function ProfilePage() {
                       required
                     />
                   </div>
-
                   <div>
                     <label className="label">Bio</label>
                     <textarea
@@ -308,7 +248,6 @@ export default function ProfilePage() {
                       placeholder="Tell us about yourself..."
                     />
                   </div>
-
                   <div className="flex space-x-4">
                     <button
                       type="submit"
@@ -322,7 +261,6 @@ export default function ProfilePage() {
                       )}
                       Save Changes
                     </button>
-
                     <button
                       type="button"
                       onClick={handleCancel}
@@ -340,7 +278,6 @@ export default function ProfilePage() {
                       <label className="label">Full Name</label>
                       <p className="text-gray-900">{currentUser?.name}</p>
                     </div>
-
                     <div>
                       <label className="label">Email</label>
                       <p className="text-gray-900">{currentUser?.email}</p>
@@ -354,12 +291,10 @@ export default function ProfilePage() {
                         </span>
                       )}
                     </div>
-
                     <div>
                       <label className="label">Phone</label>
                       <p className="text-gray-900">{currentUser?.phone}</p>
                     </div>
-
                     <div>
                       <label className="label">Role</label>
                       <p className="text-gray-900 capitalize">
@@ -367,19 +302,16 @@ export default function ProfilePage() {
                       </p>
                     </div>
                   </div>
-
                   <div>
                     <label className="label">Address</label>
                     <p className="text-gray-900 break-words">{currentUser?.address}</p>
                   </div>
-
                   {currentUser?.bio && (
                     <div>
                       <label className="label">Bio</label>
                       <p className="text-gray-900">{currentUser.bio}</p>
                     </div>
                   )}
-
                   <div>
                     <label className="label">Member Since</label>
                     <p className="text-gray-900">
@@ -399,8 +331,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Account Actions */}
+      {}
       <div className="card">
         <div className="card-header">
           <h3 className="text-lg font-semibold text-gray-900">
@@ -423,7 +354,6 @@ export default function ProfilePage() {
                 </button>
               </div>
             )}
-
             <div className="flex flex-wrap gap-4">
               <button className="btn btn-outline">Change Password</button>
               <button className="btn btn-outline">Download My Data</button>

@@ -11,30 +11,24 @@ import {
 } from '@heroicons/react/24/outline'
 import { formatDistanceToNow } from 'date-fns'
 import { cn } from '../../utils/cn'
-
 const priorityIcons = {
   high: ExclamationTriangleIcon,
   medium: InformationCircleIcon,
   low: BellIcon
 }
-
 const priorityColors = {
   high: 'text-red-600 bg-red-100',
   medium: 'text-yellow-600 bg-yellow-100',
   low: 'text-blue-600 bg-blue-100'
 }
-
 export const NotificationPanel = ({ open, onClose }) => {
   const { notifications, markNotificationRead, clearAllNotifications } = useSocket()
-
   const handleMarkAsRead = (notificationId) => {
     markNotificationRead(notificationId)
   }
-
   const handleClearAll = () => {
     clearAllNotifications()
   }
-
   return (
     <Transition.Root show={open} as={Fragment}>
       <Dialog as="div" className="relative z-50" onClose={onClose}>
@@ -49,7 +43,6 @@ export const NotificationPanel = ({ open, onClose }) => {
         >
           <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" />
         </Transition.Child>
-
         <div className="fixed inset-0 overflow-hidden">
           <div className="absolute inset-0 overflow-hidden">
             <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
@@ -79,7 +72,6 @@ export const NotificationPanel = ({ open, onClose }) => {
                           </button>
                         </div>
                       </div>
-                      
                       {notifications.length > 0 && (
                         <div className="mt-4">
                           <button
@@ -91,7 +83,6 @@ export const NotificationPanel = ({ open, onClose }) => {
                         </div>
                       )}
                     </div>
-
                     <div className="flex-1 px-4 sm:px-6">
                       {notifications.length === 0 ? (
                         <div className="flex flex-col items-center justify-center h-64 text-gray-500">
@@ -103,7 +94,6 @@ export const NotificationPanel = ({ open, onClose }) => {
                         <div className="space-y-4">
                           {notifications.map((notification) => {
                             const PriorityIcon = priorityIcons[notification.priority] || BellIcon
-                            
                             return (
                               <div
                                 key={notification._id}
@@ -121,7 +111,6 @@ export const NotificationPanel = ({ open, onClose }) => {
                                   )}>
                                     <PriorityIcon className="h-4 w-4" />
                                   </div>
-                                  
                                   <div className="flex-1 min-w-0">
                                     <p className={cn(
                                       'text-sm font-medium',
@@ -139,7 +128,6 @@ export const NotificationPanel = ({ open, onClose }) => {
                                       {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
                                     </p>
                                   </div>
-                                  
                                   {!notification.isRead && (
                                     <button
                                       onClick={() => handleMarkAsRead(notification._id)}

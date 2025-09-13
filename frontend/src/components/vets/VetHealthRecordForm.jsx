@@ -11,7 +11,6 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
-
 export default function VetHealthRecordForm({ pet, appointment, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     type: 'treatment',
@@ -34,10 +33,8 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
     followUpNotes: '',
     tags: []
   })
-  
   const [newTag, setNewTag] = useState('')
   const queryClient = useQueryClient()
-
   const addHealthRecordMutation = useMutation({
     mutationFn: (data) => petAPI.addHealthRecord(pet._id, data),
     onSuccess: () => {
@@ -51,11 +48,8 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
       toast.error(error.response?.data?.error || 'Failed to add health record')
     }
   })
-
   const handleSubmit = (e) => {
     e.preventDefault()
-    
-    // Validate required fields
     if (!formData.title.trim()) {
       toast.error('Title is required')
       return
@@ -72,8 +66,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
       toast.error('Treatment is required')
       return
     }
-
-    // Filter out empty symptoms and medications
     const cleanedData = {
       ...formData,
       symptoms: formData.symptoms.filter(s => s.name.trim()),
@@ -83,73 +75,62 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
         Object.entries(formData.vitals).filter(([_, value]) => value !== '')
       )
     }
-
     addHealthRecordMutation.mutate(cleanedData)
   }
-
   const addSymptom = () => {
     setFormData({
       ...formData,
       symptoms: [...formData.symptoms, { name: '', severity: 'mild', duration: '', notes: '' }]
     })
   }
-
   const removeSymptom = (index) => {
     setFormData({
       ...formData,
       symptoms: formData.symptoms.filter((_, i) => i !== index)
     })
   }
-
   const updateSymptom = (index, field, value) => {
     const updatedSymptoms = formData.symptoms.map((symptom, i) => 
       i === index ? { ...symptom, [field]: value } : symptom
     )
     setFormData({ ...formData, symptoms: updatedSymptoms })
   }
-
   const addMedication = () => {
     setFormData({
       ...formData,
       medications: [...formData.medications, { name: '', dosage: '', frequency: '', duration: '', instructions: '' }]
     })
   }
-
   const removeMedication = (index) => {
     setFormData({
       ...formData,
       medications: formData.medications.filter((_, i) => i !== index)
     })
   }
-
   const updateMedication = (index, field, value) => {
     const updatedMedications = formData.medications.map((medication, i) => 
       i === index ? { ...medication, [field]: value } : medication
     )
     setFormData({ ...formData, medications: updatedMedications })
   }
-
   const addLabResult = () => {
     setFormData({
       ...formData,
       labResults: [...formData.labResults, { testName: '', result: '', normalRange: '', notes: '' }]
     })
   }
-
   const removeLabResult = (index) => {
     setFormData({
       ...formData,
       labResults: formData.labResults.filter((_, i) => i !== index)
     })
   }
-
   const updateLabResult = (index, field, value) => {
     const updatedLabResults = formData.labResults.map((labResult, i) => 
       i === index ? { ...labResult, [field]: value } : labResult
     )
     setFormData({ ...formData, labResults: updatedLabResults })
   }
-
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
       setFormData({
@@ -159,14 +140,12 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
       setNewTag('')
     }
   }
-
   const removeTag = (tagToRemove) => {
     setFormData({
       ...formData,
       tags: formData.tags.filter(tag => tag !== tagToRemove)
     })
   }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-xl max-w-4xl w-full max-h-[95vh] overflow-y-auto">
@@ -184,9 +163,8 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
-
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
-          {/* Basic Information */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -207,7 +185,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 <option value="other">Other</option>
               </select>
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Title *
@@ -222,7 +199,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               />
             </div>
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Description *
@@ -236,8 +212,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               required
             />
           </div>
-
-          {/* Diagnosis and Treatment */}
+          {}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -252,7 +227,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 required
               />
             </div>
-            
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Treatment *
@@ -267,8 +241,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               />
             </div>
           </div>
-
-          {/* Symptoms */}
+          {}
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-700">
@@ -284,7 +257,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 Add Symptom
               </button>
             </div>
-            
             <div className="space-y-3">
               {formData.symptoms.map((symptom, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -300,7 +272,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                       </button>
                     )}
                   </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
                       <input
@@ -345,8 +316,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               ))}
             </div>
           </div>
-
-          {/* Medications/Prescriptions */}
+          {}
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-700">
@@ -362,7 +332,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 Add Medication
               </button>
             </div>
-            
             <div className="space-y-3">
               {formData.medications.map((medication, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -378,7 +347,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                       </button>
                     )}
                   </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
                     <div>
                       <input
@@ -417,7 +385,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                       />
                     </div>
                   </div>
-                  
                   <div>
                     <textarea
                       value={medication.instructions}
@@ -431,8 +398,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               ))}
             </div>
           </div>
-
-          {/* Vitals */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-3">
               <ClipboardDocumentCheckIcon className="h-4 w-4 inline mr-1" />
@@ -508,8 +474,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               </div>
             </div>
           </div>
-
-          {/* Lab Results */}
+          {}
           <div>
             <div className="flex items-center justify-between mb-3">
               <label className="block text-sm font-medium text-gray-700">
@@ -525,7 +490,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 Add Lab Result
               </button>
             </div>
-            
             <div className="space-y-3">
               {formData.labResults.map((labResult, index) => (
                 <div key={index} className="border border-gray-200 rounded-lg p-4">
@@ -541,7 +505,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                       </button>
                     )}
                   </div>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                     <div>
                       <input
@@ -584,8 +547,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               ))}
             </div>
           </div>
-
-          {/* Follow-up */}
+          {}
           <div>
             <div className="flex items-center space-x-3 mb-3">
               <input
@@ -599,7 +561,6 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
                 Follow-up Required
               </label>
             </div>
-            
             {formData.followUpRequired && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -628,8 +589,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               </div>
             )}
           </div>
-
-          {/* Tags */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Tags
@@ -669,8 +629,7 @@ export default function VetHealthRecordForm({ pet, appointment, onClose, onSucce
               </button>
             </div>
           </div>
-
-          {/* Actions */}
+          {}
           <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
             <button
               type="button"

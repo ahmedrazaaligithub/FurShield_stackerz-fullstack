@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const adoptionListingSchema = new mongoose.Schema({
   pet: {
     type: mongoose.Schema.ObjectId,
@@ -118,11 +117,9 @@ const adoptionListingSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
 adoptionListingSchema.index({ shelter: 1 });
 adoptionListingSchema.index({ status: 1 });
 adoptionListingSchema.index({ priority: 1 });
 adoptionListingSchema.index({ featured: 1 });
 adoptionListingSchema.index({ createdAt: -1 });
-
 module.exports = mongoose.model('AdoptionListing', adoptionListingSchema);

@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { ShieldCheckIcon, LockClosedIcon } from '@heroicons/react/24/solid'
-
 const AdminLoginPage = () => {
   const [formData, setFormData] = useState({
     email: '',
@@ -10,11 +9,9 @@ const AdminLoginPage = () => {
   })
   const [errors, setErrors] = useState({})
   const [loading, setLoading] = useState(false)
-  
   const { login, user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-
   useEffect(() => {
     if (user && user.role === 'admin') {
       navigate('/admin', { replace: true })
@@ -22,7 +19,6 @@ const AdminLoginPage = () => {
       navigate('/', { replace: true })
     }
   }, [user, navigate])
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -36,33 +32,25 @@ const AdminLoginPage = () => {
       }))
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required'
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid'
     }
-    
     if (!formData.password) {
       newErrors.password = 'Password is required'
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     setLoading(true)
     const result = await login(formData.email, formData.password)
     setLoading(false)
-    
     if (result.success && result.user) {
       if (result.user.role === 'admin') {
         navigate('/admin', { replace: true })
@@ -71,7 +59,6 @@ const AdminLoginPage = () => {
       }
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -86,7 +73,6 @@ const AdminLoginPage = () => {
             Secure login for administrators only
           </p>
         </div>
-
         <div className="bg-white/10 backdrop-blur-lg rounded-xl shadow-xl p-8 border border-white/20">
           <form className="space-y-6" onSubmit={handleSubmit}>
             {errors.general && (
@@ -94,7 +80,6 @@ const AdminLoginPage = () => {
                 {errors.general}
               </div>
             )}
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-200 mb-2">
                 Admin Email
@@ -114,7 +99,6 @@ const AdminLoginPage = () => {
                 <p className="mt-1 text-sm text-red-300">{errors.email}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-200 mb-2">
                 Password
@@ -134,7 +118,6 @@ const AdminLoginPage = () => {
                 <p className="mt-1 text-sm text-red-300">{errors.password}</p>
               )}
             </div>
-
             <div>
               <button
                 type="submit"
@@ -147,7 +130,6 @@ const AdminLoginPage = () => {
                 {loading ? 'Authenticating...' : 'Access Admin Panel'}
               </button>
             </div>
-
             <div className="text-center">
               <Link 
                 to="/" 
@@ -158,7 +140,6 @@ const AdminLoginPage = () => {
             </div>
           </form>
         </div>
-
         <div className="text-center">
           <div className="bg-yellow-500/20 border border-yellow-500/50 text-yellow-200 px-4 py-3 rounded-lg text-sm">
             <p className="font-medium">🔒 Secure Admin Zone</p>
@@ -169,5 +150,4 @@ const AdminLoginPage = () => {
     </div>
   )
 }
-
 export default AdminLoginPage

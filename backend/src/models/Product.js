@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const productSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -122,27 +121,22 @@ const productSchema = new mongoose.Schema({
   toJSON: { virtuals: true },
   toObject: { virtuals: true }
 });
-
 productSchema.virtual('reviews', {
   ref: 'Rating',
   localField: '_id',
   foreignField: 'target',
   justOne: false
 });
-
 productSchema.virtual('inStock').get(function() {
   return this.inventory.quantity > 0;
 });
-
 productSchema.virtual('lowStock').get(function() {
   return this.inventory.quantity <= this.inventory.lowStockThreshold;
 });
-
 productSchema.index({ name: 'text', description: 'text' });
 productSchema.index({ category: 1 });
 productSchema.index({ price: 1 });
 productSchema.index({ 'ratings.average': -1 });
 productSchema.index({ isFeatured: 1 });
 productSchema.index({ isActive: 1 });
-
 module.exports = mongoose.model('Product', productSchema);

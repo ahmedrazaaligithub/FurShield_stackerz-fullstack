@@ -1,5 +1,4 @@
 const mongoose = require('mongoose')
-
 const feedbackSchema = new mongoose.Schema({
   pet: {
     type: mongoose.Schema.Types.ObjectId,
@@ -37,13 +36,9 @@ const feedbackSchema = new mongoose.Schema({
 }, {
   timestamps: true
 })
-
-// Index for efficient queries
 feedbackSchema.index({ pet: 1, createdAt: -1 })
 feedbackSchema.index({ user: 1 })
 feedbackSchema.index({ type: 1 })
-
-// Populate user details when querying
 feedbackSchema.pre(/^find/, function(next) {
   this.populate({
     path: 'user',
@@ -51,5 +46,4 @@ feedbackSchema.pre(/^find/, function(next) {
   })
   next()
 })
-
 module.exports = mongoose.model('Feedback', feedbackSchema)

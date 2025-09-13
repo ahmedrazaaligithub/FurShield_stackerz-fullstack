@@ -3,14 +3,11 @@ import { Link, useParams } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { CheckCircleIcon, XCircleIcon } from '@heroicons/react/24/outline'
-
 export default function VerifyEmailPage() {
-  const [status, setStatus] = useState('loading') // loading, success, error
+  const [status, setStatus] = useState('loading') 
   const [message, setMessage] = useState('')
-  
   const { token } = useParams()
   const { verifyEmail } = useAuth()
-
   useEffect(() => {
     const verify = async () => {
       if (!token) {
@@ -18,9 +15,7 @@ export default function VerifyEmailPage() {
         setMessage('Invalid verification link')
         return
       }
-
       const result = await verifyEmail(token)
-      
       if (result.success) {
         setStatus('success')
         setMessage('Your email has been verified successfully!')
@@ -29,10 +24,8 @@ export default function VerifyEmailPage() {
         setMessage(result.error || 'Email verification failed')
       }
     }
-
     verify()
   }, [token, verifyEmail])
-
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -43,7 +36,6 @@ export default function VerifyEmailPage() {
             </div>
             <span className="ml-3 text-2xl font-bold text-gray-900">PetCare</span>
           </Link>
-          
           {status === 'loading' && (
             <>
               <div className="mt-6">
@@ -57,7 +49,6 @@ export default function VerifyEmailPage() {
               </p>
             </>
           )}
-
           {status === 'success' && (
             <>
               <div className="mx-auto mt-6 h-16 w-16 bg-green-100 rounded-full flex items-center justify-center">
@@ -71,7 +62,6 @@ export default function VerifyEmailPage() {
               </p>
             </>
           )}
-
           {status === 'error' && (
             <>
               <div className="mx-auto mt-6 h-16 w-16 bg-red-100 rounded-full flex items-center justify-center">
@@ -86,7 +76,6 @@ export default function VerifyEmailPage() {
             </>
           )}
         </div>
-
         {status !== 'loading' && (
           <div className="text-center space-y-4">
             <Link
@@ -95,7 +84,6 @@ export default function VerifyEmailPage() {
             >
               Go to Dashboard
             </Link>
-            
             <Link
               to="/login"
               className="block font-medium text-primary-600 hover:text-primary-500"

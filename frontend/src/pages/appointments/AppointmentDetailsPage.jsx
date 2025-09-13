@@ -20,7 +20,6 @@ import { cn } from '../../utils/cn'
 import { useAuth } from '../../contexts/AuthContext'
 import toast from 'react-hot-toast'
 import VetHealthRecordForm from '../../components/vets/VetHealthRecordForm'
-
 export default function AppointmentDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -47,12 +46,10 @@ export default function AppointmentDetailsPage() {
     proposedDate: '',
     reason: ''
   })
-
   const { data: appointment, isLoading, error } = useQuery({
     queryKey: ['appointment', id],
     queryFn: () => appointmentAPI.getAppointment(id)
   })
-
   const cancelMutation = useMutation({
     mutationFn: ({ id, reason }) => appointmentAPI.cancelAppointment(id, { reason }),
     onSuccess: () => {
@@ -64,7 +61,6 @@ export default function AppointmentDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to cancel appointment')
     }
   })
-
   const acceptMutation = useMutation({
     mutationFn: () => appointmentAPI.acceptAppointment(id),
     onSuccess: () => {
@@ -75,7 +71,6 @@ export default function AppointmentDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to accept appointment')
     }
   })
-
   const completeMutation = useMutation({
     mutationFn: (data) => appointmentAPI.completeAppointment(id, data),
     onSuccess: () => {
@@ -87,7 +82,6 @@ export default function AppointmentDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to complete appointment')
     }
   })
-
   const rescheduleMutation = useMutation({
     mutationFn: (data) => appointmentAPI.proposeTimeChange(id, data),
     onSuccess: () => {
@@ -99,7 +93,6 @@ export default function AppointmentDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to propose reschedule')
     }
   })
-
   const handleCancel = () => {
     if (!cancelReason.trim()) {
       toast.error('Please provide a reason for cancellation')
@@ -107,7 +100,6 @@ export default function AppointmentDetailsPage() {
     }
     cancelMutation.mutate({ id, reason: cancelReason })
   }
-
   const handleComplete = () => {
     if (!completionData.diagnosis.trim()) {
       toast.error('Please provide a diagnosis')
@@ -126,7 +118,6 @@ export default function AppointmentDetailsPage() {
         : undefined
     })
   }
-
   const handleReschedule = () => {
     if (!rescheduleData.proposedDate) {
       toast.error('Please select a new date and time')
@@ -138,11 +129,9 @@ export default function AppointmentDetailsPage() {
     }
     rescheduleMutation.mutate(rescheduleData)
   }
-
   const isVet = user?.role === 'vet'
   const isAssignedVet = isVet && appointmentData?.vet?._id === user?.id
   const canManageAppointment = isAssignedVet || user?.role === 'admin'
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -150,7 +139,6 @@ export default function AppointmentDetailsPage() {
       </div>
     )
   }
-
   if (error || !appointment?.data?.data) {
     return (
       <div className="text-center py-12">
@@ -167,12 +155,10 @@ export default function AppointmentDetailsPage() {
       </div>
     )
   }
-
   const appointmentData = appointment.data.data
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
@@ -188,7 +174,6 @@ export default function AppointmentDetailsPage() {
             </p>
           </div>
         </div>
-        
         <div className="flex items-center space-x-3">
           <span className={cn(
             'badge text-sm px-3 py-1',
@@ -199,8 +184,7 @@ export default function AppointmentDetailsPage() {
           )}>
             {appointmentData.status}
           </span>
-          
-          {/* Vet Actions */}
+          {}
           {isAssignedVet && appointmentData.status === 'pending' && (
             <>
               <button
@@ -220,8 +204,7 @@ export default function AppointmentDetailsPage() {
               </button>
             </>
           )}
-          
-          {/* General Actions */}
+          {}
           {appointmentData.status === 'confirmed' && (
             <>
               {isAssignedVet && (
@@ -253,11 +236,10 @@ export default function AppointmentDetailsPage() {
           )}
         </div>
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
+        {}
         <div className="lg:col-span-2 space-y-6">
-          {/* Appointment Details */}
+          {}
           <div className="card">
             <div className="card-header">
               <h2 className="text-xl font-semibold text-gray-900">Appointment Details</h2>
@@ -278,7 +260,6 @@ export default function AppointmentDetailsPage() {
                     </p>
                   </div>
                 </div>
-                
                 <div className="flex items-center space-x-3">
                   <ClockIcon className="h-5 w-5 text-gray-400" />
                   <div>
@@ -296,7 +277,6 @@ export default function AppointmentDetailsPage() {
                     </p>
                   </div>
                 </div>
-                
                 <div className="flex items-center space-x-3">
                   <UserIcon className="h-5 w-5 text-gray-400" />
                   <div>
@@ -306,7 +286,6 @@ export default function AppointmentDetailsPage() {
                     </p>
                   </div>
                 </div>
-                
                 <div className="flex items-center space-x-3">
                   <HeartIcon className="h-5 w-5 text-gray-400" />
                   <div>
@@ -317,14 +296,12 @@ export default function AppointmentDetailsPage() {
                   </div>
                 </div>
               </div>
-              
               {appointmentData.reason && (
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Reason for Visit</p>
                   <p className="text-gray-900">{appointmentData.reason}</p>
                 </div>
               )}
-              
               {appointmentData.notes && (
                 <div>
                   <p className="text-sm text-gray-500 mb-1">Additional Notes</p>
@@ -333,8 +310,7 @@ export default function AppointmentDetailsPage() {
               )}
             </div>
           </div>
-
-          {/* Chat Section */}
+          {}
           {appointmentData.status === 'confirmed' && (
             <div className="card">
               <div className="card-header">
@@ -358,10 +334,9 @@ export default function AppointmentDetailsPage() {
             </div>
           )}
         </div>
-
-        {/* Sidebar */}
+        {}
         <div className="space-y-6">
-          {/* Pet Information */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Pet Information</h3>
@@ -389,7 +364,6 @@ export default function AppointmentDetailsPage() {
                   </p>
                 </div>
               </div>
-              
               {appointmentData.pet?.medicalConditions?.length > 0 && (
                 <div>
                   <p className="text-sm text-gray-500 mb-2">Medical Conditions</p>
@@ -404,8 +378,7 @@ export default function AppointmentDetailsPage() {
               )}
             </div>
           </div>
-
-          {/* Veterinarian Information */}
+          {}
           {appointmentData.vet && (
             <div className="card">
               <div className="card-header">
@@ -434,14 +407,13 @@ export default function AppointmentDetailsPage() {
               </div>
             </div>
           )}
-
-          {/* Actions */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Actions</h3>
             </div>
             <div className="card-content space-y-3">
-              {/* Vet-specific actions */}
+              {}
               {isAssignedVet && appointmentData.status === 'pending' && (
                 <button
                   onClick={() => acceptMutation.mutate()}
@@ -452,7 +424,6 @@ export default function AppointmentDetailsPage() {
                   Accept Appointment
                 </button>
               )}
-              
               {isAssignedVet && appointmentData.status === 'confirmed' && (
                 <button
                   onClick={() => setShowCompleteModal(true)}
@@ -462,8 +433,7 @@ export default function AppointmentDetailsPage() {
                   Complete with Diagnosis
                 </button>
               )}
-              
-              {/* General actions */}
+              {}
               {(appointmentData.status === 'confirmed' || appointmentData.status === 'pending') && (
                 <button 
                   onClick={() => setShowRescheduleModal(true)}
@@ -473,14 +443,12 @@ export default function AppointmentDetailsPage() {
                   Propose Reschedule
                 </button>
               )}
-              
               {appointmentData.status === 'completed' && (
                 <button className="btn btn-outline w-full">
                   <DocumentTextIcon className="h-4 w-4 mr-2" />
                   Download Report
                 </button>
               )}
-              
               <button className="btn btn-outline w-full">
                 <DocumentTextIcon className="h-4 w-4 mr-2" />
                 Download Receipt
@@ -489,8 +457,7 @@ export default function AppointmentDetailsPage() {
           </div>
         </div>
       </div>
-
-      {/* Cancel Modal */}
+      {}
       {showCancelModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
@@ -528,13 +495,11 @@ export default function AppointmentDetailsPage() {
           </div>
         </div>
       )}
-
-      {/* Complete Appointment Modal */}
+      {}
       {showCompleteModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Complete Appointment</h3>
-            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Diagnosis *</label>
@@ -547,7 +512,6 @@ export default function AppointmentDetailsPage() {
                   required
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Treatment *</label>
                 <textarea
@@ -559,7 +523,6 @@ export default function AppointmentDetailsPage() {
                   required
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Prescription</label>
                 <textarea
@@ -570,7 +533,6 @@ export default function AppointmentDetailsPage() {
                   placeholder="Enter prescription details..."
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Follow-up Date</label>
                 <input
@@ -580,7 +542,6 @@ export default function AppointmentDetailsPage() {
                   className="input w-full"
                 />
               </div>
-              
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Consultation Fee</label>
@@ -636,7 +597,6 @@ export default function AppointmentDetailsPage() {
                 </div>
               </div>
             </div>
-            
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleComplete}
@@ -658,13 +618,11 @@ export default function AppointmentDetailsPage() {
           </div>
         </div>
       )}
-
-      {/* Reschedule Modal */}
+      {}
       {showRescheduleModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">Propose Reschedule</h3>
-            
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">New Date & Time *</label>
@@ -676,7 +634,6 @@ export default function AppointmentDetailsPage() {
                   required
                 />
               </div>
-              
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason *</label>
                 <textarea
@@ -689,7 +646,6 @@ export default function AppointmentDetailsPage() {
                 />
               </div>
             </div>
-            
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={handleReschedule}
@@ -711,7 +667,7 @@ export default function AppointmentDetailsPage() {
           </div>
         </div>
       )}
-      {/* Add Health Record Modal (Vet) */}
+      {}
       {showAddRecordModal && (
         <VetHealthRecordForm
           pet={appointmentData.pet}

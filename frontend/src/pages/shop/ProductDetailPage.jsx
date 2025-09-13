@@ -16,7 +16,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
-
 export default function ProductDetailPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -24,12 +23,10 @@ export default function ProductDetailPage() {
   const [selectedImage, setSelectedImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [isFavorite, setIsFavorite] = useState(false)
-
   const { data: product, isLoading } = useQuery({
     queryKey: ['product', id],
     queryFn: () => productAPI.getProduct(id)
   })
-
   const addToCartMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartAPI.addToCart(productId, quantity),
     onSuccess: () => {
@@ -40,11 +37,9 @@ export default function ProductDetailPage() {
       toast.error(error.response?.data?.error || 'Failed to add to cart')
     }
   })
-
   const handleAddToCart = () => {
     addToCartMutation.mutate({ productId: id, quantity })
   }
-
   const handleBuyNow = () => {
     addToCartMutation.mutate({ productId: id, quantity }, {
       onSuccess: () => {
@@ -52,19 +47,16 @@ export default function ProductDetailPage() {
       }
     })
   }
-
   const handleQuantityChange = (delta) => {
     const newQuantity = quantity + delta
     if (newQuantity >= 1 && newQuantity <= (productData?.inventory?.quantity || 10)) {
       setQuantity(newQuantity)
     }
   }
-
   const toggleFavorite = () => {
     setIsFavorite(!isFavorite)
     toast.success(isFavorite ? 'Removed from favorites' : 'Added to favorites')
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -72,9 +64,7 @@ export default function ProductDetailPage() {
       </div>
     )
   }
-
   const productData = product?.data?.data
-
   if (!productData) {
     return (
       <div className="text-center py-12">
@@ -85,14 +75,12 @@ export default function ProductDetailPage() {
       </div>
     )
   }
-
   const inStock = productData.inventory?.quantity > 0
   const discount = productData.compareAtPrice ? 
     Math.round(((productData.compareAtPrice - productData.price) / productData.compareAtPrice) * 100) : 0
-
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      {/* Breadcrumb */}
+      {}
       <nav className="flex items-center space-x-2 text-sm text-gray-600 mb-6">
         <button onClick={() => navigate('/shop')} className="hover:text-gray-900 flex items-center">
           <ArrowLeftIcon className="h-4 w-4 mr-1" />
@@ -103,9 +91,8 @@ export default function ProductDetailPage() {
         <span>/</span>
         <span className="text-gray-900">{productData.name}</span>
       </nav>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Image Gallery */}
+        {}
         <div className="space-y-4">
           <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
             {productData.images && productData.images.length > 0 ? (
@@ -120,8 +107,7 @@ export default function ProductDetailPage() {
               </div>
             )}
           </div>
-          
-          {/* Thumbnail Images */}
+          {}
           {productData.images && productData.images.length > 1 && (
             <div className="grid grid-cols-4 gap-2">
               {productData.images.map((image, index) => (
@@ -142,10 +128,9 @@ export default function ProductDetailPage() {
             </div>
           )}
         </div>
-
-        {/* Product Info */}
+        {}
         <div className="space-y-6">
-          {/* Title and Price */}
+          {}
           <div>
             <div className="flex items-start justify-between">
               <h1 className="text-3xl font-bold text-gray-900">{productData.name}</h1>
@@ -160,8 +145,7 @@ export default function ProductDetailPage() {
                 )}
               </button>
             </div>
-            
-            {/* Rating */}
+            {}
             <div className="flex items-center mt-2 space-x-2">
               <div className="flex">
                 {[...Array(5)].map((_, i) => (
@@ -179,8 +163,7 @@ export default function ProductDetailPage() {
                 ({productData.ratings?.count || 0} reviews)
               </span>
             </div>
-
-            {/* Price */}
+            {}
             <div className="mt-4 flex items-baseline space-x-3">
               <span className="text-3xl font-bold text-gray-900">
                 ${productData.price}
@@ -197,16 +180,14 @@ export default function ProductDetailPage() {
               )}
             </div>
           </div>
-
-          {/* Description */}
+          {}
           <div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">Description</h3>
             <p className="text-gray-600 leading-relaxed">
               {productData.description || 'No description available'}
             </p>
           </div>
-
-          {/* Product Details */}
+          {}
           <div className="border-t border-b py-4 space-y-2">
             {productData.brand && (
               <div className="flex justify-between">
@@ -233,8 +214,7 @@ export default function ProductDetailPage() {
               </span>
             </div>
           </div>
-
-          {/* Quantity and Add to Cart */}
+          {}
           <div className="space-y-4">
             <div className="flex items-center space-x-4">
               <span className="text-gray-700 font-medium">Quantity:</span>
@@ -256,7 +236,6 @@ export default function ProductDetailPage() {
                 </button>
               </div>
             </div>
-
             <div className="flex space-x-4">
               <button
                 onClick={handleAddToCart}
@@ -281,8 +260,7 @@ export default function ProductDetailPage() {
               </button>
             </div>
           </div>
-
-          {/* Features */}
+          {}
           <div className="space-y-3 pt-4">
             <div className="flex items-center space-x-3 text-gray-600">
               <TruckIcon className="h-5 w-5" />
@@ -297,8 +275,7 @@ export default function ProductDetailPage() {
               <span>100% authentic products</span>
             </div>
           </div>
-
-          {/* Vendor Info */}
+          {}
           {productData.vendor && (
             <div className="border-t pt-4">
               <p className="text-sm text-gray-600">
@@ -308,8 +285,7 @@ export default function ProductDetailPage() {
           )}
         </div>
       </div>
-
-      {/* Reviews Section */}
+      {}
       <div className="mt-12 border-t pt-8">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">Customer Reviews</h2>
         <div className="bg-gray-50 rounded-lg p-6 text-center">

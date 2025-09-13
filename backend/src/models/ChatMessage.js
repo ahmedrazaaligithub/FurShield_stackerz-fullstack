@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const chatMessageSchema = new mongoose.Schema({
   sender: {
     type: mongoose.Schema.ObjectId,
@@ -63,10 +62,8 @@ const chatMessageSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 chatMessageSchema.index({ chatRoom: 1, createdAt: -1 });
 chatMessageSchema.index({ sender: 1 });
 chatMessageSchema.index({ recipient: 1 });
 chatMessageSchema.index({ appointment: 1 });
-
 module.exports = mongoose.model('ChatMessage', chatMessageSchema);

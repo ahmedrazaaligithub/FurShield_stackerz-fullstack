@@ -20,7 +20,6 @@ import { Link } from 'react-router-dom'
 import { petAPI, appointmentAPI, adoptionAPI, chatAPI, shelterAPI, orderAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import ShelterProfileForm from '../../components/shelters/ShelterProfileForm'
-
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group">
@@ -40,7 +39,6 @@ const StatCard = ({ title, value, icon: Icon, color, href }) => (
     </div>
   </Link>
 )
-
 const QuickAction = ({ title, description, icon: Icon, href, color, onClick }) => {
   const content = (
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group cursor-pointer">
@@ -55,22 +53,17 @@ const QuickAction = ({ title, description, icon: Icon, href, color, onClick }) =
       </p>
     </div>
   )
-
   if (onClick) {
     return <div onClick={onClick}>{content}</div>
   }
-
   return <Link to={href} className="block">{content}</Link>
 }
-
 export default function ShelterDashboard() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [petToDelete, setPetToDelete] = useState(null)
   const [showShelterForm, setShowShelterForm] = useState(false)
-
-  // Fetch my shelter profile (if exists)
   const { data: myShelterResp, isLoading: myShelterLoading, isError: myShelterError } = useQuery({
     queryKey: ['my-shelter'],
     queryFn: () => shelterAPI.getMyShelter(),
@@ -78,43 +71,31 @@ export default function ShelterDashboard() {
     retry: false
   })
   const myShelter = myShelterResp?.data?.data
-
-  // Fetch shelter pets
   const { data: pets, isLoading: petsLoading } = useQuery({
     queryKey: ['shelter-pets', user?.id],
     queryFn: () => petAPI.getUserPets(user?.id),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
-  // Fetch adoption listings
   const { data: adoptions, isLoading: adoptionsLoading } = useQuery({
     queryKey: ['shelter-adoptions', user?.id],
     queryFn: () => adoptionAPI.getShelterListings(user?.id),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
-  // Fetch regular appointments (vet appointments for shelter pets)
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
     queryKey: ['shelter-appointments', user?.id],
     queryFn: () => appointmentAPI.getAppointments({ userId: user?.id }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
-  // Fetch adoption inquiries
   const { data: inquiries, isLoading: inquiriesLoading } = useQuery({
     queryKey: ['adoption-inquiries', user?.id],
     queryFn: () => adoptionAPI.getInquiries({ shelterId: user?.id }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
-  // Fetch orders for shelter products
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['shelter-orders', user?.id],
     queryFn: () => orderAPI.getOrders({ sellerId: user?.id }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
-  // Delete pet mutation
   const deletePetMutation = useMutation({
     mutationFn: (petId) => petAPI.deletePet(petId),
     onSuccess: () => {
@@ -127,18 +108,15 @@ export default function ShelterDashboard() {
       toast.error(error.response?.data?.error || 'Failed to delete pet')
     }
   })
-
   const handleDeletePet = (pet) => {
     setPetToDelete(pet)
     setShowDeleteModal(true)
   }
-
   const confirmDelete = () => {
     if (petToDelete) {
       deletePetMutation.mutate(petToDelete._id)
     }
   }
-
   const stats = [
     {
       title: 'Total Pets',
@@ -176,7 +154,6 @@ export default function ShelterDashboard() {
       href: '/shelter/orders'
     }
   ]
-
   const quickActions = [
     {
       title: 'List New Pet',
@@ -214,9 +191,7 @@ export default function ShelterDashboard() {
       color: 'bg-indigo-600'
     }
   ]
-
   const isLoading = petsLoading || adoptionsLoading || appointmentsLoading || inquiriesLoading || ordersLoading
-
   if (user?.role !== 'shelter') {
     return (
       <div className="text-center py-12">
@@ -226,10 +201,9 @@ export default function ShelterDashboard() {
       </div>
     )
   }
-
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {}
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -254,15 +228,13 @@ export default function ShelterDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div>
         <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -271,10 +243,9 @@ export default function ShelterDashboard() {
           ))}
         </div>
       </div>
-
-      {/* Recent Activity */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Shelter Pets */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -361,8 +332,7 @@ export default function ShelterDashboard() {
             )}
           </div>
         </div>
-
-        {/* Adoption Appointments */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -418,8 +388,7 @@ export default function ShelterDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Delete Confirmation Modal */}
+      {}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
@@ -447,8 +416,7 @@ export default function ShelterDashboard() {
           </div>
         </div>
       )}
-
-      {/* Create Shelter Profile Modal */}
+      {}
       {showShelterForm && (
         <ShelterProfileForm
           onClose={() => setShowShelterForm(false)}

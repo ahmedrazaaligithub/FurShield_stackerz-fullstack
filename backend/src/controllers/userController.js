@@ -1,13 +1,11 @@
 const User = require('../models/User');
 const AuditLog = require('../models/AuditLog');
 const { sendVetVerificationUpdate } = require('../services/emailService');
-
 const getUsers = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-
     const filter = {};
     if (req.query.role) filter.role = req.query.role;
     if (req.query.isVerified) filter.isVerified = req.query.isVerified === 'true';
@@ -17,15 +15,12 @@ const getUsers = async (req, res, next) => {
         { email: { $regex: req.query.search, $options: 'i' } }
       ];
     }
-
     const users = await User.find(filter)
       .select('-password')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
     const total = await User.countDocuments(filter);
-
     res.json({
       success: true,
       data: users,
@@ -40,18 +35,15 @@ const getUsers = async (req, res, next) => {
     next(error);
   }
 };
-
 const getUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id).select('-password');
-    
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     res.json({
       success: true,
       data: user
@@ -60,24 +52,20 @@ const getUser = async (req, res, next) => {
     next(error);
   }
 };
-
 const updateProfile = async (req, res, next) => {
   try {
     const allowedFields = ['name', 'phone', 'address', 'bio'];
     const updates = {};
-
     Object.keys(req.body).forEach(key => {
       if (allowedFields.includes(key)) {
         updates[key] = req.body[key];
       }
     });
-
     const user = await User.findByIdAndUpdate(
       req.user.id,
       updates,
       { new: true, runValidators: true }
     ).select('-password');
-
     await AuditLog.create({
       user: req.user._id,
       action: 'profile_update',
@@ -87,7 +75,6 @@ const updateProfile = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       data: user
@@ -96,7 +83,6 @@ const updateProfile = async (req, res, next) => {
     next(error);
   }
 };
-
 const updateUser = async (req, res, next) => {
   try {
     const user = await User.findByIdAndUpdate(
@@ -104,14 +90,12 @@ const updateUser = async (req, res, next) => {
       req.body,
       { new: true, runValidators: true }
     ).select('-password');
-
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     await AuditLog.create({
       user: req.user._id,
       action: 'user_update',
@@ -121,7 +105,6 @@ const updateUser = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       data: user
@@ -130,21 +113,17 @@ const updateUser = async (req, res, next) => {
     next(error);
   }
 };
-
 const deleteUser = async (req, res, next) => {
   try {
     const user = await User.findById(req.params.id);
-
     if (!user) {
       return res.status(404).json({
         success: false,
         error: 'User not found'
       });
     }
-
     user.isActive = false;
     await user.save();
-
     await AuditLog.create({
       user: req.user._id,
       action: 'user_deletion',
@@ -153,7 +132,6 @@ const deleteUser = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       message: 'User deactivated successfully'
@@ -162,11 +140,9 @@ const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
-
 const verifyVet = async (req, res, next) => {
   try {
     const { vetId, status, notes } = req.body;
-
     const vet = await User.findById(vetId);
     if (!vet || vet.role !== 'vet') {
       return res.status(404).json({
@@ -174,15 +150,12 @@ const verifyVet = async (req, res, next) => {
         error: 'Veterinarian not found'
       });
     }
-
     vet.isVerified = status === 'approved';
     if (notes) {
       vet.profile.verificationNotes = notes;
     }
     await vet.save();
-
     await sendVetVerificationUpdate(vet, status);
-
     await AuditLog.create({
       user: req.user._id,
       action: 'vet_verification',
@@ -192,7 +165,6 @@ const verifyVet = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       message: `Veterinarian ${status} successfully`
@@ -201,26 +173,21 @@ const verifyVet = async (req, res, next) => {
     next(error);
   }
 };
-
 const uploadAvatar = async (req, res, next) => {
   console.log('avatarUrl------------------------------->',req.body);
   try {
     const { avatarUrl } = req.body;
-    
-
     if (!avatarUrl) {
       return res.status(400).json({
         success: false,
         error: 'Please provide avatar URL'
       });
     }
-
     const user = await User.findByIdAndUpdate(
       req.user.id,
       { avatar: avatarUrl },
       { new: true }
     ).select('-password');
-
     await AuditLog.create({
       user: req.user._id,
       action: 'avatar_upload',
@@ -230,7 +197,6 @@ const uploadAvatar = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       data: user,
@@ -240,38 +206,27 @@ const uploadAvatar = async (req, res, next) => {
     next(error);
   }
 };
-
 const getVets = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-
     const filter = { role: 'vet', isActive: true };
-    
-    // Verification filter
     if (req.query.verified === 'true') filter.isVetVerified = true;
-    
-    // Specialization filter
     if (req.query.specialization) {
       filter['profile.specialization'] = { $regex: req.query.specialization, $options: 'i' };
     }
-    
-    // Location-based filtering
     if (req.query.location) {
       filter.$or = [
         { 'profile.location': { $regex: req.query.location, $options: 'i' } },
         { 'address': { $regex: req.query.location, $options: 'i' } }
       ];
     }
-    
-    // Distance-based filtering (if coordinates provided)
     let aggregationPipeline = [];
     if (req.query.latitude && req.query.longitude && req.query.radius) {
       const lat = parseFloat(req.query.latitude);
       const lng = parseFloat(req.query.longitude);
-      const radius = parseFloat(req.query.radius) || 50; // Default 50km radius
-      
+      const radius = parseFloat(req.query.radius) || 50; 
       aggregationPipeline = [
         {
           $geoNear: {
@@ -280,7 +235,7 @@ const getVets = async (req, res, next) => {
               coordinates: [lng, lat]
             },
             distanceField: "distance",
-            maxDistance: radius * 1000, // Convert km to meters
+            maxDistance: radius * 1000, 
             spherical: true,
             query: filter
           }
@@ -291,13 +246,11 @@ const getVets = async (req, res, next) => {
         {
           $project: {
             password: 0,
-            distance: { $round: [{ $divide: ["$distance", 1000] }, 2] } // Convert to km
+            distance: { $round: [{ $divide: ["$distance", 1000] }, 2] } 
           }
         }
       ];
     }
-    
-    // Condition/symptom-based filtering
     if (req.query.condition) {
       const conditionSpecializations = {
         'skin': ['dermatology', 'general'],
@@ -313,21 +266,15 @@ const getVets = async (req, res, next) => {
         'behavior': ['behavior', 'psychology', 'general'],
         'exotic': ['exotic', 'avian', 'general']
       };
-      
       const relevantSpecs = conditionSpecializations[req.query.condition.toLowerCase()] || ['general'];
       filter['profile.specialization'] = { 
         $in: relevantSpecs.map(spec => new RegExp(spec, 'i'))
       };
     }
-    
     let vets, total;
-    
     if (aggregationPipeline.length > 0) {
-      // Use aggregation for geo-based queries
       const results = await User.aggregate(aggregationPipeline);
       vets = results;
-      
-      // Get total count for geo queries
       const countPipeline = [
         {
           $geoNear: {
@@ -343,20 +290,16 @@ const getVets = async (req, res, next) => {
         },
         { $count: "total" }
       ];
-      
       const countResult = await User.aggregate(countPipeline);
       total = countResult[0]?.total || 0;
     } else {
-      // Regular query for non-geo searches
       vets = await User.find(filter)
         .select('-password')
         .skip(skip)
         .limit(limit)
         .sort({ isVetVerified: -1, createdAt: -1 });
-
       total = await User.countDocuments(filter);
     }
-
     res.json({
       success: true,
       data: vets,
@@ -378,7 +321,6 @@ const getVets = async (req, res, next) => {
     next(error);
   }
 };
-
 module.exports = {
   getUsers,
   getUser,

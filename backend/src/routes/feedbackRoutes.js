@@ -3,10 +3,7 @@ const feedbackController = require('../controllers/feedbackController')
 const { protect, restrictTo } = require('../middlewares/auth')
 const { validateRequest } = require('../middlewares/validation')
 const { body, param } = require('express-validator')
-
 const router = express.Router()
-
-// Validation middleware
 const validateFeedbackSubmission = [
   body('content')
     .notEmpty()
@@ -19,7 +16,6 @@ const validateFeedbackSubmission = [
     .withMessage('Invalid feedback type'),
   validateRequest
 ]
-
 const validateFeedbackUpdate = [
   body('content')
     .notEmpty()
@@ -28,30 +24,19 @@ const validateFeedbackUpdate = [
     .withMessage('Feedback must be between 10 and 2000 characters'),
   validateRequest
 ]
-
 const validatePetId = [
   param('petId').isMongoId().withMessage('Invalid pet ID'),
   validateRequest
 ]
-
 const validateFeedbackId = [
   param('feedbackId').isMongoId().withMessage('Invalid feedback ID'),
   validateRequest
 ]
-
-// Protect all routes
 router.use(protect)
-
-// Pet feedback routes
 router.get('/pets/:petId/feedback', validatePetId, feedbackController.getPetFeedback)
 router.post('/pets/:petId/feedback', validatePetId, validateFeedbackSubmission, feedbackController.submitFeedback)
-
-// Individual feedback routes
 router.patch('/feedback/:feedbackId', validateFeedbackId, validateFeedbackUpdate, feedbackController.updateFeedback)
 router.delete('/feedback/:feedbackId', validateFeedbackId, feedbackController.deleteFeedback)
 router.post('/feedback/:feedbackId/report', validateFeedbackId, feedbackController.reportFeedback)
-
-// User feedback routes
 router.get('/my-feedback', feedbackController.getUserFeedback)
-
 module.exports = router

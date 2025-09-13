@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const UserRow = ({ user, onEdit, onDelete, onToggleStatus }) => (
   <tr className="hover:bg-gray-50">
     <td className="px-6 py-4 whitespace-nowrap">
@@ -87,7 +86,6 @@ const UserRow = ({ user, onEdit, onDelete, onToggleStatus }) => (
     </td>
   </tr>
 )
-
 export default function AdminUsersPage() {
   const queryClient = useQueryClient()
   const [searchQuery, setSearchQuery] = useState('')
@@ -95,7 +93,6 @@ export default function AdminUsersPage() {
   const [statusFilter, setStatusFilter] = useState('')
   const [showEditModal, setShowEditModal] = useState(false)
   const [selectedUser, setSelectedUser] = useState(null)
-
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users', { search: searchQuery, role: roleFilter, status: statusFilter }],
     queryFn: () => adminAPI.getUsers({
@@ -104,7 +101,6 @@ export default function AdminUsersPage() {
       status: statusFilter || undefined
     })
   })
-
   const updateUserMutation = useMutation({
     mutationFn: ({ id, data }) => adminAPI.updateUser(id, data),
     onSuccess: () => {
@@ -116,7 +112,6 @@ export default function AdminUsersPage() {
       toast.error(error.response?.data?.error || 'Failed to update user')
     }
   })
-
   const deleteUserMutation = useMutation({
     mutationFn: adminAPI.deleteUser,
     onSuccess: () => {
@@ -127,18 +122,15 @@ export default function AdminUsersPage() {
       toast.error(error.response?.data?.error || 'Failed to delete user')
     }
   })
-
   const handleEdit = (user) => {
     setSelectedUser(user)
     setShowEditModal(true)
   }
-
   const handleDelete = (user) => {
     if (window.confirm(`Are you sure you want to delete ${user.name}?`)) {
       deleteUserMutation.mutate(user._id)
     }
   }
-
   const handleToggleStatus = (user) => {
     const newStatus = user.isActive ? 'inactive' : 'active'
     updateUserMutation.mutate({
@@ -146,16 +138,13 @@ export default function AdminUsersPage() {
       data: { status: newStatus }
     })
   }
-
   const userList = users?.data?.data || []
-
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
         <p className="text-gray-600 mt-1">Manage platform users and permissions</p>
       </div>
-
       <div className="card p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -168,7 +157,6 @@ export default function AdminUsersPage() {
               className="input pl-10"
             />
           </div>
-          
           <select
             value={roleFilter}
             onChange={(e) => setRoleFilter(e.target.value)}
@@ -180,7 +168,6 @@ export default function AdminUsersPage() {
             <option value="shelter">Shelter</option>
             <option value="admin">Admin</option>
           </select>
-          
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -192,7 +179,6 @@ export default function AdminUsersPage() {
           </select>
         </div>
       </div>
-
       <div className="card">
         <div className="card-header">
           <div className="flex items-center justify-between">
@@ -203,7 +189,6 @@ export default function AdminUsersPage() {
             </div>
           </div>
         </div>
-        
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <LoadingSpinner size="lg" />
@@ -253,14 +238,12 @@ export default function AdminUsersPage() {
           </div>
         )}
       </div>
-
       {showEditModal && selectedUser && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
             <h3 className="text-lg font-medium text-gray-900 mb-4">
               Edit User: {selectedUser.name}
             </h3>
-            
             <div className="space-y-4">
               <div>
                 <label className="label">Role</label>
@@ -275,7 +258,6 @@ export default function AdminUsersPage() {
                   <option value="admin">Admin</option>
                 </select>
               </div>
-              
               <div>
                 <label className="label">Status</label>
                 <select
@@ -288,7 +270,6 @@ export default function AdminUsersPage() {
                 </select>
               </div>
             </div>
-            
             <div className="flex space-x-3 mt-6">
               <button
                 onClick={() => updateUserMutation.mutate({

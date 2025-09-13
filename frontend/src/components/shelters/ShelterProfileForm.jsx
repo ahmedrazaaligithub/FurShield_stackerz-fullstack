@@ -4,7 +4,6 @@ import { shelterAPI } from '../../services/api'
 import toast from 'react-hot-toast'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { LoadingSpinner } from '../ui/LoadingSpinner'
-
 export default function ShelterProfileForm({ onClose, onSuccess }) {
   const queryClient = useQueryClient()
   const [formData, setFormData] = useState({
@@ -20,20 +19,16 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
     socialMedia: { facebook: '', instagram: '', twitter: '' }
   })
   const [errors, setErrors] = useState({})
-
   const serviceOptions = ['adoption', 'fostering', 'medical-care', 'grooming', 'training', 'boarding']
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
     if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
-
   const handleAddressChange = (field, value) => {
     setFormData(prev => ({ ...prev, address: { ...prev.address, [field]: value } }))
     if (errors[`address.${field}`]) setErrors(prev => ({ ...prev, [`address.${field}`]: '' }))
   }
-
   const handleServiceToggle = (svc) => {
     setFormData(prev => ({
       ...prev,
@@ -42,7 +37,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
         : [...prev.services, svc]
     }))
   }
-
   const validate = () => {
     const e = {}
     if (!formData.name.trim()) e.name = 'Shelter name is required'
@@ -50,11 +44,11 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
     if (!formData.address.country.trim()) e['address.country'] = 'Country is required'
     if (formData.phone && !/^\+?[1-9][\d\s]{6,14}$/.test(formData.phone)) e.phone = 'Invalid phone number'
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(formData.email)) e.email = 'Invalid email'
-    if (formData.website && !/^https?:\/\//.test(formData.website)) e.website = 'Website must start with http(s)://'
+    if (formData.website && !/^https?:\/\/[^\s]+\.[^\s]{2,}$/.test(formData.website)) e.website = 'Invalid website URL'
+    if (formData.capacity && isNaN(formData.capacity)) e.capacity = 'Invalid capacity'
     setErrors(e)
     return Object.keys(e).length === 0
   }
-
   const createMutation = useMutation({
     mutationFn: (payload) => shelterAPI.createShelter(payload),
     onSuccess: () => {
@@ -67,11 +61,9 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
       toast.error(error.response?.data?.error || 'Failed to create shelter profile')
     }
   })
-
   const onSubmit = (e) => {
     e.preventDefault()
     if (!validate()) return
-
     const payload = {
       ...formData,
       capacity: formData.capacity ? Number(formData.capacity) : undefined,
@@ -79,7 +71,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
     }
     createMutation.mutate(payload)
   }
-
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -89,7 +80,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
             <XMarkIcon className="h-5 w-5" />
           </button>
         </div>
-
         <form onSubmit={onSubmit} className="p-6 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -102,12 +92,10 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
               <input type="number" name="capacity" value={formData.capacity} onChange={handleChange} className="input" placeholder="e.g., 50" />
             </div>
           </div>
-
           <div>
             <label className="label">Description</label>
             <textarea name="description" value={formData.description} onChange={handleChange} rows={3} className="textarea" placeholder="About your shelter..." />
           </div>
-
           <div>
             <label className="label">Address *</label>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -121,7 +109,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
               <p className="text-sm text-red-600 mt-1">{errors['address.city'] || errors['address.country']}</p>
             )}
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="label">Phone</label>
@@ -143,7 +130,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
               <input name="licenseNumber" value={formData.licenseNumber} onChange={handleChange} className="input" placeholder="SH-2024-001" />
             </div>
           </div>
-
           <div>
             <label className="label">Services Offered</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -155,7 +141,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
               ))}
             </div>
           </div>
-
           <div>
             <label className="label">Social Media</label>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -164,7 +149,6 @@ export default function ShelterProfileForm({ onClose, onSuccess }) {
               <input value={formData.socialMedia.twitter} onChange={(e) => setFormData(prev => ({ ...prev, socialMedia: { ...prev.socialMedia, twitter: e.target.value } }))} className="input" placeholder="Twitter URL" />
             </div>
           </div>
-
           <div className="flex justify-end space-x-3 border-t pt-4">
             <button type="button" onClick={onClose} className="btn btn-outline" disabled={createMutation.isPending}>Cancel</button>
             <button type="submit" className="btn btn-primary">

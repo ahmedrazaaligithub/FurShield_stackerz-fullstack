@@ -8,7 +8,6 @@ import {
   UserGroupIcon,
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
-
 const features = [
   {
     name: 'Pet Management',
@@ -47,20 +46,17 @@ const features = [
     color: 'text-blue-600'
   }
 ]
-
 const stats = [
   { label: 'Happy Pet Owners', value: '10,000+' },
   { label: 'Verified Vets', value: '500+' },
   { label: 'Successful Adoptions', value: '2,500+' },
   { label: 'Pet Products', value: '5,000+' }
 ]
-
 export default function HomePage() {
   const { user } = useAuth()
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-secondary-50">
-      {/* Navigation */}
+      {}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-white/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -70,7 +66,6 @@ export default function HomePage() {
               </div>
               <span className="ml-2 text-xl font-bold text-gray-900">PetCare</span>
             </div>
-            
             <div className="flex items-center space-x-4">
               {user ? (
                 <Link
@@ -99,8 +94,7 @@ export default function HomePage() {
           </div>
         </div>
       </nav>
-
-      {/* Hero Section */}
+      {}
       <section className="relative py-20 sm:py-32">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -131,8 +125,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Stats Section */}
+      {}
       <section className="py-16 bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
@@ -147,8 +140,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* Features Section */}
+      {}
       <section className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
@@ -160,7 +152,6 @@ export default function HomePage() {
               in one convenient, secure location.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature) => (
               <div
@@ -181,8 +172,7 @@ export default function HomePage() {
           </div>
         </div>
       </section>
-
-      {/* CTA Section */}
+      {}
       <section className="py-20 bg-primary-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
@@ -201,8 +191,7 @@ export default function HomePage() {
           )}
         </div>
       </section>
-
-      {/* Footer */}
+      {}
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -218,7 +207,6 @@ export default function HomePage() {
                 veterinarians, adoption centers, and premium pet products.
               </p>
             </div>
-            
             <div>
               <h3 className="font-semibold mb-4">Services</h3>
               <ul className="space-y-2 text-gray-400">
@@ -228,7 +216,6 @@ export default function HomePage() {
                 <li>AI Assistant</li>
               </ul>
             </div>
-            
             <div>
               <h3 className="font-semibold mb-4">Company</h3>
               <ul className="space-y-2 text-gray-400">
@@ -239,7 +226,6 @@ export default function HomePage() {
               </ul>
             </div>
           </div>
-          
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
             <p>&copy; 2024 PetCare. All rights reserved.</p>
           </div>

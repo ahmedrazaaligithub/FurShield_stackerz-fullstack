@@ -3,7 +3,6 @@ import { Link, useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { EyeIcon, EyeSlashIcon } from '@heroicons/react/24/outline'
-
 export default function ResetPasswordPage() {
   const [formData, setFormData] = useState({
     password: '',
@@ -13,11 +12,9 @@ export default function ResetPasswordPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState({})
-
   const { token } = useParams()
   const { resetPassword } = useAuth()
   const navigate = useNavigate()
-
   const handleChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -25,10 +22,8 @@ export default function ResetPasswordPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.password) {
       newErrors.password = 'Password is required'
     } else if (formData.password.length < 8) {
@@ -36,31 +31,24 @@ export default function ResetPasswordPage() {
     } else if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/.test(formData.password)) {
       newErrors.password = 'Password must contain uppercase, lowercase, number and special character'
     }
-    
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = 'Please confirm your password'
     } else if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Passwords do not match'
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     setLoading(true)
     const result = await resetPassword(token, formData.password)
     setLoading(false)
-    
     if (result.success) {
       navigate('/dashboard')
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -78,7 +66,6 @@ export default function ResetPasswordPage() {
             Enter your new password below
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
@@ -113,7 +100,6 @@ export default function ResetPasswordPage() {
                 <p className="mt-1 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
-
             <div>
               <label htmlFor="confirmPassword" className="label">
                 Confirm New Password
@@ -147,7 +133,6 @@ export default function ResetPasswordPage() {
               )}
             </div>
           </div>
-
           <div>
             <button
               type="submit"
@@ -160,7 +145,6 @@ export default function ResetPasswordPage() {
               {loading ? 'Resetting...' : 'Reset password'}
             </button>
           </div>
-
           <div className="text-center">
             <Link
               to="/login"

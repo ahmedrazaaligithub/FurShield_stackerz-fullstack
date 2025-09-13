@@ -13,7 +13,6 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { uploadImageToCloudinary } from '../../utils/uploadImage'
-
 export default function PetInsurance({ pet, isOwner }) {
   const [showAddModal, setShowAddModal] = useState(false)
   const [editingInsurance, setEditingInsurance] = useState(null)
@@ -32,12 +31,10 @@ export default function PetInsurance({ pet, isOwner }) {
     notes: ''
   })
   const queryClient = useQueryClient()
-
   const insuranceData = pet.insurance || {
     policies: [],
     claims: []
   }
-
   const addInsuranceMutation = useMutation({
     mutationFn: (data) => petAPI.addInsurance(pet._id, data),
     onSuccess: () => {
@@ -50,7 +47,6 @@ export default function PetInsurance({ pet, isOwner }) {
       toast.error(error.response?.data?.error || 'Failed to add insurance')
     }
   })
-
   const deleteInsuranceMutation = useMutation({
     mutationFn: (policyId) => petAPI.deleteInsurance(pet._id, policyId),
     onSuccess: () => {
@@ -61,16 +57,13 @@ export default function PetInsurance({ pet, isOwner }) {
       toast.error(error.response?.data?.error || 'Failed to delete insurance')
     }
   })
-
   const handleDocumentUpload = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
-
     setIsUploading(true)
     try {
       const uploadPromises = files.map(file => uploadImageToCloudinary(file))
       const uploadedUrls = await Promise.all(uploadPromises)
-      
       setFormData(prev => ({
         ...prev,
         documents: [...prev.documents, ...uploadedUrls.map((url, index) => ({
@@ -80,7 +73,6 @@ export default function PetInsurance({ pet, isOwner }) {
           uploadedAt: new Date().toISOString()
         }))]
       }))
-      
       toast.success('Documents uploaded successfully')
     } catch (error) {
       toast.error('Failed to upload documents')
@@ -88,26 +80,20 @@ export default function PetInsurance({ pet, isOwner }) {
       setIsUploading(false)
     }
   }
-
   const handleSubmit = (e) => {
     e.preventDefault()
-    
     const insuranceData = {
       ...formData,
       premium: parseFloat(formData.premium),
       deductible: parseFloat(formData.deductible),
       claimLimit: parseFloat(formData.claimLimit)
     }
-
     if (editingInsurance) {
-      // Update existing insurance
       insuranceData.policyId = editingInsurance._id
-      // Call update mutation
     } else {
       addInsuranceMutation.mutate(insuranceData)
     }
   }
-
   const resetForm = () => {
     setFormData({
       provider: '',
@@ -124,7 +110,6 @@ export default function PetInsurance({ pet, isOwner }) {
     })
     setEditingInsurance(null)
   }
-
   const calculateDaysRemaining = (endDate) => {
     const today = new Date()
     const end = new Date(endDate)
@@ -132,10 +117,9 @@ export default function PetInsurance({ pet, isOwner }) {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return diffDays
   }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Insurance Information</h2>
@@ -151,8 +135,7 @@ export default function PetInsurance({ pet, isOwner }) {
           </button>
         )}
       </div>
-
-      {/* Active Policies */}
+      {}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Active Policies</h3>
         {insuranceData.policies?.length > 0 ? (
@@ -161,7 +144,6 @@ export default function PetInsurance({ pet, isOwner }) {
               const daysRemaining = calculateDaysRemaining(policy.endDate)
               const isExpiring = daysRemaining <= 30 && daysRemaining > 0
               const isExpired = daysRemaining <= 0
-
               return (
                 <div key={policy._id} className="bg-white border rounded-xl p-6 hover:shadow-lg transition-shadow">
                   <div className="flex justify-between items-start mb-4">
@@ -199,7 +181,6 @@ export default function PetInsurance({ pet, isOwner }) {
                       </div>
                     )}
                   </div>
-
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center justify-between">
                       <span className="text-gray-600">Type:</span>
@@ -228,13 +209,11 @@ export default function PetInsurance({ pet, isOwner }) {
                       </span>
                     </div>
                   </div>
-
                   {policy.coverage && (
                     <div className="mt-3 pt-3 border-t">
                       <p className="text-xs text-gray-600">Coverage: {policy.coverage}</p>
                     </div>
                   )}
-
                   {policy.documents?.length > 0 && (
                     <div className="mt-3 pt-3 border-t">
                       <p className="text-xs text-gray-600 mb-2">Documents:</p>
@@ -253,7 +232,6 @@ export default function PetInsurance({ pet, isOwner }) {
                       </div>
                     </div>
                   )}
-
                   {isExpiring && isOwner && (
                     <div className="mt-3 p-2 bg-yellow-50 rounded-lg">
                       <p className="text-xs text-yellow-800 flex items-center">
@@ -281,8 +259,7 @@ export default function PetInsurance({ pet, isOwner }) {
           </div>
         )}
       </div>
-
-      {/* Claims History */}
+      {}
       {insuranceData.claims?.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-gray-900">Claims History</h3>
@@ -339,8 +316,7 @@ export default function PetInsurance({ pet, isOwner }) {
           </div>
         </div>
       )}
-
-      {/* Add/Edit Modal */}
+      {}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -348,7 +324,6 @@ export default function PetInsurance({ pet, isOwner }) {
               <h3 className="text-xl font-bold text-gray-900 mb-4">
                 {editingInsurance ? 'Edit' : 'Add'} Insurance Policy
               </h3>
-
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -376,7 +351,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Policy Type *
@@ -392,7 +366,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     <option value="liability">Liability</option>
                   </select>
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -419,7 +392,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     />
                   </div>
                 </div>
-
                 <div className="grid grid-cols-3 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -461,7 +433,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     />
                   </div>
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Coverage Details
@@ -474,7 +445,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     placeholder="What does this policy cover?"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Upload Policy Documents
@@ -506,7 +476,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     </div>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Additional Notes
@@ -518,7 +487,6 @@ export default function PetInsurance({ pet, isOwner }) {
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   />
                 </div>
-
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const orderSchema = new mongoose.Schema({
   orderNumber: {
     type: String,
@@ -114,18 +113,15 @@ const orderSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 orderSchema.pre('save', function(next) {
   if (this.isNew && !this.orderNumber) {
     this.orderNumber = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
   }
   next();
 });
-
 orderSchema.index({ user: 1 });
 orderSchema.index({ orderNumber: 1 });
 orderSchema.index({ status: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ createdAt: -1 });
-
 module.exports = mongoose.model('Order', orderSchema);

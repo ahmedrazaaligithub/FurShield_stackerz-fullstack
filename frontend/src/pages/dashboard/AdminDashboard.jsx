@@ -14,7 +14,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { Link } from 'react-router-dom'
 import { userAPI, orderAPI, appointmentAPI, shelterAPI } from '../../services/api'
-
 const StatCard = ({ title, value, icon: Icon, color, href, change }) => (
   <Link to={href} className="block">
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group">
@@ -39,12 +38,9 @@ const StatCard = ({ title, value, icon: Icon, color, href, change }) => (
     </div>
   </Link>
 )
-
 export default function AdminDashboard() {
   const { user } = useAuth()
   const [activeTab, setActiveTab] = useState('overview')
-
-  // Fetch dashboard stats
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ['admin-stats'],
     queryFn: async () => {
@@ -54,7 +50,6 @@ export default function AdminDashboard() {
         appointmentAPI.getAppointments({ limit: 1 }),
         shelterAPI.getShelters({ limit: 1 })
       ])
-      
       return {
         totalUsers: users.data?.total || 0,
         totalOrders: orders.data?.total || 0,
@@ -68,14 +63,11 @@ export default function AdminDashboard() {
     },
     enabled: !!user?.id && user?.role === 'admin'
   })
-
-  // Fetch recent activities
   const { data: recentOrders } = useQuery({
     queryKey: ['recent-orders'],
     queryFn: () => orderAPI.getOrders({ limit: 5, sort: '-createdAt' }),
     enabled: !!user?.id && user?.role === 'admin'
   })
-
   const { data: pendingApprovals } = useQuery({
     queryKey: ['pending-approvals'],
     queryFn: async () => {
@@ -90,7 +82,6 @@ export default function AdminDashboard() {
     },
     enabled: !!user?.id && user?.role === 'admin'
   })
-
   if (user?.role !== 'admin') {
     return (
       <div className="text-center py-12">
@@ -100,7 +91,6 @@ export default function AdminDashboard() {
       </div>
     )
   }
-
   const statsCards = [
     {
       title: 'Total Users',
@@ -135,7 +125,6 @@ export default function AdminDashboard() {
       change: 5
     }
   ]
-
   const pendingItems = [
     {
       title: 'Pending Orders',
@@ -159,10 +148,9 @@ export default function AdminDashboard() {
       href: '/admin/approvals?type=shelter'
     }
   ]
-
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-2xl p-8 text-white">
         <div className="flex items-center justify-between">
           <div>
@@ -176,8 +164,7 @@ export default function AdminDashboard() {
           <ShieldCheckIcon className="h-16 w-16 text-white/20" />
         </div>
       </div>
-
-      {/* Pending Actions Alert */}
+      {}
       {(stats?.pendingOrders > 0 || stats?.pendingVets > 0 || stats?.pendingShelters > 0) && (
         <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
           <div className="flex items-center">
@@ -203,8 +190,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       )}
-
-      {/* Stats Cards */}
+      {}
       {statsLoading ? (
         <div className="flex justify-center py-12">
           <LoadingSpinner size="lg" />
@@ -216,10 +202,9 @@ export default function AdminDashboard() {
           ))}
         </div>
       )}
-
-      {/* Main Content Grid */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Orders */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -261,8 +246,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
-
-        {/* Pending Approvals */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -293,7 +277,6 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               )}
-              
               {pendingApprovals?.shelters?.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-700 mb-2">Shelters</h3>
@@ -313,7 +296,6 @@ export default function AdminDashboard() {
                   ))}
                 </div>
               )}
-
               {(!pendingApprovals?.vets?.length && !pendingApprovals?.shelters?.length) && (
                 <div className="text-center py-8 text-gray-500">
                   No pending approvals
@@ -323,24 +305,20 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Link to="/admin/users" className="card p-6 hover:shadow-lg transition-shadow text-center">
           <UsersIcon className="h-8 w-8 text-blue-600 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900">Manage Users</h3>
         </Link>
-        
         <Link to="/admin/orders" className="card p-6 hover:shadow-lg transition-shadow text-center">
           <ShoppingBagIcon className="h-8 w-8 text-green-600 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900">Manage Orders</h3>
         </Link>
-        
         <Link to="/admin/approvals" className="card p-6 hover:shadow-lg transition-shadow text-center">
           <ShieldCheckIcon className="h-8 w-8 text-purple-600 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900">Approvals</h3>
         </Link>
-        
         <Link to="/admin/reports" className="card p-6 hover:shadow-lg transition-shadow text-center">
           <ChartBarIcon className="h-8 w-8 text-orange-600 mx-auto mb-3" />
           <h3 className="font-semibold text-gray-900">Reports</h3>

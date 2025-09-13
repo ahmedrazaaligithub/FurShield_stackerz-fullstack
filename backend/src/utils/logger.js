@@ -1,5 +1,4 @@
 const winston = require('winston');
-
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
   format: winston.format.combine(
@@ -13,7 +12,6 @@ const logger = winston.createLogger({
     new winston.transports.File({ filename: 'logs/combined.log' }),
   ],
 });
-
 if (process.env.NODE_ENV !== 'production') {
   logger.add(new winston.transports.Console({
     format: winston.format.combine(
@@ -22,5 +20,4 @@ if (process.env.NODE_ENV !== 'production') {
     )
   }));
 }
-
 module.exports = { logger };

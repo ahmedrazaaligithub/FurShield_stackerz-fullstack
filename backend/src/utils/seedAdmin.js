@@ -1,14 +1,11 @@
 const bcrypt = require('bcryptjs');
 const User = require('../models/User');
 const { logger } = require('./logger');
-
 const seedAdminUser = async () => {
   try {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@gmail.com';
     const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
-
     const existingAdmin = await User.findOne({ email: adminEmail });
-    
     if (existingAdmin) {
       if (existingAdmin.role !== 'admin') {
         existingAdmin.role = 'admin';
@@ -19,9 +16,7 @@ const seedAdminUser = async () => {
       }
       return existingAdmin;
     }
-
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
-    
     const adminUser = await User.create({
       name: 'System Administrator',
       email: adminEmail,
@@ -32,7 +27,6 @@ const seedAdminUser = async () => {
       phone: '+923213265524',
       address: 'Admin Office, System, Admin, 00000, Pakistan'
     });
-
     logger.info('Admin user created successfully');
     return adminUser;
   } catch (error) {
@@ -40,5 +34,4 @@ const seedAdminUser = async () => {
     throw error;
   }
 };
-
 module.exports = { seedAdminUser };

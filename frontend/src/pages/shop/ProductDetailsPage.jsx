@@ -9,20 +9,17 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import FavoriteButton from '../../components/common/FavoriteButton';
 import toast from 'react-hot-toast';
 import ReviewList from '../../components/reviews/ReviewList';
-
 export default function ProductDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [quantity, setQuantity] = useState(1)
   const [selectedImage, setSelectedImage] = useState(0)
-
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['product', id],
     queryFn: () => productAPI.getProduct(id),
     enabled: !!id
   })
-
   const addToCartMutation = useMutation({
     mutationFn: ({ productId, quantity }) => cartAPI.addToCart(productId, quantity),
     onSuccess: () => {
@@ -33,18 +30,15 @@ export default function ProductDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to add to cart')
     }
   })
-
   const handleAddToCart = () => {
     if (!product?.data?.data) return;
     addToCartMutation.mutate({ productId: id, quantity })
   }
-
   const adjustQuantity = (change) => {
     if (!product?.data?.data) return;
     const productData = product.data.data;
     setQuantity(prev => Math.max(1, Math.min(prev + change, productData?.inventory?.quantity || 1)))
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -52,7 +46,6 @@ export default function ProductDetailsPage() {
       </div>
     )
   }
-
   if (error || !product?.data?.data) {
     return (
       <div className="text-center py-12">
@@ -69,13 +62,11 @@ export default function ProductDetailsPage() {
       </div>
     )
   }
-
   const productData = product.data.data
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
+        {}
         <div className="flex items-center space-x-4 mb-8">
           <button
             onClick={() => navigate('/shop')}
@@ -93,9 +84,8 @@ export default function ProductDetailsPage() {
             </nav>
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Product Images */}
+        {}
         <div className="space-y-6">
           <div className="relative group">
             <div className="aspect-square w-full overflow-hidden rounded-2xl bg-gradient-to-br from-gray-100 to-gray-200 shadow-2xl">
@@ -111,8 +101,7 @@ export default function ProductDetailsPage() {
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              
-              {/* Favorite Button */}
+              {}
               <div className="absolute top-4 right-4">
                 <FavoriteButton 
                   productId={productData._id} 
@@ -122,7 +111,6 @@ export default function ProductDetailsPage() {
               </div>
             </div>
           </div>
-          
           {productData.images?.length > 1 && (
             <div className="grid grid-cols-4 gap-3">
               {productData.images.map((image, index) => (
@@ -148,8 +136,7 @@ export default function ProductDetailsPage() {
             </div>
           )}
         </div>
-
-        {/* Product Info */}
+        {}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 space-y-8">
           <div>
             <div className="flex items-center justify-between mb-4">
@@ -160,11 +147,9 @@ export default function ProductDetailsPage() {
                 <HeartIcon className="h-6 w-6 text-gray-400 hover:text-red-500 transition-colors" />
               </button>
             </div>
-            
             <h1 className="text-4xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent mb-4">
               {productData.name}
             </h1>
-            
             {productData.ratings?.average && (
               <div className="flex items-center space-x-3 mb-6">
                 <div className="flex items-center space-x-1">
@@ -188,7 +173,6 @@ export default function ProductDetailsPage() {
               </div>
             )}
           </div>
-
           <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 space-y-4">
             <div className="flex items-baseline space-x-4">
               <span className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -203,7 +187,6 @@ export default function ProductDetailsPage() {
                 </>
               )}
             </div>
-            
             <div className="flex items-center space-x-3">
               <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium ${
                 productData.inventory?.quantity > 0 
@@ -224,7 +207,6 @@ export default function ProductDetailsPage() {
               )}
             </div>
           </div>
-
           <div className="bg-gray-50 rounded-xl p-6">
             <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
               <div className="w-1 h-6 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full mr-3"></div>
@@ -232,7 +214,6 @@ export default function ProductDetailsPage() {
             </h3>
             <p className="text-gray-700 leading-relaxed text-lg">{productData.description}</p>
           </div>
-
           {productData.features?.length > 0 && (
             <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-6 border border-blue-100">
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -249,7 +230,6 @@ export default function ProductDetailsPage() {
               </ul>
             </div>
           )}
-
           {productData.inventory?.quantity > 0 && (
             <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-100 space-y-6">
               <div>
@@ -272,7 +252,6 @@ export default function ProductDetailsPage() {
                   </button>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
                   onClick={handleAddToCart}
@@ -294,7 +273,6 @@ export default function ProductDetailsPage() {
               </div>
             </div>
           )}
-
           {productData.specifications && (
             <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-xl p-6 border border-gray-200">
               <h3 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
@@ -315,8 +293,7 @@ export default function ProductDetailsPage() {
           )}
         </div>
         </div>
-
-        {/* Customer Reviews */}
+        {}
         <ReviewList product={productData} />
       </div>
     </div>

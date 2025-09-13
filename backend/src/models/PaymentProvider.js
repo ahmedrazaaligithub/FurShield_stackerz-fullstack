@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { encrypt, decrypt } = require('../utils/encryption');
-
 const paymentProviderSchema = new mongoose.Schema({
   name: {
     type: String,
@@ -66,8 +65,6 @@ const paymentProviderSchema = new mongoose.Schema({
   toJSON: { getters: true },
   toObject: { getters: true }
 });
-
 paymentProviderSchema.index({ name: 1 });
 paymentProviderSchema.index({ isActive: 1 });
-
 module.exports = mongoose.model('PaymentProvider', paymentProviderSchema);

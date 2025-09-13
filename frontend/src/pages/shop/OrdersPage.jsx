@@ -11,7 +11,6 @@ import {
   ClockIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const OrderCard = ({ order }) => {
   const getStatusIcon = (status) => {
     switch (status) {
@@ -29,7 +28,6 @@ const OrderCard = ({ order }) => {
         return <ClockIcon className="h-5 w-5 text-gray-500" />
     }
   }
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending':
@@ -46,7 +44,6 @@ const OrderCard = ({ order }) => {
         return 'badge-secondary'
     }
   }
-
   return (
     <Link to={`/orders/${order._id}`} className="block">
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 hover:shadow-lg hover:border-primary-300 transition-all duration-300 group overflow-hidden">
@@ -80,8 +77,7 @@ const OrderCard = ({ order }) => {
               <p className="text-sm text-gray-500">{order.items?.length || 0} items</p>
             </div>
           </div>
-
-          {/* Order Progress Bar */}
+          {}
           <div className="mb-4">
             <div className="flex items-center justify-between text-xs text-gray-500 mb-2">
               <span>Order Progress</span>
@@ -98,8 +94,7 @@ const OrderCard = ({ order }) => {
               ></div>
             </div>
           </div>
-
-          {/* Shipping & Payment Info */}
+          {}
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-gray-50 rounded-lg p-3">
               <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Payment</p>
@@ -116,7 +111,6 @@ const OrderCard = ({ order }) => {
               </p>
             </div>
           </div>
-
           {order.shipping?.trackingNumber && (
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
@@ -125,7 +119,6 @@ const OrderCard = ({ order }) => {
               </div>
             </div>
           )}
-
           {order.estimatedDelivery && (
             <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
               <div className="flex items-center justify-between">
@@ -140,8 +133,7 @@ const OrderCard = ({ order }) => {
               </div>
             </div>
           )}
-
-          {/* Order Items Preview */}
+          {}
           <div className="border-t pt-4">
             <h4 className="text-sm font-semibold text-gray-900 mb-3">Order Items</h4>
             <div className="space-y-2">
@@ -169,7 +161,6 @@ const OrderCard = ({ order }) => {
                   </div>
                 </div>
               ))}
-              
               {order.items?.length > 2 && (
                 <div className="text-center py-2">
                   <p className="text-sm text-gray-500">
@@ -184,22 +175,17 @@ const OrderCard = ({ order }) => {
     </Link>
   )
 }
-
 export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState('')
-
   const { data: orders, isLoading, error } = useQuery({
     queryKey: ['orders', { status: statusFilter }],
     queryFn: () => orderAPI.getOrders({
       status: statusFilter || undefined
     })
   })
-
   const filteredOrders = orders?.data?.data || []
-
   return (
     <div className="space-y-6">
-   
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">My Orders</h1>
@@ -212,8 +198,6 @@ export default function OrdersPage() {
           Continue Shopping
         </Link>
       </div>
-
-    
       <div className="card p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           <select
@@ -230,8 +214,6 @@ export default function OrdersPage() {
           </select>
         </div>
       </div>
-
-    
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />
@@ -261,14 +243,11 @@ export default function OrdersPage() {
         </div>
       ) : (
         <>
-        
           <div className="flex items-center justify-between">
             <p className="text-gray-600">
               {filteredOrders.length} order{filteredOrders.length !== 1 ? 's' : ''}
             </p>
           </div>
-
-         
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {filteredOrders.map((order) => (
               <OrderCard key={order._id} order={order} />
@@ -276,8 +255,6 @@ export default function OrdersPage() {
           </div>
         </>
       )}
-
-    
       {filteredOrders.length > 0 && (
         <div className="card p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Order Status Guide</h3>

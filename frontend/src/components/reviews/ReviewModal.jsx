@@ -8,18 +8,15 @@ import {
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarSolidIcon } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
-
 export default function ReviewModal({ product, review, onClose }) {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const isEditing = !!review
-
   const [formData, setFormData] = useState({
     rating: review?.rating || 5,
     title: review?.title || '',
     comment: review?.comment || ''
   })
-
   const createReviewMutation = useMutation({
     mutationFn: (data) => reviewAPI.createReview(product._id, data),
     onSuccess: () => {
@@ -32,7 +29,6 @@ export default function ReviewModal({ product, review, onClose }) {
       toast.error(error.response?.data?.error || 'Failed to submit review')
     }
   })
-
   const updateReviewMutation = useMutation({
     mutationFn: (data) => reviewAPI.updateReview(review._id, data),
     onSuccess: () => {
@@ -45,32 +41,26 @@ export default function ReviewModal({ product, review, onClose }) {
       toast.error(error.response?.data?.error || 'Failed to update review')
     }
   })
-
   const handleSubmit = (e) => {
     e.preventDefault()
-    
     if (!formData.title.trim() || !formData.comment.trim()) {
       toast.error('Please fill in all fields')
       return
     }
-
     if (isEditing) {
       updateReviewMutation.mutate(formData)
     } else {
       createReviewMutation.mutate(formData)
     }
   }
-
   const handleRatingClick = (rating) => {
     setFormData(prev => ({ ...prev, rating }))
   }
-
   const isLoading = createReviewMutation.isPending || updateReviewMutation.isPending
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        {/* Header */}
+        {}
         <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">
@@ -84,10 +74,9 @@ export default function ReviewModal({ product, review, onClose }) {
             </button>
           </div>
         </div>
-
-        {/* Content */}
+        {}
         <div className="p-6">
-          {/* Product Info */}
+          {}
           <div className="flex items-center space-x-4 mb-6 p-4 bg-gray-50 rounded-xl">
             {product.images?.[0] && (
               <img
@@ -101,9 +90,8 @@ export default function ReviewModal({ product, review, onClose }) {
               <p className="text-sm text-gray-600">${product.price}</p>
             </div>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Rating */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Rating *
@@ -128,8 +116,7 @@ export default function ReviewModal({ product, review, onClose }) {
                 </span>
               </div>
             </div>
-
-            {/* Title */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Review Title *
@@ -146,8 +133,7 @@ export default function ReviewModal({ product, review, onClose }) {
                 {formData.title.length}/100 characters
               </p>
             </div>
-
-            {/* Comment */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Your Review *
@@ -164,8 +150,7 @@ export default function ReviewModal({ product, review, onClose }) {
                 {formData.comment.length}/1000 characters
               </p>
             </div>
-
-            {/* Guidelines */}
+            {}
             <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
               <h4 className="font-medium text-blue-900 mb-2">Review Guidelines</h4>
               <ul className="text-sm text-blue-800 space-y-1">
@@ -175,8 +160,7 @@ export default function ReviewModal({ product, review, onClose }) {
                 <li>• Reviews are public and can be seen by everyone</li>
               </ul>
             </div>
-
-            {/* Action Buttons */}
+            {}
             <div className="flex space-x-3 pt-4">
               <button
                 type="button"

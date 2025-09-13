@@ -9,15 +9,10 @@ const {
   getCareLogsByPet,
   getCareLogsByShelter
 } = require('../controllers/careLogController');
-
-// All routes require authentication
 router.use(protect);
-
-// Care log routes for shelters
 router.get('/shelter/:shelterId', authorize('shelter', 'admin'), getCareLogsByShelter);
 router.get('/pet/:petId', getCareLogs);
 router.post('/pet/:petId', authorize('shelter'), addCareLog);
 router.put('/:logId', authorize('shelter'), updateCareLog);
 router.delete('/:logId', authorize('shelter'), deleteCareLog);
-
 module.exports = router;

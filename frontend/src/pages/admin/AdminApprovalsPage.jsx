@@ -10,24 +10,19 @@ import {
   MapPinIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const AdminApprovalsPage = () => {
   const [activeTab, setActiveTab] = useState('shelters')
   const [pendingShelters, setPendingShelters] = useState([])
   const [pendingVets, setPendingVets] = useState([])
   const [loading, setLoading] = useState(true)
-
-  // Fetch pending approvals from API
   useEffect(() => {
     fetchPendingApprovals()
   }, [])
-
   const fetchPendingApprovals = async () => {
     try {
       setLoading(true)
       const { adminAPI } = await import('../../services/api')
       const response = await adminAPI.getPendingApprovals()
-      
       if (response.data) {
         setPendingShelters(response.data.data.shelters || [])
         setPendingVets(response.data.data.vets || [])
@@ -38,12 +33,10 @@ const AdminApprovalsPage = () => {
       setLoading(false)
     }
   }
-
   const handleApprove = async (type, id) => {
     try {
       const { adminAPI } = await import('../../services/api')
       const data = { notes: 'Approved by admin' }
-      
       if (type === 'shelter') {
         await adminAPI.approveShelter(id, data)
         setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
@@ -51,22 +44,18 @@ const AdminApprovalsPage = () => {
         await adminAPI.approveVet(id, data)
         setPendingVets(prev => prev.filter(vet => vet._id !== id))
       }
-      
       alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} approved successfully!`)
     } catch (error) {
       console.error('Error approving:', error)
       alert(`Error: ${error.response?.data?.error || 'Failed to approve'}`)
     }
   }
-
   const handleReject = async (type, id) => {
     try {
       const reason = prompt('Please provide a reason for rejection:')
       if (!reason) return
-      
       const { adminAPI } = await import('../../services/api')
       const data = { reason }
-      
       if (type === 'shelter') {
         await adminAPI.rejectShelter(id, data)
         setPendingShelters(prev => prev.filter(shelter => shelter._id !== id))
@@ -74,25 +63,21 @@ const AdminApprovalsPage = () => {
         await adminAPI.rejectVet(id, data)
         setPendingVets(prev => prev.filter(vet => vet._id !== id))
       }
-      
       alert(`${type === 'shelter' ? 'Shelter' : 'Veterinarian'} rejected successfully!`)
     } catch (error) {
       console.error('Error rejecting:', error)
       alert(`Error: ${error.response?.data?.error || 'Failed to reject'}`)
     }
   }
-
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      
       minute: '2-digit'
     })
   }
-
   const ShelterCard = ({ shelter }) => {
     const formatAddress = (address) => {
       if (typeof address === 'string') return address
@@ -102,7 +87,6 @@ const AdminApprovalsPage = () => {
       }
       return 'Address not provided'
     }
-
     return (
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
         <div className="flex items-start justify-between mb-4">
@@ -122,7 +106,6 @@ const AdminApprovalsPage = () => {
             <span>{formatDate(shelter.createdAt)}</span>
           </div>
         </div>
-
         <div className="space-y-3 mb-6">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <EnvelopeIcon className="h-4 w-4" />
@@ -136,14 +119,12 @@ const AdminApprovalsPage = () => {
             <MapPinIcon className="h-4 w-4" />
             <span>{formatAddress(shelter.address)}</span>
           </div>
-          
           {shelter.description && (
             <div className="text-sm text-gray-600">
               <span className="font-medium">Description:</span>
               <p className="mt-1">{shelter.description}</p>
             </div>
           )}
-          
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="font-medium text-gray-700">Capacity:</span>
@@ -158,7 +139,6 @@ const AdminApprovalsPage = () => {
               </p>
             </div>
           </div>
-
           {shelter.website && (
             <div className="flex items-center space-x-2 text-sm text-gray-600">
               <span className="font-medium">Website:</span>
@@ -169,7 +149,6 @@ const AdminApprovalsPage = () => {
             </div>
           )}
         </div>
-
         <div className="mb-4">
           <h4 className="text-sm font-medium text-gray-700 mb-2">Documents:</h4>
           <div className="flex flex-wrap gap-2">
@@ -184,7 +163,6 @@ const AdminApprovalsPage = () => {
             )}
           </div>
         </div>
-
         <div className="flex space-x-3">
           <button
             onClick={() => handleApprove('shelter', shelter._id)}
@@ -204,7 +182,6 @@ const AdminApprovalsPage = () => {
       </div>
     )
   }
-
   const VetCard = ({ vet }) => (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
@@ -224,7 +201,6 @@ const AdminApprovalsPage = () => {
           <span>{formatDate(vet.createdAt)}</span>
         </div>
       </div>
-
       <div className="space-y-3 mb-6">
         <div className="flex items-center space-x-2 text-sm text-gray-600">
           <EnvelopeIcon className="h-4 w-4" />
@@ -238,14 +214,12 @@ const AdminApprovalsPage = () => {
           <MapPinIcon className="h-4 w-4" />
           <span>{vet.address || 'Address not provided'}</span>
         </div>
-
         {(vet.bio || vet.profile?.bio) && (
           <div className="text-sm text-gray-600">
             <span className="font-medium">Bio:</span>
             <p className="mt-1">{vet.bio || vet.profile?.bio}</p>
           </div>
         )}
-        
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="font-medium text-gray-700">Specialization:</span>
@@ -258,7 +232,6 @@ const AdminApprovalsPage = () => {
             </p>
           </div>
         </div>
-
         {vet.profile?.website && (
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <span className="font-medium">Website:</span>
@@ -268,7 +241,6 @@ const AdminApprovalsPage = () => {
             </a>
           </div>
         )}
-
         {vet.profile?.location && (
           <div className="text-sm text-gray-600">
             <span className="font-medium">Clinic Location:</span>
@@ -276,7 +248,6 @@ const AdminApprovalsPage = () => {
           </div>
         )}
       </div>
-
       <div className="mb-4">
         <h4 className="text-sm font-medium text-gray-700 mb-2">Verification Status:</h4>
         <div className="flex items-center space-x-2">
@@ -292,7 +263,6 @@ const AdminApprovalsPage = () => {
           </span>
         </div>
       </div>
-
       <div className="flex space-x-3">
         <button
           onClick={() => handleApprove('vet', vet._id)}
@@ -311,7 +281,6 @@ const AdminApprovalsPage = () => {
       </div>
     </div>
   )
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -319,7 +288,6 @@ const AdminApprovalsPage = () => {
       </div>
     )
   }
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -328,8 +296,7 @@ const AdminApprovalsPage = () => {
           <p className="text-gray-600">Review and approve shelter and veterinarian applications</p>
         </div>
       </div>
-
-      {/* Tabs */}
+      {}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           <button
@@ -356,8 +323,7 @@ const AdminApprovalsPage = () => {
           </button>
         </nav>
       </div>
-
-      {/* Content */}
+      {}
       <div className="space-y-6">
         {activeTab === 'shelters' && (
           <div>
@@ -376,7 +342,6 @@ const AdminApprovalsPage = () => {
             )}
           </div>
         )}
-
         {activeTab === 'vets' && (
           <div>
             {pendingVets.length === 0 ? (
@@ -398,5 +363,4 @@ const AdminApprovalsPage = () => {
     </div>
   )
 }
-
 export default AdminApprovalsPage

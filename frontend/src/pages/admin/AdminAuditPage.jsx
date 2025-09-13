@@ -13,7 +13,6 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const AuditLogRow = ({ log }) => {
   const getActionIcon = (action) => {
     switch (action.toLowerCase()) {
@@ -27,7 +26,6 @@ const AuditLogRow = ({ log }) => {
         return <DocumentTextIcon className="h-4 w-4 text-gray-500" />
     }
   }
-
   const getSeverityColor = (severity) => {
     switch (severity?.toLowerCase()) {
       case 'high':
@@ -40,7 +38,6 @@ const AuditLogRow = ({ log }) => {
         return 'badge-secondary'
     }
   }
-
   return (
     <tr className="hover:bg-gray-50">
       <td className="px-6 py-4 whitespace-nowrap">
@@ -97,13 +94,11 @@ const AuditLogRow = ({ log }) => {
     </tr>
   )
 }
-
 export default function AdminAuditPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [actionFilter, setActionFilter] = useState('')
   const [severityFilter, setSeverityFilter] = useState('')
-  const [dateRange, setDateRange] = useState('7') // days
-
+  const [dateRange, setDateRange] = useState('7') 
   const { data: auditLogs, isLoading } = useQuery({
     queryKey: ['admin-audit-logs', { 
       search: searchQuery, 
@@ -118,24 +113,20 @@ export default function AdminAuditPage() {
       dateRange: dateRange || undefined
     })
   })
-
   const { data: auditStats } = useQuery({
     queryKey: ['admin-audit-stats'],
     queryFn: adminAPI.getAuditStats
   })
-
   const logList = auditLogs?.data?.data || []
   const stats = auditStats?.data?.data || {}
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
         <p className="text-gray-600 mt-1">Monitor system activities and security events</p>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <div className="card">
           <div className="card-content">
@@ -150,7 +141,6 @@ export default function AdminAuditPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -164,7 +154,6 @@ export default function AdminAuditPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -178,7 +167,6 @@ export default function AdminAuditPage() {
             </div>
           </div>
         </div>
-
         <div className="card">
           <div className="card-content">
             <div className="flex items-center">
@@ -193,8 +181,7 @@ export default function AdminAuditPage() {
           </div>
         </div>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="card p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1 relative">
@@ -207,7 +194,6 @@ export default function AdminAuditPage() {
               className="input pl-10"
             />
           </div>
-          
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
@@ -220,7 +206,6 @@ export default function AdminAuditPage() {
             <option value="login">Login</option>
             <option value="logout">Logout</option>
           </select>
-          
           <select
             value={severityFilter}
             onChange={(e) => setSeverityFilter(e.target.value)}
@@ -231,7 +216,6 @@ export default function AdminAuditPage() {
             <option value="medium">Medium</option>
             <option value="high">High</option>
           </select>
-
           <select
             value={dateRange}
             onChange={(e) => setDateRange(e.target.value)}
@@ -244,8 +228,7 @@ export default function AdminAuditPage() {
           </select>
         </div>
       </div>
-
-      {/* Audit Logs Table */}
+      {}
       <div className="card">
         <div className="card-header">
           <div className="flex items-center justify-between">
@@ -256,7 +239,6 @@ export default function AdminAuditPage() {
             </div>
           </div>
         </div>
-        
         {isLoading ? (
           <div className="flex justify-center items-center py-12">
             <LoadingSpinner size="lg" />
@@ -300,8 +282,7 @@ export default function AdminAuditPage() {
           </div>
         )}
       </div>
-
-      {/* Security Notice */}
+      {}
       <div className="card bg-yellow-50 border-yellow-200">
         <div className="card-content">
           <div className="flex items-start">

@@ -5,22 +5,17 @@ const AuditLog = require('../models/AuditLog');
 const paymentService = require('../services/paymentService');
 const { sendOrderConfirmation, sendOrderCancellation } = require('../services/emailService');
 const { emitToUser, emitToAdmins } = require('../sockets/socketHandler');
-
 const getOrders = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
-
     const filter = {};
-    
     if (req.user.role !== 'admin') {
       filter.user = req.user.id;
     }
-
     if (req.query.status) filter.status = req.query.status;
     if (req.query.paymentStatus) filter.paymentStatus = req.query.paymentStatus;
-
     const orders = await Order.find(filter)
       .populate('user', 'name email')
       .populate('items.product', 'name price images')
@@ -28,9 +23,7 @@ const getOrders = async (req, res, next) => {
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 });
-
     const total = await Order.countDocuments(filter);
-
     res.json({
       success: true,
       data: orders,
@@ -45,28 +38,24 @@ const getOrders = async (req, res, next) => {
     next(error);
   }
 };
-
 const getOrder = async (req, res, next) => {
   try {
     const order = await Order.findById(req.params.id)
       .populate('user', 'name email phone')
       .populate('items.product')
       .populate('paymentProvider', 'name');
-
     if (!order) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
-
     if (order.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to access this order'
       });
     }
-
     res.json({
       success: true,
       data: order
@@ -75,42 +64,30 @@ const getOrder = async (req, res, next) => {
     next(error);
   }
 };
-
 const createOrder = async (req, res, next) => {
   try {
     const Cart = require('../models/Cart');
     const { shippingAddress, paymentMethod, shippingMethod } = req.body;
-
-    // Get user's cart
     const cart = await Cart.findOne({ user: req.user.id }).populate('items.product');
-    
     if (!cart || cart.items.length === 0) {
       return res.status(400).json({
         success: false,
         error: 'Cart is empty'
       });
     }
-
     let subtotal = 0;
     const orderItems = [];
-
-    // Process cart items
     for (const cartItem of cart.items) {
       if (!cartItem.product) continue;
-      
       const product = cartItem.product;
-      
-      // Check stock availability
       if (product.inventory && product.inventory.quantity < cartItem.quantity) {
         return res.status(400).json({
           success: false,
           error: `Insufficient stock for product: ${product.name}`
         });
       }
-
       const itemTotal = product.price * cartItem.quantity;
       subtotal += itemTotal;
-
       orderItems.push({
         product: product._id,
         name: product.name,
@@ -119,14 +96,10 @@ const createOrder = async (req, res, next) => {
         total: itemTotal
       });
     }
-
-    const tax = 0; // No tax
+    const tax = 0; 
     const shipping = subtotal > 50 ? 0 : 9.99;
     const total = subtotal + tax + shipping;
-
-    // Generate order number
     const orderNumber = 'ORD-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9).toUpperCase();
-
     const order = await Order.create({
       orderNumber,
       user: req.user.id,
@@ -147,21 +120,16 @@ const createOrder = async (req, res, next) => {
         country: shippingAddress.country,
         phone: shippingAddress.phone || ''
       },
-      paymentMethod: 'credit-card', // Use valid enum value
+      paymentMethod: 'credit-card', 
       status: 'pending',
       paymentStatus: 'pending'
     });
-
     await order.populate([
       { path: 'user', select: 'name email' },
       { path: 'items.product', select: 'name price images' }
     ]);
-
-    // Clear the cart after successful order
     cart.items = [];
     await cart.save();
-
-    // Send order confirmation email
     try {
       const orderForEmail = {
         ...order.toObject(),
@@ -172,9 +140,7 @@ const createOrder = async (req, res, next) => {
       await sendOrderConfirmation(orderForEmail);
     } catch (emailError) {
       console.error('Failed to send order confirmation email:', emailError);
-      // Don't fail the order if email fails
     }
-
     await AuditLog.create({
       user: req.user._id,
       action: 'order_creation',
@@ -184,7 +150,6 @@ const createOrder = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.status(201).json({
       success: true,
       data: order
@@ -193,33 +158,28 @@ const createOrder = async (req, res, next) => {
     next(error);
   }
 };
-
 const processPayment = async (req, res, next) => {
   try {
     const { paymentProviderId, paymentMethodId, returnUrl } = req.body;
     const order = await Order.findById(req.params.id);
-
     if (!order) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
-
     if (order.user.toString() !== req.user.id) {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to process payment for this order'
       });
     }
-
     if (order.paymentStatus === 'paid') {
       return res.status(400).json({
         success: false,
         error: 'Order has already been paid'
       });
     }
-
     const paymentData = {
       amount: order.total,
       currency: 'USD',
@@ -227,9 +187,7 @@ const processPayment = async (req, res, next) => {
       returnUrl,
       orderId: order.orderNumber
     };
-
     const paymentResult = await paymentService.processPayment(paymentProviderId, paymentData);
-
     if (paymentResult.success) {
       order.paymentStatus = 'paid';
       order.status = 'confirmed';
@@ -239,7 +197,6 @@ const processPayment = async (req, res, next) => {
         status: 'paid',
         note: 'Payment processed successfully'
       });
-
       for (const item of order.items) {
         await Product.findByIdAndUpdate(item.product, {
           $inc: {
@@ -249,11 +206,8 @@ const processPayment = async (req, res, next) => {
           }
         });
       }
-
       await order.save();
-
       await sendPaymentConfirmation(order);
-
       const notification = await Notification.create({
         recipient: req.user.id,
         title: 'Payment Confirmed',
@@ -261,19 +215,18 @@ const processPayment = async (req, res, next) => {
         type: 'payment',
         data: { orderId: order._id }
       });
-
       if (global.io) {
         emitToUser(global.io, req.user.id, 'payment_confirmed', {
           order,
           notification
         });
-
-        emitToAdmins(global.io, 'new_payment', {
-          order,
-          amount: order.total
-        });
+        if (global.io) {
+          emitToAdmins(global.io, 'new_payment', {
+            order,
+            amount: order.total
+          });
+        }
       }
-
       await AuditLog.create({
         user: req.user._id,
         action: 'payment_processed',
@@ -283,7 +236,6 @@ const processPayment = async (req, res, next) => {
         ipAddress: req.ip,
         userAgent: req.get('User-Agent')
       });
-
       res.json({
         success: true,
         data: {
@@ -298,7 +250,6 @@ const processPayment = async (req, res, next) => {
         note: paymentResult.message || 'Payment processing failed'
       });
       await order.save();
-
       res.status(400).json({
         success: false,
         error: 'Payment processing failed',
@@ -309,21 +260,17 @@ const processPayment = async (req, res, next) => {
     next(error);
   }
 };
-
 const updateOrderStatus = async (req, res, next) => {
   try {
     const { status, paymentStatus, trackingNumber, notes, shipping, estimatedDelivery, timeline } = req.body;
     const order = await Order.findById(req.params.id)
       .populate('user', 'name email');
-
     if (!order) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
-
-    // Update order fields
     if (status) order.status = status;
     if (paymentStatus) order.paymentStatus = paymentStatus;
     if (trackingNumber || shipping?.trackingNumber) {
@@ -331,8 +278,6 @@ const updateOrderStatus = async (req, res, next) => {
       order.shipping.trackingNumber = trackingNumber || shipping?.trackingNumber;
     }
     if (estimatedDelivery) order.estimatedDelivery = estimatedDelivery;
-    
-    // Add to timeline if provided
     if (timeline && timeline.length > 0) {
       order.timeline = timeline;
     } else {
@@ -341,20 +286,14 @@ const updateOrderStatus = async (req, res, next) => {
         note: notes || `Order status updated to ${status || order.status}`
       });
     }
-
     if (status === 'shipped' && !order.estimatedDelivery) {
       order.estimatedDelivery = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
     } else if (status === 'delivered') {
       order.actualDelivery = new Date();
     }
-
     await order.save();
-
-    // Send email notification for status updates
     if (status && order.user?.email) {
       const { sendOrderStatusUpdate } = require('../services/emailService');
-      
-      // Send email asynchronously
       sendOrderStatusUpdate(order.user.email, {
         orderNumber: order.orderNumber,
         customerName: order.user.name,
@@ -367,7 +306,6 @@ const updateOrderStatus = async (req, res, next) => {
         console.error('Failed to send order status update email:', err);
       });
     }
-
     const notification = await Notification.create({
       recipient: order.user,
       sender: req.user.id,
@@ -376,14 +314,12 @@ const updateOrderStatus = async (req, res, next) => {
       type: 'system',
       data: { orderId: order._id }
     });
-
     if (global.io) {
       emitToUser(global.io, order.user, 'order_status_updated', {
         order,
         notification
       });
     }
-
     await AuditLog.create({
       user: req.user._id,
       action: 'order_status_update',
@@ -393,7 +329,6 @@ const updateOrderStatus = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       data: order
@@ -402,43 +337,36 @@ const updateOrderStatus = async (req, res, next) => {
     next(error);
   }
 };
-
 const cancelOrder = async (req, res, next) => {
   try {
     const { reason } = req.body;
     const order = await Order.findById(req.params.id)
       .populate('user', 'name email')
       .populate('items.product', 'name price images');
-
     if (!order) {
       return res.status(404).json({
         success: false,
         error: 'Order not found'
       });
     }
-
     if (order.user._id.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({
         success: false,
         error: 'Not authorized to cancel this order'
       });
     }
-
     if (order.status === 'cancelled') {
       return res.status(400).json({
         success: false,
         error: 'Order is already cancelled'
       });
     }
-
     if (order.status === 'delivered') {
       return res.status(400).json({
         success: false,
         error: 'Cannot cancel delivered order'
       });
     }
-
-    // Update order status
     order.status = 'cancelled';
     if (!order.timeline) order.timeline = [];
     order.timeline.push({
@@ -446,8 +374,6 @@ const cancelOrder = async (req, res, next) => {
       timestamp: new Date(),
       note: reason || (req.user.role === 'admin' ? 'Order cancelled by admin' : 'Order cancelled by customer')
     });
-
-    // Restore inventory
     for (const item of order.items) {
       if (item.product) {
         await Product.findByIdAndUpdate(item.product._id, {
@@ -455,10 +381,7 @@ const cancelOrder = async (req, res, next) => {
         });
       }
     }
-
     await order.save();
-
-    // Handle refund if payment was made
     if (order.paymentStatus === 'paid') {
       try {
         if (order.paymentProvider && order.transactionId) {
@@ -472,19 +395,13 @@ const cancelOrder = async (req, res, next) => {
         await order.save();
       } catch (refundError) {
         console.error('Refund failed:', refundError);
-        // Continue with cancellation even if refund fails
       }
     }
-
-    // Send cancellation email to customer
     try {
       await sendOrderCancellation(order, reason || 'Order cancelled as requested');
     } catch (emailError) {
       console.error('Failed to send cancellation email:', emailError);
-      // Don't fail the cancellation if email fails
     }
-
-    // Log the cancellation
     await AuditLog.create({
       user: req.user._id,
       action: 'order_cancellation',
@@ -498,7 +415,6 @@ const cancelOrder = async (req, res, next) => {
       ipAddress: req.ip,
       userAgent: req.get('User-Agent')
     });
-
     res.json({
       success: true,
       message: 'Order cancelled successfully',
@@ -508,7 +424,6 @@ const cancelOrder = async (req, res, next) => {
     next(error);
   }
 };
-
 module.exports = {
   getOrders,
   getOrder,

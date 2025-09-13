@@ -17,9 +17,7 @@ const { validate } = require('../middlewares/validation');
 const { petSchema, healthRecordSchema } = require('../utils/validation');
 const { checkPetOwnership } = require('../middlewares/ownershipCheck');
 const { checkVetPetAccess, getVetAuthorizedPets, checkVetHealthRecordAccess } = require('../middlewares/vetPetAccess');
-
 const router = express.Router();
-
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadPath = path.join(__dirname, '../../uploads/pets');
@@ -32,7 +30,6 @@ const storage = multer.diskStorage({
     cb(null, `pet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}${path.extname(file.originalname)}`);
   }
 });
-
 const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 },
@@ -44,9 +41,7 @@ const upload = multer({
     }
   }
 });
-
 router.use(protect);
-
 router.get('/user', authorize('owner', 'shelter', 'vet', 'admin'), getVetAuthorizedPets, getUserPets);
 router.get('/user/:userId', authorize('owner', 'shelter', 'admin'), getUserPets);
 router.get('/', authorize('admin', 'vet'), getVetAuthorizedPets, getPets);
@@ -58,5 +53,4 @@ router.post('/:id/photo', authorize('owner', 'shelter'), checkPetOwnership, uplo
 router.post('/:id/photos', authorize('owner', 'shelter'), checkPetOwnership, upload.single('photo'), uploadPetPhoto);
 router.get('/:id/health-records', authorize('owner', 'vet', 'admin'), checkVetPetAccess, getHealthRecords);
 router.post('/:id/health-records', authorize('vet', 'admin'), checkVetHealthRecordAccess, validate(healthRecordSchema), addHealthRecord);
-
 module.exports = router;

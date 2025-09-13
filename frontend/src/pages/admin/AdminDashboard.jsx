@@ -9,7 +9,6 @@ import {
   ChartBarIcon,
   ExclamationTriangleIcon
 } from '@heroicons/react/24/outline'
-
 const StatCard = ({ title, value, icon: Icon, change, color = 'primary' }) => (
   <div className="card">
     <div className="card-content">
@@ -30,13 +29,11 @@ const StatCard = ({ title, value, icon: Icon, change, color = 'primary' }) => (
     </div>
   </div>
 )
-
 export default function AdminDashboard() {
   const { data: stats, isLoading } = useQuery({
     queryKey: ['admin-dashboard-stats'],
     queryFn: adminAPI.getDashboardStats
   })
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -44,20 +41,17 @@ export default function AdminDashboard() {
       </div>
     )
   }
-
   const statsData = stats?.data?.data || {}
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
         <p className="text-gray-600 mt-1">
           Monitor and manage your pet care platform
         </p>
       </div>
-
-      {/* Stats Grid */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Total Users"
@@ -84,9 +78,8 @@ export default function AdminDashboard() {
           color="yellow"
         />
       </div>
-
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Recent Activity */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Recent Orders</h2>
@@ -113,8 +106,7 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
-
-        {/* System Health */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">System Health</h2>
@@ -139,8 +131,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div className="card">
         <div className="card-header">
           <h2 className="text-xl font-semibold text-gray-900">Quick Actions</h2>

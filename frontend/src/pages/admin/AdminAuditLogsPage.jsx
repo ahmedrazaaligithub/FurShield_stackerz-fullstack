@@ -12,15 +12,12 @@ import {
   InformationCircleIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 export default function AdminAuditLogsPage() {
   const [searchTerm, setSearchTerm] = useState('')
   const [actionFilter, setActionFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 20
-
-  // Mock data for now - replace with actual API calls
   const { data: auditLogs, isLoading } = useQuery({
     queryKey: ['audit-logs', searchTerm, actionFilter, dateFilter, currentPage],
     queryFn: () => Promise.resolve({
@@ -115,12 +112,10 @@ export default function AdminAuditLogsPage() {
       }
     })
   })
-
   const getActionIcon = (action, status) => {
     if (status === 'error') {
       return <XCircleIcon className="h-5 w-5 text-red-500" />
     }
-    
     switch (action) {
       case 'ORDER_CREATED':
       case 'ORDER_UPDATED':
@@ -135,10 +130,8 @@ export default function AdminAuditLogsPage() {
         return <InformationCircleIcon className="h-5 w-5 text-gray-500" />
     }
   }
-
   const getActionColor = (action, status) => {
     if (status === 'error') return 'text-red-600 bg-red-50'
-    
     switch (action) {
       case 'ORDER_CREATED':
       case 'ORDER_UPDATED':
@@ -153,11 +146,9 @@ export default function AdminAuditLogsPage() {
         return 'text-gray-600 bg-gray-50'
     }
   }
-
   const formatAction = (action) => {
     return action.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase())
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -165,12 +156,10 @@ export default function AdminAuditLogsPage() {
       </div>
     )
   }
-
   const logs = auditLogs?.data?.data || []
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Audit Logs</h1>
@@ -180,11 +169,10 @@ export default function AdminAuditLogsPage() {
           Total Events: {auditLogs?.data?.totalItems || 0}
         </div>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {/* Search */}
+          {}
           <div className="relative">
             <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
             <input
@@ -195,8 +183,7 @@ export default function AdminAuditLogsPage() {
               className="pl-10 pr-4 py-2 w-full border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
-
-          {/* Action Filter */}
+          {}
           <select
             value={actionFilter}
             onChange={(e) => setActionFilter(e.target.value)}
@@ -209,16 +196,14 @@ export default function AdminAuditLogsPage() {
             <option value="PAYMENT_FAILED">Payment Failed</option>
             <option value="PRODUCT_UPDATED">Product Updated</option>
           </select>
-
-          {/* Date Filter */}
+          {}
           <input
             type="date"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
             className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
           />
-
-          {/* Clear Filters */}
+          {}
           <button
             onClick={() => {
               setSearchTerm('')
@@ -231,8 +216,7 @@ export default function AdminAuditLogsPage() {
           </button>
         </div>
       </div>
-
-      {/* Audit Logs Table */}
+      {}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -311,8 +295,7 @@ export default function AdminAuditLogsPage() {
             </tbody>
           </table>
         </div>
-
-        {/* Pagination */}
+        {}
         <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
           <div className="flex-1 flex justify-between sm:hidden">
             <button
@@ -365,7 +348,6 @@ export default function AdminAuditLogsPage() {
           </div>
         </div>
       </div>
-
       {logs.length === 0 && (
         <div className="text-center py-12">
           <DocumentTextIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />

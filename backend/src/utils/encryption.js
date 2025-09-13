@@ -1,8 +1,6 @@
 const crypto = require('crypto');
-
 const algorithm = 'aes-256-cbc';
 const key = Buffer.from(process.env.ENCRYPTION_KEY || 'default_key_32_characters_long!!', 'utf8');
-
 const encrypt = (text) => {
   const iv = crypto.randomBytes(16);
   const cipher = crypto.createCipher(algorithm, key);
@@ -10,7 +8,6 @@ const encrypt = (text) => {
   encrypted += cipher.final('hex');
   return iv.toString('hex') + ':' + encrypted;
 };
-
 const decrypt = (text) => {
   const textParts = text.split(':');
   const iv = Buffer.from(textParts.shift(), 'hex');
@@ -20,5 +17,4 @@ const decrypt = (text) => {
   decrypted += decipher.final('utf8');
   return decrypted;
 };
-
 module.exports = { encrypt, decrypt };

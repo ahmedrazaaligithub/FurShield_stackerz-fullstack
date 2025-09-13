@@ -9,7 +9,6 @@ import {
   CogIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-
 const statusOptions = [
   { value: 'pending', label: 'Pending', icon: ClockIcon, color: 'text-yellow-600' },
   { value: 'confirmed', label: 'Confirmed', icon: CheckCircleIcon, color: 'text-blue-600' },
@@ -18,14 +17,12 @@ const statusOptions = [
   { value: 'delivered', label: 'Delivered', icon: CheckCircleIcon, color: 'text-green-600' },
   { value: 'cancelled', label: 'Cancelled', icon: XCircleIcon, color: 'text-red-600' }
 ]
-
 const paymentStatusOptions = [
   { value: 'pending', label: 'Pending' },
   { value: 'paid', label: 'Paid' },
   { value: 'failed', label: 'Failed' },
   { value: 'refunded', label: 'Refunded' }
 ]
-
 export default function OrderStatusUpdate({ order, onClose }) {
   const [formData, setFormData] = useState({
     status: order.status || 'pending',
@@ -34,11 +31,8 @@ export default function OrderStatusUpdate({ order, onClose }) {
     estimatedDelivery: order.estimatedDelivery ? new Date(order.estimatedDelivery).toISOString().split('T')[0] : '',
     note: order.notes || ''
   })
-
   const isCancelled = order.status === 'cancelled'
-
   const queryClient = useQueryClient()
-
   const updateOrderMutation = useMutation({
     mutationFn: (data) => orderAPI.updateOrder(order._id, data),
     onSuccess: () => {
@@ -51,10 +45,8 @@ export default function OrderStatusUpdate({ order, onClose }) {
       toast.error(error.response?.data?.error || 'Failed to update order')
     }
   })
-
   const handleSubmit = (e) => {
     e.preventDefault()
-    
     const updateData = {
       status: formData.status,
       paymentStatus: formData.paymentStatus,
@@ -72,10 +64,8 @@ export default function OrderStatusUpdate({ order, onClose }) {
         }
       ]
     }
-
     updateOrderMutation.mutate(updateData)
   }
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({
@@ -83,7 +73,6 @@ export default function OrderStatusUpdate({ order, onClose }) {
       [name]: value
     }))
   }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
@@ -97,7 +86,6 @@ export default function OrderStatusUpdate({ order, onClose }) {
               <XCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
             </button>
           </div>
-
           <div className={`mb-4 p-3 rounded-lg ${isCancelled ? 'bg-red-50 border border-red-200' : 'bg-gray-50'}`}>
             <p className="text-sm font-medium text-gray-900">Order #{order.orderNumber}</p>
             <p className="text-xs text-gray-600">Current Status: {order.status}</p>
@@ -112,9 +100,8 @@ export default function OrderStatusUpdate({ order, onClose }) {
               </p>
             )}
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            {/* Order Status */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Order Status
@@ -149,8 +136,7 @@ export default function OrderStatusUpdate({ order, onClose }) {
                 })}
               </div>
             </div>
-
-            {/* Payment Status and Tracking - Two Column Layout */}
+            {}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -170,7 +156,6 @@ export default function OrderStatusUpdate({ order, onClose }) {
                   ))}
                 </select>
               </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tracking Number
@@ -186,8 +171,7 @@ export default function OrderStatusUpdate({ order, onClose }) {
                 />
               </div>
             </div>
-
-            {/* Estimated Delivery */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Estimated Delivery Date
@@ -201,8 +185,7 @@ export default function OrderStatusUpdate({ order, onClose }) {
                 className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
               />
             </div>
-
-            {/* Note */}
+            {}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Update Note
@@ -217,8 +200,7 @@ export default function OrderStatusUpdate({ order, onClose }) {
                 className="w-full p-2 sm:p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm resize-none"
               />
             </div>
-
-            {/* Action Buttons */}
+            {}
             <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
               <button
                 type="button"

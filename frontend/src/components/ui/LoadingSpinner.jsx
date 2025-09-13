@@ -1,12 +1,9 @@
-// import { cn } from '../../utils/cn'
-
 const sizeClasses = {
   sm: 'h-4 w-4',
   md: 'h-6 w-6',
   lg: 'h-8 w-8',
   xl: 'h-12 w-12'
 }
-
 export const LoadingSpinner = ({ size = 'md', className, ...props }) => {
   return (
     <div
@@ -15,7 +12,6 @@ export const LoadingSpinner = ({ size = 'md', className, ...props }) => {
     />
   )
 }
-
 export const LoadingDots = ({ className }) => {
   return (
     <div className={`flex space-x-1 ${className || ''}`}>
@@ -25,7 +21,6 @@ export const LoadingDots = ({ className }) => {
     </div>
   )
 }
-
 export const LoadingOverlay = ({ children, loading, className }) => {
   return (
     <div className={`relative ${className || ''}`}>

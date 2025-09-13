@@ -9,7 +9,6 @@ import {
   XCircleIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const AdminCategoriesPage = () => {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
@@ -28,12 +27,10 @@ const AdminCategoriesPage = () => {
     activeCategories: 0,
     inactiveCategories: 0
   })
-
   useEffect(() => {
     fetchCategories()
     fetchStats()
   }, [])
-
   const fetchCategories = async () => {
     try {
       setLoading(true)
@@ -43,7 +40,6 @@ const AdminCategoriesPage = () => {
         }
       })
       const data = await response.json()
-      
       if (data.success) {
         setCategories(data.data)
       } else {
@@ -56,7 +52,6 @@ const AdminCategoriesPage = () => {
       setLoading(false)
     }
   }
-
   const fetchStats = async () => {
     try {
       const response = await fetch('/api/v1/admin/category-stats', {
@@ -65,7 +60,6 @@ const AdminCategoriesPage = () => {
         }
       })
       const data = await response.json()
-      
       if (data.success) {
         setStats(data.data)
       }
@@ -73,17 +67,13 @@ const AdminCategoriesPage = () => {
       console.error('Error fetching stats:', err)
     }
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     try {
       const url = editingCategory 
         ? `/api/v1/admin/categories/${editingCategory._id}`
         : '/api/v1/admin/categories'
-      
       const method = editingCategory ? 'PUT' : 'POST'
-      
       const response = await fetch(url, {
         method,
         headers: {
@@ -92,9 +82,7 @@ const AdminCategoriesPage = () => {
         },
         body: JSON.stringify(formData)
       })
-      
       const data = await response.json()
-      
       if (data.success) {
         setShowModal(false)
         setEditingCategory(null)
@@ -109,7 +97,6 @@ const AdminCategoriesPage = () => {
       console.error('Error saving category:', err)
     }
   }
-
   const handleEdit = (category) => {
     setEditingCategory(category)
     setFormData({
@@ -118,15 +105,12 @@ const AdminCategoriesPage = () => {
     })
     setShowModal(true)
   }
-
   const handleDeleteClick = (category) => {
     setCategoryToDelete(category)
     setShowDeleteModal(true)
   }
-
   const handleDeleteConfirm = async () => {
     if (!categoryToDelete) return
-    
     try {
       const response = await fetch(`/api/v1/admin/categories/${categoryToDelete._id}`, {
         method: 'DELETE',
@@ -134,9 +118,7 @@ const AdminCategoriesPage = () => {
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         }
       })
-      
       const data = await response.json()
-      
       if (data.success) {
         setShowDeleteModal(false)
         setCategoryToDelete(null)
@@ -150,12 +132,10 @@ const AdminCategoriesPage = () => {
       console.error('Error deleting category:', err)
     }
   }
-
   const handleDeleteCancel = () => {
     setShowDeleteModal(false)
     setCategoryToDelete(null)
   }
-
   const toggleStatus = async (categoryId, currentStatus) => {
     try {
       const response = await fetch(`/api/v1/admin/categories/${categoryId}`, {
@@ -166,9 +146,7 @@ const AdminCategoriesPage = () => {
         },
         body: JSON.stringify({ isActive: !currentStatus })
       })
-      
       const data = await response.json()
-      
       if (data.success) {
         fetchCategories()
         fetchStats()
@@ -180,15 +158,13 @@ const AdminCategoriesPage = () => {
       console.error('Error updating category:', err)
     }
   }
-
   const filteredCategories = categories.filter(category =>
     category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (category.description && category.description.toLowerCase().includes(searchTerm.toLowerCase()))
   )
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Category Management</h1>
@@ -206,8 +182,7 @@ const AdminCategoriesPage = () => {
           <span>Add Category</span>
         </button>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white p-6 rounded-lg shadow">
           <div className="flex items-center">
@@ -237,8 +212,7 @@ const AdminCategoriesPage = () => {
           </div>
         </div>
       </div>
-
-      {/* Search */}
+      {}
       <div className="bg-white p-6 rounded-lg shadow">
         <div className="relative">
           <MagnifyingGlassIcon className="h-5 w-5 absolute left-3 top-3 text-gray-400" />
@@ -251,8 +225,7 @@ const AdminCategoriesPage = () => {
           />
         </div>
       </div>
-
-      {/* Error Message */}
+      {}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
           <p className="text-red-600">{error}</p>
@@ -264,13 +237,11 @@ const AdminCategoriesPage = () => {
           </button>
         </div>
       )}
-
-      {/* Categories Table */}
+      {}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
           <h3 className="text-lg font-medium text-gray-900">Categories</h3>
         </div>
-        
         {loading ? (
           <div className="p-8 text-center">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
@@ -356,7 +327,6 @@ const AdminCategoriesPage = () => {
                 ))}
               </tbody>
             </table>
-            
             {filteredCategories.length === 0 && (
               <div className="p-8 text-center">
                 <TagIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
@@ -366,8 +336,7 @@ const AdminCategoriesPage = () => {
           </div>
         )}
       </div>
-
-      {/* Modal */}
+      {}
       {showModal && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -375,7 +344,6 @@ const AdminCategoriesPage = () => {
               <h3 className="text-lg font-medium text-gray-900 mb-4">
                 {editingCategory ? 'Edit Category' : 'Add New Category'}
               </h3>
-              
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -390,7 +358,6 @@ const AdminCategoriesPage = () => {
                     placeholder="Enter category name"
                   />
                 </div>
-                
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Description
@@ -403,7 +370,6 @@ const AdminCategoriesPage = () => {
                     placeholder="Enter category description"
                   />
                 </div>
-                
                 <div className="flex justify-end space-x-3 pt-4">
                   <button
                     type="button"
@@ -428,8 +394,7 @@ const AdminCategoriesPage = () => {
           </div>
         </div>
       )}
-
-      {/* Delete Confirmation Modal */}
+      {}
       {showDeleteModal && categoryToDelete && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
           <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
@@ -437,16 +402,13 @@ const AdminCategoriesPage = () => {
               <div className="flex items-center justify-center w-12 h-12 mx-auto bg-red-100 rounded-full mb-4">
                 <TrashIcon className="h-6 w-6 text-red-600" />
               </div>
-              
               <h3 className="text-lg font-medium text-gray-900 text-center mb-2">
                 Delete Category
               </h3>
-              
               <p className="text-sm text-gray-500 text-center mb-4">
                 Are you sure you want to delete the category "{categoryToDelete.name}"? 
                 This action cannot be undone.
               </p>
-              
               <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
                 <div className="flex">
                   <div className="flex-shrink-0">
@@ -461,7 +423,6 @@ const AdminCategoriesPage = () => {
                   </div>
                 </div>
               </div>
-              
               <div className="flex justify-end space-x-3">
                 <button
                   type="button"
@@ -485,5 +446,4 @@ const AdminCategoriesPage = () => {
     </div>
   )
 }
-
 export default AdminCategoriesPage

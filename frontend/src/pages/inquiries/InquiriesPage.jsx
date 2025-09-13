@@ -14,10 +14,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const InquiryCard = ({ inquiry, onStatusUpdate }) => {
   const [isExpanded, setIsExpanded] = useState(false)
-
   const getStatusColor = (status) => {
     switch (status) {
       case 'pending': return 'bg-yellow-100 text-yellow-800'
@@ -27,7 +25,6 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
       default: return 'bg-gray-100 text-gray-800'
     }
   }
-
   return (
     <div className="card">
       <div className="card-content">
@@ -45,7 +42,6 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
             {inquiry.status}
           </span>
         </div>
-
         <div className="mb-4">
           <h4 className="font-medium text-gray-900 mb-2">
             Pet: {inquiry.adoptionListing?.pet?.name || inquiry.adoptionListing?.title}
@@ -55,7 +51,6 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
             <span>Submitted {new Date(inquiry.createdAt).toLocaleDateString()}</span>
           </div>
         </div>
-
         <div className="mb-4">
           <p className={cn(
             'text-gray-700',
@@ -72,7 +67,6 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
             </button>
           )}
         </div>
-
         {inquiry.status === 'pending' && (
           <div className="flex space-x-2">
             <button
@@ -91,7 +85,6 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
             </button>
           </div>
         )}
-
         {inquiry.status === 'approved' && (
           <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-lg">
             <p className="text-green-800 text-sm">
@@ -103,12 +96,10 @@ const InquiryCard = ({ inquiry, onStatusUpdate }) => {
     </div>
   )
 }
-
 export default function InquiriesPage() {
   const { user } = useAuth()
   const queryClient = useQueryClient()
   const [statusFilter, setStatusFilter] = useState('all')
-
   const { data: inquiries, isLoading, error } = useQuery({
     queryKey: ['adoption-inquiries', user?.id, statusFilter],
     queryFn: () => adoptionAPI.getInquiries({ 
@@ -117,7 +108,6 @@ export default function InquiriesPage() {
     }),
     enabled: !!user?.id && user?.role === 'shelter'
   })
-
   const updateStatusMutation = useMutation({
     mutationFn: ({ inquiryId, status }) => 
       adoptionAPI.updateInquiryStatus(inquiryId, status),
@@ -129,21 +119,17 @@ export default function InquiriesPage() {
       toast.error(error.response?.data?.error || 'Failed to update inquiry status')
     }
   })
-
   const handleStatusUpdate = (inquiryId, status) => {
     updateStatusMutation.mutate({ inquiryId, status })
   }
-
   const inquiriesData = inquiries?.data?.data || []
   const filteredInquiries = inquiriesData
-
   const stats = {
     total: inquiriesData.length,
     pending: inquiriesData.filter(i => i.status === 'pending').length,
     approved: inquiriesData.filter(i => i.status === 'approved').length,
     rejected: inquiriesData.filter(i => i.status === 'rejected').length
   }
-
   if (user?.role !== 'shelter') {
     return (
       <div className="text-center py-12">
@@ -153,18 +139,16 @@ export default function InquiriesPage() {
       </div>
     )
   }
-
   return (
     <div className="space-y-6">
-      {/* Header */}
+      {}
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Adoption Inquiries</h1>
         <p className="text-gray-600 mt-1">
           Manage and respond to adoption inquiries from potential adopters
         </p>
       </div>
-
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="card p-4">
           <div className="text-center">
@@ -191,8 +175,7 @@ export default function InquiriesPage() {
           </div>
         </div>
       </div>
-
-      {/* Filters */}
+      {}
       <div className="card p-4">
         <div className="flex flex-wrap gap-2">
           {['all', 'pending', 'approved', 'rejected'].map((status) => (
@@ -209,8 +192,7 @@ export default function InquiriesPage() {
           ))}
         </div>
       </div>
-
-      {/* Content */}
+      {}
       {isLoading ? (
         <div className="flex justify-center items-center min-h-64">
           <LoadingSpinner size="lg" />

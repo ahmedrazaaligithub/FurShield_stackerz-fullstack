@@ -7,9 +7,7 @@ const {
   getAIStatus
 } = require('../controllers/aiController');
 const { protect, authorize, checkVetVerification } = require('../middlewares/auth');
-
 const router = express.Router();
-
 const aiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 20,
@@ -17,13 +15,10 @@ const aiLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
 });
-
 router.use(protect);
 router.use(aiLimiter);
-
 router.get('/status', getAIStatus);
 router.post('/ask', askAI);
 router.post('/pet-advice', getPetCareAdvice);
 router.post('/health-recommendations', authorize('vet'), checkVetVerification, getHealthRecommendations);
-
 module.exports = router;

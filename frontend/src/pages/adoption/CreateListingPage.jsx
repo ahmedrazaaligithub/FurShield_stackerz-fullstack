@@ -11,7 +11,6 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
-
 export default function CreateListingPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -36,7 +35,6 @@ export default function CreateListingPage() {
   const [goodWithDogs, setGoodWithDogs] = useState(false)
   const [goodWithCats, setGoodWithCats] = useState(false)
   const [newRequirement, setNewRequirement] = useState('')
-
   const createListingMutation = useMutation({
     mutationFn: adoptionAPI.createListing,
     onSuccess: (data) => {
@@ -47,15 +45,12 @@ export default function CreateListingPage() {
       toast.error(error.response?.data?.error || 'Failed to create listing')
     }
   })
-
-  // Fetch current shelter's pets for selection
   const { data: myPetsResp, isLoading: petsLoading } = useQuery({
     queryKey: ['my-pets'],
     queryFn: () => petAPI.getMyPets(),
     enabled: !!user?.id && user?.role === 'shelter'
   })
   const myPets = myPetsResp?.data?.data || []
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -66,7 +61,6 @@ export default function CreateListingPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const addToArray = (field, value, setValue) => {
     if (value.trim()) {
       setFormData(prev => ({
@@ -76,30 +70,23 @@ export default function CreateListingPage() {
       setValue('')
     }
   }
-
   const removeFromArray = (field, index) => {
     setFormData(prev => ({
       ...prev,
       [field]: prev[field].filter((_, i) => i !== index)
     }))
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.title.trim()) newErrors.title = 'Title is required'
     if (!formData.description.trim()) newErrors.description = 'Description is required'
     if (!petId) newErrors.petId = 'Please select a pet for this listing'
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     const payload = {
       petId,
       title: formData.title,
@@ -118,13 +105,11 @@ export default function CreateListingPage() {
       temperament: formData.temperament?.length ? formData.temperament : undefined,
       photos: formData.photos?.length ? formData.photos : undefined
     }
-
     createListingMutation.mutate(payload)
   }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/adoption')}
@@ -137,9 +122,8 @@ export default function CreateListingPage() {
           <p className="text-gray-600">Help a pet find their forever home</p>
         </div>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Select Pet */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Select Pet *</h2>
@@ -164,8 +148,7 @@ export default function CreateListingPage() {
             {errors.petId && <p className="text-sm text-red-600">{errors.petId}</p>}
           </div>
         </div>
-
-        {/* Basic Information */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Basic Information</h2>
@@ -183,7 +166,6 @@ export default function CreateListingPage() {
               />
               {errors.title && <p className="mt-1 text-sm text-red-600">{errors.title}</p>}
             </div>
-
             <div>
               <label className="label">Description *</label>
               <textarea
@@ -196,7 +178,6 @@ export default function CreateListingPage() {
               />
               {errors.description && <p className="mt-1 text-sm text-red-600">{errors.description}</p>}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="label">Energy Level</label>
@@ -227,7 +208,6 @@ export default function CreateListingPage() {
                 </select>
               </div>
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
                 <label className="label">Breed</label>
@@ -240,7 +220,6 @@ export default function CreateListingPage() {
                   placeholder="e.g., Golden Retriever"
                 />
               </div>
-
               <div>
                 <label className="label">Size</label>
                 <select
@@ -256,7 +235,6 @@ export default function CreateListingPage() {
                   <option value="extra-large">Extra Large</option>
                 </select>
               </div>
-
               <div>
                 <label className="label">Weight (lbs)</label>
                 <input
@@ -270,7 +248,6 @@ export default function CreateListingPage() {
                 />
               </div>
             </div>
-
             <div>
               <label className="label">Color</label>
               <input
@@ -284,8 +261,7 @@ export default function CreateListingPage() {
             </div>
           </div>
         </div>
-
-        {/* Temperament & Behavior */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Temperament & Behavior</h2>
@@ -324,7 +300,6 @@ export default function CreateListingPage() {
                 ))}
               </div>
             </div>
-
             <div>
               <label className="label">Good With</label>
               <div className="flex space-x-2 mb-2">
@@ -360,8 +335,7 @@ export default function CreateListingPage() {
             </div>
           </div>
         </div>
-
-        {/* Compatibility & Medical Information */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Compatibility & Medical Information</h2>
@@ -396,7 +370,6 @@ export default function CreateListingPage() {
                 This pet has special needs
               </label>
             </div>
-
             {formData.specialNeeds && (
               <div>
                 <label className="label">Special Needs Description</label>
@@ -410,7 +383,6 @@ export default function CreateListingPage() {
                 />
               </div>
             )}
-
             <div>
               <label className="label">Medical History</label>
               <textarea
@@ -424,8 +396,7 @@ export default function CreateListingPage() {
             </div>
           </div>
         </div>
-
-        {/* Adoption Details */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Adoption Details</h2>
@@ -443,7 +414,6 @@ export default function CreateListingPage() {
                 min="0"
               />
             </div>
-
             <div>
               <label className="label">Adoption Requirements</label>
               <div className="flex space-x-2 mb-2">
@@ -479,8 +449,7 @@ export default function CreateListingPage() {
             </div>
           </div>
         </div>
-
-        {/* Submit Buttons */}
+        {}
         <div className="flex space-x-4">
           <button
             type="submit"
@@ -492,7 +461,6 @@ export default function CreateListingPage() {
             ) : null}
             {createListingMutation.isPending ? 'Creating...' : 'Create Listing'}
           </button>
-          
           <button
             type="button"
             onClick={() => navigate('/adoption')}

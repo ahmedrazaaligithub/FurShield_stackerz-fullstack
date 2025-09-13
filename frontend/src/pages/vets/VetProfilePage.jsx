@@ -17,22 +17,18 @@ import {
 } from '@heroicons/react/24/outline'
 import { StarIcon as StarIconSolid, HeartIcon as HeartIconSolid, CheckBadgeIcon as CheckBadgeIconSolid } from '@heroicons/react/24/solid'
 import toast from 'react-hot-toast'
-
 export default function VetProfilePage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-
   const { data: vet, isLoading, error } = useQuery({
     queryKey: ['vet', id],
     queryFn: () => userAPI.getVetById(id)
   })
-
   const { data: favorites } = useQuery({
     queryKey: ['favorites'],
     queryFn: () => userAPI.getFavoriteVets()
   })
-
   const addFavoriteMutation = useMutation({
     mutationFn: (vetId) => userAPI.addFavoriteVet(vetId),
     onSuccess: () => {
@@ -45,7 +41,6 @@ export default function VetProfilePage() {
       toast.error(error.response?.data?.error || 'Failed to add to favorites')
     }
   })
-
   const removeFavoriteMutation = useMutation({
     mutationFn: (vetId) => userAPI.removeFavoriteVet(vetId),
     onSuccess: () => {
@@ -56,21 +51,16 @@ export default function VetProfilePage() {
       toast.error(error.response?.data?.error || 'Failed to remove from favorites')
     }
   })
-
   const vetData = vet?.data?.data
   const favoriteVetsData = favorites?.data?.data?.data || []
-  
   console.log('VetProfile - Favorites response:', favorites)
   console.log('VetProfile - Favorite vets data:', favoriteVetsData)
   console.log('VetProfile - Current vet ID:', id)
   console.log('VetProfile - Is favorite check:', favoriteVetsData.some(fav => fav._id === id))
   const isFavorite = favoriteVetsData.some(fav => fav._id === id)
-
   const handleChatVet = () => {
-    // TODO: Implement chat functionality
     console.log('Chat with vet:', id)
   }
-
   const handleToggleFavorite = () => {
     if (isFavorite) {
       removeFavoriteMutation.mutate(id)
@@ -78,11 +68,9 @@ export default function VetProfilePage() {
       addFavoriteMutation.mutate(id)
     }
   }
-
   if (isLoading) {
     return <LoadingSpinner />
   }
-
   if (error || !vetData) {
     return (
       <div className="max-w-4xl mx-auto text-center py-12">
@@ -98,10 +86,9 @@ export default function VetProfilePage() {
       </div>
     )
   }
-
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/vets')}
@@ -114,12 +101,11 @@ export default function VetProfilePage() {
           <p className="text-gray-600">Professional details and information</p>
         </div>
       </div>
-
-      {/* Profile Header Card */}
+      {}
       <div className="card">
         <div className="card-content p-8">
           <div className="flex flex-col md:flex-row items-start space-y-6 md:space-y-0 md:space-x-8">
-            {/* Profile Image */}
+            {}
             <div className="flex-shrink-0">
               {vetData.avatar ? (
                 <img
@@ -133,8 +119,7 @@ export default function VetProfilePage() {
                 </div>
               )}
             </div>
-
-            {/* Profile Info */}
+            {}
             <div className="flex-1 space-y-4">
               <div>
                 <div className="flex items-center space-x-3 mb-2">
@@ -150,8 +135,7 @@ export default function VetProfilePage() {
                   {vetData.profile?.specialization?.join(', ') || vetData.specialization || 'General Practice'}
                 </p>
               </div>
-
-              {/* Rating */}
+              {}
               {vetData.rating && (
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center">
@@ -167,32 +151,28 @@ export default function VetProfilePage() {
                   <span className="text-gray-600">({vetData.reviewCount || 0} reviews)</span>
                 </div>
               )}
-
-              {/* Experience */}
+              {}
               {(vetData.profile?.experience || vetData.experience) && (
                 <div className="flex items-center text-gray-600">
                   <ClockIcon className="h-5 w-5 mr-2" />
                   <span>{vetData.profile?.experience || vetData.experience} years of experience</span>
                 </div>
               )}
-
-              {/* License Number */}
+              {}
               {vetData.profile?.licenseNumber && (
                 <div className="flex items-center text-gray-600">
                   <AcademicCapIcon className="h-5 w-5 mr-2" />
                   <span>License: {vetData.profile.licenseNumber}</span>
                 </div>
               )}
-
-              {/* Clinic Information */}
+              {}
               {vetData.profile?.clinicName && (
                 <div className="flex items-center text-gray-600">
                   <MapPinIcon className="h-5 w-5 mr-2" />
                   <span>{vetData.profile.clinicName}</span>
                 </div>
               )}
-
-              {/* Action Buttons */}
+              {}
               <div className="flex space-x-4 pt-4">
                 <button
                   onClick={handleChatVet}
@@ -218,12 +198,11 @@ export default function VetProfilePage() {
           </div>
         </div>
       </div>
-
-      {/* Details Grid */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* About Section */}
+        {}
         <div className="lg:col-span-2 space-y-6">
-          {/* Bio */}
+          {}
           {(vetData.profile?.bio || vetData.bio) && (
             <div className="card">
               <div className="card-header">
@@ -234,8 +213,7 @@ export default function VetProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Education & Certifications */}
+          {}
           {vetData.education && (
             <div className="card">
               <div className="card-header">
@@ -257,8 +235,7 @@ export default function VetProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Services */}
+          {}
           {vetData.services && (
             <div className="card">
               <div className="card-header">
@@ -277,10 +254,9 @@ export default function VetProfilePage() {
             </div>
           )}
         </div>
-
-        {/* Contact & Info Sidebar */}
+        {}
         <div className="space-y-6">
-          {/* Contact Information */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-xl font-semibold text-gray-900">Contact Information</h3>
@@ -295,7 +271,6 @@ export default function VetProfilePage() {
                   </div>
                 </div>
               )}
-              
               {vetData.email && (
                 <div className="flex items-start">
                   <EnvelopeIcon className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" />
@@ -305,7 +280,6 @@ export default function VetProfilePage() {
                   </div>
                 </div>
               )}
-              
               {vetData.address && (
                 <div className="flex items-start">
                   <MapPinIcon className="h-5 w-5 text-gray-400 mr-3 flex-shrink-0 mt-0.5" />
@@ -317,8 +291,7 @@ export default function VetProfilePage() {
               )}
             </div>
           </div>
-
-          {/* Languages */}
+          {}
           {(vetData.profile?.languages || vetData.languages) && (vetData.profile?.languages?.length > 0 || vetData.languages?.length > 0) && (
             <div className="card">
               <div className="card-header">
@@ -335,8 +308,7 @@ export default function VetProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Consultation Fee */}
+          {}
           {vetData.profile?.consultationFee && (
             <div className="card">
               <div className="card-header">
@@ -350,8 +322,7 @@ export default function VetProfilePage() {
               </div>
             </div>
           )}
-
-          {/* Availability */}
+          {}
           {(vetData.profile?.availableHours || vetData.availability) && (
             <div className="card">
               <div className="card-header">
@@ -384,8 +355,7 @@ export default function VetProfilePage() {
           )}
         </div>
       </div>
-
-      {/* Reviews Section */}
+      {}
       {vetData.reviews && vetData.reviews.length > 0 && (
         <div className="card">
           <div className="card-header">

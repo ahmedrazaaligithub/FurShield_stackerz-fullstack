@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const healthRecordSchema = new mongoose.Schema({
   pet: {
     type: mongoose.Schema.ObjectId,
@@ -88,10 +87,8 @@ const healthRecordSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 healthRecordSchema.index({ pet: 1 });
 healthRecordSchema.index({ vet: 1 });
 healthRecordSchema.index({ date: -1 });
 healthRecordSchema.index({ type: 1 });
-
 module.exports = mongoose.model('HealthRecord', healthRecordSchema);

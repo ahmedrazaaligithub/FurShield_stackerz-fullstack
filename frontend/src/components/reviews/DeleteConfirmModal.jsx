@@ -5,10 +5,8 @@ import {
   XMarkIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-
 export default function DeleteConfirmModal({ review, onClose, onConfirm }) {
   const queryClient = useQueryClient()
-
   const deleteReviewMutation = useMutation({
     mutationFn: () => reviewAPI.deleteReview(review._id),
     onSuccess: () => {
@@ -19,15 +17,13 @@ export default function DeleteConfirmModal({ review, onClose, onConfirm }) {
       toast.error(error.response?.data?.error || 'Failed to delete review')
     }
   })
-
   const handleDelete = () => {
     deleteReviewMutation.mutate()
   }
-
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-        {/* Header */}
+        {}
         <div className="bg-gradient-to-r from-red-500 to-pink-600 px-6 py-4 rounded-t-2xl">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white">Delete Review</h2>
@@ -39,8 +35,7 @@ export default function DeleteConfirmModal({ review, onClose, onConfirm }) {
             </button>
           </div>
         </div>
-
-        {/* Content */}
+        {}
         <div className="p-6">
           <div className="flex items-center space-x-4 mb-6">
             <div className="flex-shrink-0">
@@ -55,14 +50,12 @@ export default function DeleteConfirmModal({ review, onClose, onConfirm }) {
               </p>
             </div>
           </div>
-
-          {/* Review Preview */}
+          {}
           <div className="bg-gray-50 rounded-xl p-4 mb-6">
             <h4 className="font-medium text-gray-900 mb-1">{review.title}</h4>
             <p className="text-sm text-gray-600 line-clamp-2">{review.comment}</p>
           </div>
-
-          {/* Action Buttons */}
+          {}
           <div className="flex space-x-3">
             <button
               onClick={onClose}

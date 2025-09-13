@@ -12,7 +12,6 @@ import {
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
-
 const ChatMessage = ({ message, isOwn }) => (
   <div className={cn('flex', isOwn ? 'justify-end' : 'justify-start')}>
     <div className={cn(
@@ -34,7 +33,6 @@ const ChatMessage = ({ message, isOwn }) => (
     </div>
   </div>
 )
-
 const ChatList = ({ chats, activeChat, onChatSelect }) => (
   <div className="space-y-2">
     {chats.map((chat) => (
@@ -80,28 +78,23 @@ const ChatList = ({ chats, activeChat, onChatSelect }) => (
     ))}
   </div>
 )
-
 export default function ChatPage() {
   const { user } = useAuth()
   const { socket } = useSocket()
   const queryClient = useQueryClient()
   const messagesEndRef = useRef(null)
-  
   const [activeChat, setActiveChat] = useState(null)
   const [newMessage, setNewMessage] = useState('')
   const [showNewChatModal, setShowNewChatModal] = useState(false)
-
   const { data: chats, isLoading: chatsLoading } = useQuery({
     queryKey: ['chats'],
     queryFn: chatAPI.getChats
   })
-
   const { data: messages, isLoading: messagesLoading } = useQuery({
     queryKey: ['messages', activeChat?._id],
     queryFn: () => activeChat ? chatAPI.getMessages(activeChat._id) : null,
     enabled: !!activeChat
   })
-
   const sendMessageMutation = useMutation({
     mutationFn: ({ chatId, content }) => chatAPI.sendMessage(chatId, { content }),
     onSuccess: (data) => {
@@ -113,93 +106,43 @@ export default function ChatPage() {
       toast.error(error.response?.data?.error || 'Failed to send message')
     }
   })
-
   const handleSendMessage = (e) => {
     e.preventDefault()
     if (!newMessage.trim() || !activeChat) return
-    
     sendMessageMutation.mutate({
       chatId: activeChat._id,
       content: newMessage.trim()
     })
   }
-
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }
-
   useEffect(() => {
     scrollToBottom()
   }, [messages])
-
   useEffect(() => {
     if (socket && activeChat) {
       socket.emit('join-chat', activeChat._id)
-      
       const handleNewMessage = (message) => {
         queryClient.invalidateQueries(['messages', activeChat._id])
         queryClient.invalidateQueries(['chats'])
       }
-      
       socket.on('new-message', handleNewMessage)
-      
       return () => {
         socket.off('new-message', handleNewMessage)
         socket.emit('leave-chat', activeChat._id)
       }
     }
   }, [socket, activeChat, queryClient])
-
   const chatList = chats?.data?.data || []
   const messageList = messages?.data?.data || []
-
   return (
     <div className="h-[calc(100vh-8rem)] flex">
-      {/* Chat List Sidebar */}
-      <div className="w-1/3 border-r border-gray-200 flex flex-col">
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-gray-900">Messages</h2>
-            <button
-              onClick={() => setShowNewChatModal(true)}
-              className="btn btn-primary btn-sm"
-            >
-              <PlusIcon className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex-1 overflow-y-auto p-4">
-          {chatsLoading ? (
-            <div className="flex justify-center items-center h-32">
-              <LoadingSpinner />
-            </div>
-          ) : chatList.length === 0 ? (
-            <div className="text-center py-8">
-              <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-500">No conversations yet</p>
-              <button
-                onClick={() => setShowNewChatModal(true)}
-                className="btn btn-primary btn-sm mt-2"
-              >
-                Start a conversation
-              </button>
-            </div>
-          ) : (
-            <ChatList
-              chats={chatList}
-              activeChat={activeChat}
-              onChatSelect={setActiveChat}
-            />
-          )}
-        </div>
-      </div>
-
-      {/* Chat Messages */}
+      {}
       <div className="flex-1 flex flex-col">
         {activeChat ? (
           <>
-            {/* Chat Header */}
+            {}
             <div className="p-4 border-b border-gray-200 bg-white">
               <div className="flex items-center space-x-3">
                 <div className="flex-shrink-0">
@@ -225,8 +168,7 @@ export default function ChatPage() {
                 </div>
               </div>
             </div>
-
-            {/* Messages */}
+            {}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {messagesLoading ? (
                 <div className="flex justify-center items-center h-32">
@@ -249,8 +191,7 @@ export default function ChatPage() {
               )}
               <div ref={messagesEndRef} />
             </div>
-
-            {/* Message Input */}
+            {}
             <div className="p-4 border-t border-gray-200 bg-white">
               <form onSubmit={handleSendMessage} className="flex space-x-2">
                 <input
@@ -279,14 +220,20 @@ export default function ChatPage() {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <ChatBubbleLeftRightIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">Select a conversation</h3>
-              <p className="text-gray-500">Choose a conversation from the sidebar to start messaging</p>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">Chat Feature</h3>
+              <p className="text-gray-500 mb-4">Connect with veterinarians, shelter staff, and other pet owners</p>
+              <button
+                onClick={() => setShowNewChatModal(true)}
+                className="btn btn-primary"
+              >
+                <PlusIcon className="h-4 w-4 mr-2" />
+                Start New Conversation
+              </button>
             </div>
           </div>
         )}
       </div>
-
-      {/* New Chat Modal */}
+      {}
       {showNewChatModal && (
         <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">

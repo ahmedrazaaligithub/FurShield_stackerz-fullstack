@@ -3,41 +3,32 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner'
 import { CheckCircleIcon } from '@heroicons/react/24/outline'
-
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
   const [sent, setSent] = useState(false)
   const [error, setError] = useState('')
-
   const { forgotPassword } = useAuth()
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!email) {
       setError('Email is required')
       return
     }
-    
     if (!/\S+@\S+\.\S+/.test(email)) {
       setError('Please enter a valid email')
       return
     }
-    
     setLoading(true)
     setError('')
-    
     const result = await forgotPassword(email)
     setLoading(false)
-    
     if (result.success) {
       setSent(true)
     } else {
       setError(result.error)
     }
   }
-
   if (sent) {
     return (
       <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
@@ -53,7 +44,6 @@ export default function ForgotPasswordPage() {
               We've sent a password reset link to <strong>{email}</strong>
             </p>
           </div>
-
           <div className="text-center space-y-4">
             <p className="text-sm text-gray-500">
               Didn't receive the email? Check your spam folder or try again.
@@ -65,7 +55,6 @@ export default function ForgotPasswordPage() {
               Try again
             </button>
           </div>
-
           <div className="text-center">
             <Link
               to="/login"
@@ -78,7 +67,6 @@ export default function ForgotPasswordPage() {
       </div>
     )
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center gradient-bg py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
@@ -96,7 +84,6 @@ export default function ForgotPasswordPage() {
             Enter your email and we'll send you a reset link
           </p>
         </div>
-
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="email" className="label">
@@ -120,7 +107,6 @@ export default function ForgotPasswordPage() {
               <p className="mt-1 text-sm text-red-600">{error}</p>
             )}
           </div>
-
           <div>
             <button
               type="submit"
@@ -133,7 +119,6 @@ export default function ForgotPasswordPage() {
               {loading ? 'Sending...' : 'Send reset link'}
             </button>
           </div>
-
           <div className="text-center">
             <Link
               to="/login"

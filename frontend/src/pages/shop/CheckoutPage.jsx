@@ -12,12 +12,10 @@ import {
   UserIcon
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
-
 export default function CheckoutPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [formData, setFormData] = useState({
-   
     firstName: '',
     lastName: '',
     email: '',
@@ -27,31 +25,23 @@ export default function CheckoutPage() {
     state: '',
     zipCode: '',
     country: 'US',
-    
-   
     cardNumber: '',
     expiryDate: '',
     cvv: '',
     cardName: '',
-    
-  
     shippingMethod: 'standard',
     saveAddress: false
   })
   const [errors, setErrors] = useState({})
-
   const { data: cart, isLoading } = useQuery({
     queryKey: ['cart'],
     queryFn: cartAPI.getCart
   })
-
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: () => userAPI.getProfile(),
     enabled: !!user
   })
-
-  // Auto-fill form with user data
   useEffect(() => {
     if (userProfile?.data?.data) {
       const profile = userProfile.data.data
@@ -69,12 +59,10 @@ export default function CheckoutPage() {
       }))
     }
   }, [userProfile])
-
   const createOrderMutation = useMutation({
     mutationFn: orderAPI.createOrder,
     onSuccess: (data) => {
       toast.success('Order placed successfully!')
-      // Redirect to success page
       navigate(`/order-success/${data.data.data._id}`)
     },
     onError: (error) => {
@@ -82,7 +70,6 @@ export default function CheckoutPage() {
       toast.error(error.response?.data?.error || error.response?.data?.message || 'Failed to place order')
     }
   })
-
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target
     setFormData(prev => ({
@@ -93,58 +80,39 @@ export default function CheckoutPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
-    // Required field validation
     const required = ['firstName', 'lastName', 'email', 'phone', 'address', 'city', 'state', 'zipCode', 'cardNumber', 'expiryDate', 'cvv', 'cardName']
     required.forEach(field => {
       if (!formData[field].trim()) {
         newErrors[field] = 'This field is required'
       }
     })
-    
-    // Email validation
     if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       newErrors.email = 'Please enter a valid email address'
     }
-    
-    // Phone validation (10-15 digits)
     if (formData.phone && !/^[0-9]{10,15}$/.test(formData.phone.replace(/[\s\-\(\)]/g, ''))) {
       newErrors.phone = 'Please enter a valid phone number (10-15 digits)'
     }
-    
-    // ZIP code validation (5 or 9 digits)
     if (formData.zipCode && !/^\d{5}(-\d{4})?$/.test(formData.zipCode)) {
       newErrors.zipCode = 'Please enter a valid ZIP code (e.g., 12345 or 12345-6789)'
     }
-    
-    // Card number validation (13-19 digits)
     const cardNumber = formData.cardNumber.replace(/\s/g, '')
     if (cardNumber && (cardNumber.length < 13 || cardNumber.length > 19 || !/^\d+$/.test(cardNumber))) {
       newErrors.cardNumber = 'Please enter a valid card number (13-19 digits)'
     }
-    
-    // Expiry date validation (MM/YY or MM/YYYY)
     if (formData.expiryDate && !/^(0[1-9]|1[0-2])\/(\d{2}|\d{4})$/.test(formData.expiryDate)) {
       newErrors.expiryDate = 'Please enter a valid expiry date (MM/YY)'
     }
-    
-    // CVV validation (3-4 digits)
     if (formData.cvv && !/^\d{3,4}$/.test(formData.cvv)) {
       newErrors.cvv = 'Please enter a valid CVV (3-4 digits)'
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     const orderData = {
       shippingAddress: {
         firstName: formData.firstName,
@@ -164,11 +132,9 @@ export default function CheckoutPage() {
       },
       shippingMethod: formData.shippingMethod
     }
-    
     console.log('Submitting order with data:', orderData)
     createOrderMutation.mutate(orderData)
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -176,10 +142,8 @@ export default function CheckoutPage() {
       </div>
     )
   }
-
   const cartData = cart?.data?.data
   const items = cartData?.items || []
-  
   if (items.length === 0) {
     return (
       <div className="text-center py-12">
@@ -193,15 +157,12 @@ export default function CheckoutPage() {
       </div>
     )
   }
-
   const subtotal = items.reduce((sum, item) => sum + (item.product.price * item.quantity), 0)
-  const tax = 0 // No tax
+  const tax = 0 
   const shipping = formData.shippingMethod === 'express' ? 19.99 : (subtotal > 50 ? 0 : 9.99)
   const total = subtotal + tax + shipping
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-     
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/cart')}
@@ -214,12 +175,9 @@ export default function CheckoutPage() {
           <p className="text-gray-600">Complete your order</p>
         </div>
       </div>
-
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        
           <div className="lg:col-span-2 space-y-6">
-            
             <div className="card">
               <div className="card-header">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -252,7 +210,6 @@ export default function CheckoutPage() {
                     {errors.lastName && <p className="mt-1 text-sm text-red-600">{errors.lastName}</p>}
                   </div>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="label">Email *</label>
@@ -279,7 +236,6 @@ export default function CheckoutPage() {
                     {errors.phone && <p className="mt-1 text-sm text-red-600">{errors.phone}</p>}
                   </div>
                 </div>
-
                 <div>
                   <label className="label">Address *</label>
                   <input
@@ -291,7 +247,6 @@ export default function CheckoutPage() {
                   />
                   {errors.address && <p className="mt-1 text-sm text-red-600">{errors.address}</p>}
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
                     <label className="label">City *</label>
@@ -331,8 +286,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
-
-           
             <div className="card">
               <div className="card-header">
                 <h2 className="text-xl font-semibold text-gray-900">Shipping Method</h2>
@@ -355,7 +308,6 @@ export default function CheckoutPage() {
                     <p className="text-sm text-gray-600">5-7 business days</p>
                   </div>
                 </label>
-                
                 <label className="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50">
                   <input
                     type="radio"
@@ -375,8 +327,6 @@ export default function CheckoutPage() {
                 </label>
               </div>
             </div>
-
-           
             <div className="card">
               <div className="card-header">
                 <h2 className="text-xl font-semibold text-gray-900 flex items-center">
@@ -392,7 +342,6 @@ export default function CheckoutPage() {
                     name="cardNumber"
                     value={formData.cardNumber}
                     onChange={(e) => {
-                      // Format card number with spaces
                       let value = e.target.value.replace(/\s/g, '')
                       let formattedValue = value.match(/.{1,4}/g)?.join(' ') || value
                       setFormData(prev => ({ ...prev, cardNumber: formattedValue }))
@@ -406,7 +355,6 @@ export default function CheckoutPage() {
                   />
                   {errors.cardNumber && <p className="mt-1 text-sm text-red-600">{errors.cardNumber}</p>}
                 </div>
-
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="label">Expiry Date *</label>
@@ -450,7 +398,6 @@ export default function CheckoutPage() {
                     {errors.cvv && <p className="mt-1 text-sm text-red-600">{errors.cvv}</p>}
                   </div>
                 </div>
-
                 <div>
                   <label className="label">Name on Card *</label>
                   <input
@@ -465,8 +412,6 @@ export default function CheckoutPage() {
               </div>
             </div>
           </div>
-
-       
           <div className="space-y-6">
             <div className="card">
               <div className="card-header">
@@ -482,7 +427,6 @@ export default function CheckoutPage() {
                     <p className="font-medium">${(item.product.price * item.quantity).toFixed(2)}</p>
                   </div>
                 ))}
-                
                 <div className="border-t pt-4 space-y-2">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
@@ -503,7 +447,6 @@ export default function CheckoutPage() {
                 </div>
               </div>
             </div>
-
             <button
               type="submit"
               disabled={createOrderMutation.isPending}
@@ -516,7 +459,6 @@ export default function CheckoutPage() {
               )}
               {createOrderMutation.isPending ? 'Processing...' : 'Place Order'}
             </button>
-
             <div className="text-center text-sm text-gray-500">
               <ShieldCheckIcon className="h-4 w-4 inline mr-1" />
               Your payment information is secure and encrypted

@@ -11,7 +11,6 @@ import {
 } from '@heroicons/react/24/outline'
 import toast from 'react-hot-toast'
 import { useAuth } from '../../contexts/AuthContext'
-
 const appointmentTypes = [
   { value: 'checkup', label: 'Regular Checkup', duration: 30 },
   { value: 'vaccination', label: 'Vaccination', duration: 15 },
@@ -21,13 +20,11 @@ const appointmentTypes = [
   { value: 'dental', label: 'Dental Care', duration: 45 },
   { value: 'grooming', label: 'Grooming', duration: 60 }
 ]
-
 export default function BookAppointmentPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const preselectedPetId = searchParams.get('petId')
   const { user } = useAuth()
-
   const [formData, setFormData] = useState({
     petId: preselectedPetId || '',
     vetId: '',
@@ -47,12 +44,10 @@ export default function BookAppointmentPage() {
     verified: 'true'
   })
   const [userLocation, setUserLocation] = useState(null)
-
   const { data: pets } = useQuery({
     queryKey: ['pets'],
     queryFn: () => petAPI.getPets()
   })
-
   const { data: vets, refetch: refetchVets } = useQuery({
     queryKey: ['vets', filters],
     queryFn: () => {
@@ -64,7 +59,6 @@ export default function BookAppointmentPage() {
       return userAPI.getVets(params)
     }
   })
-
   const bookAppointmentMutation = useMutation({
     mutationFn: appointmentAPI.createAppointment,
     onSuccess: (data) => {
@@ -75,7 +69,6 @@ export default function BookAppointmentPage() {
       toast.error(error.response?.data?.error || 'Failed to book appointment')
     }
   })
-
   const handleInputChange = (e) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
@@ -83,12 +76,10 @@ export default function BookAppointmentPage() {
       setErrors(prev => ({ ...prev, [name]: '' }))
     }
   }
-
   const handleFilterChange = (e) => {
     const { name, value } = e.target
     setFilters(prev => ({ ...prev, [name]: value }))
   }
-
   const getCurrentLocation = () => {
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition(
@@ -107,60 +98,44 @@ export default function BookAppointmentPage() {
       toast.error('Geolocation is not supported by this browser.')
     }
   }
-
   const validateForm = () => {
     const newErrors = {}
-    
     if (!formData.petId) newErrors.petId = 'Please select a pet'
     if (!formData.vetId) newErrors.vetId = 'Please select a veterinarian'
     if (!formData.type) newErrors.type = 'Please select appointment type'
     if (!formData.reason.trim()) newErrors.reason = 'Please provide a reason for the visit'
     if (!formData.preferredDate) newErrors.preferredDate = 'Please select a preferred date'
     if (!formData.preferredTime) newErrors.preferredTime = 'Please select a preferred time'
-    
-    // Check if date is in the future
     if (formData.preferredDate) {
       const selectedDate = new Date(formData.preferredDate + 'T' + formData.preferredTime)
       if (selectedDate <= new Date()) {
         newErrors.preferredDate = 'Please select a future date and time'
       }
     }
-    
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
-
   const handleSubmit = async (e) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-    
     const appointmentData = {
       ...formData,
       scheduledDate: new Date(formData.preferredDate + 'T' + formData.preferredTime).toISOString(),
       estimatedDuration: appointmentTypes.find(t => t.value === formData.type)?.duration || 30
     }
-    
     bookAppointmentMutation.mutate(appointmentData)
   }
-
-  // Check if current user is a veterinarian
   const isVeterinarian = user?.role === 'veterinarian'
-
-  // Redirect veterinarians away from appointment booking
   useEffect(() => {
     if (isVeterinarian) {
       toast.error('Veterinarians cannot book appointments. You can view other veterinarian profiles instead.')
-      navigate('/vets') // Redirect to vet directory page
+      navigate('/vets') 
     }
   }, [isVeterinarian, navigate])
-
   const selectedType = appointmentTypes.find(t => t.value === formData.type)
   const userPets = pets?.data?.data || []
   const availableVets = vets?.data?.data || []
   const displayedVets = showAllVets ? availableVets : availableVets.slice(0, 2)
-
-  // Don't render the form if user is a veterinarian
   if (isVeterinarian) {
     return (
       <div className="max-w-2xl mx-auto text-center py-12">
@@ -178,10 +153,9 @@ export default function BookAppointmentPage() {
       </div>
     )
   }
-
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center space-x-4">
         <button
           onClick={() => navigate('/appointments')}
@@ -194,9 +168,8 @@ export default function BookAppointmentPage() {
           <p className="text-gray-600">Schedule a visit with a veterinarian</p>
         </div>
       </div>
-
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Pet Selection */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Select Pet</h2>
@@ -221,8 +194,7 @@ export default function BookAppointmentPage() {
             </div>
           </div>
         </div>
-
-        {/* Vet Search Filters */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Find Veterinarians</h2>
@@ -250,7 +222,6 @@ export default function BookAppointmentPage() {
                   </button>
                 </div>
               </div>
-
               <div>
                 <label className="label">Condition/Symptom</label>
                 <select
@@ -274,7 +245,6 @@ export default function BookAppointmentPage() {
                   <option value="exotic">Exotic pets</option>
                 </select>
               </div>
-
               <div>
                 <label className="label">Specialization</label>
                 <input
@@ -286,7 +256,6 @@ export default function BookAppointmentPage() {
                   className="input"
                 />
               </div>
-
               <div>
                 <label className="label">Distance (km)</label>
                 <select
@@ -302,7 +271,6 @@ export default function BookAppointmentPage() {
                   <option value="100">Within 100 km</option>
                 </select>
               </div>
-
               <div>
                 <label className="label">Verification</label>
                 <select
@@ -316,7 +284,6 @@ export default function BookAppointmentPage() {
                 </select>
               </div>
             </div>
-
             {userLocation && (
               <div className="bg-green-50 border border-green-200 rounded-lg p-3">
                 <p className="text-sm text-green-800">
@@ -326,8 +293,7 @@ export default function BookAppointmentPage() {
             )}
           </div>
         </div>
-
-        {/* Veterinarian Selection */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Select Veterinarian</h2>
@@ -336,7 +302,6 @@ export default function BookAppointmentPage() {
             <div className="space-y-4">
               <label className="label">Veterinarian *</label>
               {errors.vetId && <p className="text-sm text-red-600 mb-2">{errors.vetId}</p>}
-              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {displayedVets.map(vet => (
                   <div
@@ -362,7 +327,6 @@ export default function BookAppointmentPage() {
                           </div>
                         )}
                       </div>
-                      
                       <div className="flex-1 min-w-0">
                         <h3 className="text-lg font-semibold text-gray-900">
                           Dr. {vet.name}
@@ -370,25 +334,21 @@ export default function BookAppointmentPage() {
                         <p className="text-sm text-gray-600 mb-2">
                           {vet.profile?.specialization || 'General Practice'}
                         </p>
-                        
                         {vet.profile?.experience && (
                           <p className="text-sm text-gray-500 mb-1">
                             {vet.profile.experience} years experience
                           </p>
                         )}
-                        
                         {vet.distance && (
                           <p className="text-sm text-blue-600 mb-1">
                             📍 {vet.distance} km away
                           </p>
                         )}
-                        
                         {vet.profile?.consultationFee && (
                           <p className="text-sm text-green-600 mb-1">
                             💰 ₹{vet.profile.consultationFee} consultation fee
                           </p>
                         )}
-                        
                         {vet.rating && (
                           <div className="flex items-center mb-2">
                             <div className="flex items-center">
@@ -410,13 +370,11 @@ export default function BookAppointmentPage() {
                             </div>
                           </div>
                         )}
-                        
                         {vet.bio && (
                           <p className="text-sm text-gray-600 line-clamp-2">
                             {vet.bio}
                           </p>
                         )}
-                        
                         <div className="mt-2 flex flex-wrap gap-1">
                           {vet.profile?.languages && vet.profile.languages.map((lang, index) => (
                             <span key={index} className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -430,7 +388,6 @@ export default function BookAppointmentPage() {
                           ))}
                         </div>
                       </div>
-                      
                       {formData.vetId === vet._id && (
                         <div className="flex-shrink-0">
                           <div className="h-6 w-6 bg-primary-500 rounded-full flex items-center justify-center">
@@ -444,15 +401,13 @@ export default function BookAppointmentPage() {
                   </div>
                 ))}
               </div>
-              
               {availableVets.length === 0 && (
                 <div className="text-center py-8">
                   <UserIcon className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500">No veterinarians available at the moment</p>
                 </div>
               )}
-              
-              {/* Show All/Show Less Link */}
+              {}
               {availableVets.length > 2 && (
                 <div className="text-center mt-4">
                   <button
@@ -471,8 +426,7 @@ export default function BookAppointmentPage() {
             </div>
           </div>
         </div>
-
-        {/* Appointment Details */}
+        {}
         <div className="card">
           <div className="card-header">
             <h2 className="text-xl font-semibold text-gray-900">Appointment Details</h2>
@@ -495,7 +449,6 @@ export default function BookAppointmentPage() {
               </select>
               {errors.type && <p className="mt-1 text-sm text-red-600">{errors.type}</p>}
             </div>
-
             <div>
               <label className="label">Reason for Visit *</label>
               <textarea
@@ -508,7 +461,6 @@ export default function BookAppointmentPage() {
               />
               {errors.reason && <p className="mt-1 text-sm text-red-600">{errors.reason}</p>}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="label">Preferred Date *</label>
@@ -522,7 +474,6 @@ export default function BookAppointmentPage() {
                 />
                 {errors.preferredDate && <p className="mt-1 text-sm text-red-600">{errors.preferredDate}</p>}
               </div>
-
               <div>
                 <label className="label">Preferred Time *</label>
                 <input
@@ -535,7 +486,6 @@ export default function BookAppointmentPage() {
                 {errors.preferredTime && <p className="mt-1 text-sm text-red-600">{errors.preferredTime}</p>}
               </div>
             </div>
-
             <div>
               <label className="label">Additional Notes</label>
               <textarea
@@ -549,8 +499,7 @@ export default function BookAppointmentPage() {
             </div>
           </div>
         </div>
-
-        {/* Appointment Summary */}
+        {}
         {selectedType && formData.preferredDate && formData.preferredTime && (
           <div className="card bg-primary-50 border-primary-200">
             <div className="card-header">
@@ -586,8 +535,7 @@ export default function BookAppointmentPage() {
             </div>
           </div>
         )}
-
-        {/* Submit Buttons */}
+        {}
         <div className="flex space-x-4">
           <button
             type="submit"
@@ -599,7 +547,6 @@ export default function BookAppointmentPage() {
             ) : null}
             {bookAppointmentMutation.isPending ? 'Booking...' : 'Book Appointment'}
           </button>
-          
           <button
             type="button"
             onClick={() => navigate('/appointments')}
@@ -609,8 +556,7 @@ export default function BookAppointmentPage() {
           </button>
         </div>
       </form>
-
-      {/* Information */}
+      {}
       <div className="card bg-gray-50">
         <div className="card-content">
           <h4 className="font-medium text-gray-900 mb-2">Important Information</h4>

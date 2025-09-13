@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-
 const ratingSchema = new mongoose.Schema({
   user: {
     type: mongoose.Schema.ObjectId,
@@ -67,11 +66,9 @@ const ratingSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
 ratingSchema.index({ target: 1, targetType: 1 });
 ratingSchema.index({ user: 1 });
 ratingSchema.index({ rating: 1 });
 ratingSchema.index({ createdAt: -1 });
 ratingSchema.index({ user: 1, target: 1, targetType: 1 }, { unique: true });
-
 module.exports = mongoose.model('Rating', ratingSchema);

@@ -14,7 +14,6 @@ import { petAPI, appointmentAPI, orderAPI } from '../../services/api'
 import ShelterDashboard from './ShelterDashboard'
 import VetDashboard from './VetDashboard'
 import AdminDashboard from './AdminDashboard'
-
 const StatCard = ({ title, value, icon: Icon, color, href }) => (
   <Link to={href} className="block">
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group">
@@ -34,7 +33,6 @@ const StatCard = ({ title, value, icon: Icon, color, href }) => (
     </div>
   </Link>
 )
-
 const QuickAction = ({ title, description, icon: Icon, href, color }) => (
   <Link to={href} className="block">
     <div className="card p-6 hover:shadow-glow transition-all duration-300 group">
@@ -50,39 +48,30 @@ const QuickAction = ({ title, description, icon: Icon, href, color }) => (
     </div>
   </Link>
 )
-
 export default function DashboardPage() {
   const { user } = useAuth()
-  
-  // Redirect to role-specific dashboards
   if (user?.role === 'admin') {
     return <AdminDashboard />
   }
-  
   if (user?.role === 'shelter') {
     return <ShelterDashboard />
   }
-  
   if (user?.role === 'vet') {
     return <VetDashboard />
   }
-
   const { data: pets, isLoading: petsLoading } = useQuery({
     queryKey: ['user-pets'],
     queryFn: () => petAPI.getUserPets(user?.id),
     enabled: !!user?.id
   })
-
   const { data: appointments, isLoading: appointmentsLoading } = useQuery({
     queryKey: ['appointments'],
     queryFn: () => appointmentAPI.getAppointments({ limit: 5, status: 'upcoming' })
   })
-
   const { data: orders, isLoading: ordersLoading } = useQuery({
     queryKey: ['orders'],
     queryFn: () => orderAPI.getOrders({ limit: 5 })
   })
-
   const stats = [
     {
       title: 'Pets',
@@ -106,7 +95,6 @@ export default function DashboardPage() {
       href: '/orders'
     }
   ]
-
   const quickActions = [
     {
       title: 'Add New Pet',
@@ -137,12 +125,10 @@ export default function DashboardPage() {
       color: 'bg-green-600'
     }
   ]
-
   const isLoading = petsLoading || appointmentsLoading || ordersLoading
-
   return (
     <div className="space-y-8">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">
@@ -159,17 +145,15 @@ export default function DashboardPage() {
           </Link>
         </div>
       </div>
-
-      {/* Stats Cards */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
           <StatCard key={index} {...stat} />
         ))}
       </div>
-
-      {/* Recent Activity & Quick Actions */}
+      {}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Recent Appointments */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -228,8 +212,7 @@ export default function DashboardPage() {
             )}
           </div>
         </div>
-
-        {/* My Pets */}
+        {}
         <div className="card">
           <div className="card-header">
             <div className="flex items-center justify-between">
@@ -295,8 +278,7 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
-
-      {/* Quick Actions */}
+      {}
       <div>
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Quick Actions
@@ -307,8 +289,7 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
-
-      {/* Health Tips */}
+      {}
       <div className="card">
         <div className="card-header">
           <h2 className="text-xl font-semibold text-gray-900">

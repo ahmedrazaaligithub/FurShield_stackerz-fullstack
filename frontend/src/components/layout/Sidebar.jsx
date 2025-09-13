@@ -16,7 +16,6 @@ import {
   ShieldCheckIcon
 } from '@heroicons/react/24/outline'
 import { cn } from '../../utils/cn'
-
 const getNavigation = (userRole) => {
   const baseNavigation = [
     { name: 'Dashboard', href: '/dashboard', icon: HomeIcon },
@@ -33,26 +32,20 @@ const getNavigation = (userRole) => {
   ]
   return baseNavigation
 }
-
 const adminNavigation = [
   { name: 'Admin Panel', href: '/admin', icon: ShieldCheckIcon },
   { name: 'User Management', href: '/admin/users', icon: UserIcon },
   { name: 'Payment Providers', href: '/admin/payments', icon: Cog6ToothIcon },
   { name: 'Audit Logs', href: '/admin/audit', icon: ShieldCheckIcon },
 ]
-
 export const Sidebar = ({ open, onClose }) => {
   const location = useLocation()
   const { user } = useAuth()
   const [avatarKey, setAvatarKey] = useState(0)
-  
   const isAdmin = user?.role === 'admin'
-  
-  // Force avatar re-render when user changes
   useEffect(() => {
     setAvatarKey(prev => prev + 1)
   }, [user?.avatar])
-
   const SidebarContent = () => (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between p-4 border-b border-gray-200">
@@ -69,12 +62,10 @@ export const Sidebar = ({ open, onClose }) => {
           <XMarkIcon className="h-6 w-6" />
         </button>
       </div>
-
       <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
         {getNavigation(user?.role).map((item) => {
           const isActive = location.pathname === item.href || 
                           (item.href !== '/dashboard' && location.pathname.startsWith(item.href))
-          
           return (
             <Link
               key={item.name}
@@ -97,7 +88,6 @@ export const Sidebar = ({ open, onClose }) => {
             </Link>
           )
         })}
-
         {isAdmin && (
           <>
             <div className="pt-6 mt-6 border-t border-gray-200">
@@ -108,7 +98,6 @@ export const Sidebar = ({ open, onClose }) => {
             {adminNavigation.map((item) => {
               const isActive = location.pathname === item.href || 
                               location.pathname.startsWith(item.href)
-              
               return (
                 <Link
                   key={item.name}
@@ -134,7 +123,6 @@ export const Sidebar = ({ open, onClose }) => {
           </>
         )}
       </nav>
-
       <div className="p-4 border-t border-gray-200">
         <div className="flex items-center">
           {user?.avatar ? (
@@ -163,10 +151,9 @@ export const Sidebar = ({ open, onClose }) => {
       </div>
     </div>
   )
-
   return (
     <>
-      {/* Mobile sidebar */}
+      {}
       <Transition.Root show={open} as={Fragment}>
         <Dialog as="div" className="relative z-50 lg:hidden" onClose={onClose}>
           <Transition.Child
@@ -180,7 +167,6 @@ export const Sidebar = ({ open, onClose }) => {
           >
             <div className="fixed inset-0 bg-gray-900/80" />
           </Transition.Child>
-
           <div className="fixed inset-0 flex">
             <Transition.Child
               as={Fragment}
@@ -200,8 +186,7 @@ export const Sidebar = ({ open, onClose }) => {
           </div>
         </Dialog>
       </Transition.Root>
-
-      {/* Desktop sidebar */}
+      {}
       <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white border-r border-gray-200">
           <SidebarContent />

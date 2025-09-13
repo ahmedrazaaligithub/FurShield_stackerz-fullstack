@@ -24,7 +24,6 @@ import { StarIcon as StarIconSolid } from '@heroicons/react/24/solid'
 import { cn } from '../../utils/cn'
 import toast from 'react-hot-toast'
 import VetHealthRecordForm from '../../components/vets/VetHealthRecordForm'
-
 export default function PetDetailsPage() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -37,47 +36,37 @@ export default function PetDetailsPage() {
   const [editingFeedback, setEditingFeedback] = useState(null)
   const [editContent, setEditContent] = useState('')
   const [showVetRecordModal, setShowVetRecordModal] = useState(false)
-  
   const isVet = user?.role === 'veterinarian' || user?.role === 'vet'
   const isShelter = user?.role === 'shelter'
-
   const { data: pet, isLoading, error } = useQuery({
     queryKey: ['pet', id],
     queryFn: () => petAPI.getPet(id)
   })
-
   const { data: healthRecords } = useQuery({
     queryKey: ['pet-health-records', id],
     queryFn: () => petAPI.getHealthRecords(id),
     enabled: !!id
   })
-
   const { data: appointments } = useQuery({
     queryKey: ['pet-appointments', id],
     queryFn: () => appointmentAPI.getAppointments({ petId: id }),
     enabled: !!id
   })
-
-  // Fetch feedback data from API
   const { data: feedbackData, isLoading: feedbackLoading, error: feedbackError } = useQuery({
     queryKey: ['pet-feedback', id],
     queryFn: () => petAPI.getFeedback(id),
     enabled: !!id,
     retry: 3,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    cacheTime: 10 * 60 * 1000, // 10 minutes
+    staleTime: 5 * 60 * 1000, 
+    cacheTime: 10 * 60 * 1000, 
     onError: (error) => {
       console.error('Failed to fetch feedback:', error)
-      // Don't show error toast for 404 (no feedback yet)
       if (error.response?.status !== 404) {
         toast.error('Failed to load feedback')
       }
     }
   })
-
-  // Use React Query data directly instead of local state
   const feedbacks = feedbackData?.data?.data || []
-
   const deletePetMutation = useMutation({
     mutationFn: petAPI.deletePet,
     onSuccess: () => {
@@ -88,12 +77,10 @@ export default function PetDetailsPage() {
       toast.error(error.response?.data?.error || 'Failed to delete pet')
     }
   })
-
   const uploadPhotoMutation = useMutation({
     mutationFn: async (file) => {
       const photoUrl = await uploadImageToCloudinary(file)
       const updatedPhotos = [...(petData.photos || []), photoUrl]
-      
       return petAPI.updatePet(id, { photos: updatedPhotos })
     },
     onSuccess: () => {
@@ -105,7 +92,6 @@ export default function PetDetailsPage() {
       toast.error('Failed to upload photo')
     }
   })
-
   const deletePhotoMutation = useMutation({
     mutationFn: async (photoIndex) => {
       const updatedPhotos = petData.photos.filter((_, index) => index !== photoIndex)
@@ -120,25 +106,21 @@ export default function PetDetailsPage() {
       toast.error('Failed to delete photo')
     }
   })
-
   const handleDeletePet = () => {
     if (window.confirm('Are you sure you want to delete this pet? This action cannot be undone.')) {
       deletePetMutation.mutate(id)
     }
   }
-
   const handleDeletePhoto = (photoIndex) => {
     if (window.confirm('Are you sure you want to delete this photo?')) {
       deletePhotoMutation.mutate(photoIndex)
     }
   }
-
   const submitFeedbackMutation = useMutation({
     mutationFn: (feedbackData) => petAPI.submitFeedback(id, feedbackData),
     onSuccess: (response) => {
-      // Update the cache optimistically with the new feedback
       queryClient.setQueryData(['pet-feedback', id], (oldData) => {
-        const feedbackContent = newFeedback // Store the content before overwriting
+        const feedbackContent = newFeedback 
         const newFeedbackItem = response?.data?.data || {
           id: Date.now(),
           user: { 
@@ -149,7 +131,6 @@ export default function PetDetailsPage() {
           createdAt: new Date().toISOString(),
           type: isVet ? 'professional_advice' : isShelter ? 'care_tip' : 'experience_share'
         }
-        
         if (oldData?.data?.data) {
           return {
             ...oldData,
@@ -159,15 +140,12 @@ export default function PetDetailsPage() {
             }
           }
         }
-        
         return {
           data: {
             data: [newFeedbackItem]
           }
         }
       })
-      
-      // Also invalidate to ensure fresh data
       queryClient.invalidateQueries(['pet-feedback', id])
       setNewFeedback('')
       toast.success('Feedback submitted successfully!')
@@ -177,28 +155,22 @@ export default function PetDetailsPage() {
       toast.error('Failed to submit feedback')
     }
   })
-
   const handleSubmitFeedback = async (e) => {
     e.preventDefault()
     if (!newFeedback.trim()) return
-
     const feedbackData = {
       content: newFeedback.trim(),
       type: isVet ? 'professional_advice' : isShelter ? 'care_tip' : 'experience_share'
     }
-    
     submitFeedbackMutation.mutate(feedbackData)
   }
-
   const handleEditFeedback = (feedback) => {
     setEditingFeedback(feedback.id)
     setEditContent(feedback.content)
   }
-
   const editFeedbackMutation = useMutation({
     mutationFn: ({ feedbackId, content }) => petAPI.updateFeedback(feedbackId, { content }),
     onSuccess: (response, variables) => {
-      // Update cache optimistically
       queryClient.setQueryData(['pet-feedback', id], (oldData) => {
         if (oldData?.data?.data) {
           return {
@@ -215,7 +187,6 @@ export default function PetDetailsPage() {
         }
         return oldData
       })
-      
       setEditingFeedback(null)
       setEditContent('')
       toast.success('Feedback updated successfully!')
@@ -225,21 +196,17 @@ export default function PetDetailsPage() {
       toast.error('Failed to update feedback')
     }
   })
-
   const handleSaveEdit = async (feedbackId) => {
     if (!editContent.trim()) return
     editFeedbackMutation.mutate({ feedbackId, content: editContent.trim() })
   }
-
   const handleCancelEdit = () => {
     setEditingFeedback(null)
     setEditContent('')
   }
-
   const deleteFeedbackMutation = useMutation({
     mutationFn: (feedbackId) => petAPI.deleteFeedback(feedbackId),
     onSuccess: (response, feedbackId) => {
-      // Update cache optimistically
       queryClient.setQueryData(['pet-feedback', id], (oldData) => {
         if (oldData?.data?.data) {
           return {
@@ -252,7 +219,6 @@ export default function PetDetailsPage() {
         }
         return oldData
       })
-      
       toast.success('Feedback deleted successfully!')
     },
     onError: (error) => {
@@ -260,14 +226,12 @@ export default function PetDetailsPage() {
       toast.error('Failed to delete feedback')
     }
   })
-
   const handleDeleteFeedback = async (feedbackId) => {
     if (!window.confirm('Are you sure you want to delete this feedback? This action cannot be undone.')) {
       return
     }
     deleteFeedbackMutation.mutate(feedbackId)
   }
-
   const getRoleIcon = (role) => {
     switch (role) {
       case 'veterinarian':
@@ -279,7 +243,6 @@ export default function PetDetailsPage() {
         return <UserIcon className="h-4 w-4" />
     }
   }
-
   const getRoleBadgeClass = (role) => {
     switch (role) {
       case 'veterinarian':
@@ -291,7 +254,6 @@ export default function PetDetailsPage() {
         return 'badge-secondary'
     }
   }
-
   const getRoleLabel = (role) => {
     switch (role) {
       case 'veterinarian':
@@ -303,16 +265,12 @@ export default function PetDetailsPage() {
         return 'Pet Owner'
     }
   }
-
   const handlePhotoUpload = async (e) => {
     const files = Array.from(e.target.files)
     if (files.length === 0) return
-
     setIsUploading(true)
-    
     try {
       const uploadedPhotos = []
-      
       for (const file of files) {
         try {
           const data = await uploadImageToCloudinary(file)
@@ -322,17 +280,11 @@ export default function PetDetailsPage() {
           toast.error(`Failed to upload ${file.name}`)
         }
       }
-      
       if (uploadedPhotos.length > 0) {
-        // Update pet photos via API
         const currentPhotos = petData.photos || []
         const updatedPhotos = [...currentPhotos, ...uploadedPhotos]
-        
-        // Update the pet with new photos
         try {
           await petAPI.updatePet(id, { photos: updatedPhotos })
-          
-          // Update query cache
           queryClient.setQueryData(['pet', id], (oldData) => {
             if (oldData?.data?.data) {
               return {
@@ -348,14 +300,12 @@ export default function PetDetailsPage() {
             }
             return oldData
           })
-          
           toast.success(`${uploadedPhotos.length} photo(s) uploaded successfully`)
         } catch (error) {
           console.error('Failed to update pet photos:', error)
           toast.error('Failed to save photos to pet record')
         }
       }
-      
     } catch (error) {
       console.error('Upload error:', error)
       toast.error('Failed to upload photos')
@@ -363,7 +313,6 @@ export default function PetDetailsPage() {
       setIsUploading(false)
     }
   }
-
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-64">
@@ -371,7 +320,6 @@ export default function PetDetailsPage() {
       </div>
     )
   }
-
   if (error || !pet?.data?.data) {
     return (
       <div className="text-center py-12">
@@ -385,7 +333,6 @@ export default function PetDetailsPage() {
       </div>
     )
   }
-
   const petData = pet.data.data
   const petHealthRecords = healthRecords?.data?.data || []
   const petAppointments = appointments?.data?.data || []
@@ -395,7 +342,6 @@ export default function PetDetailsPage() {
       )
     : null
   const canVetAddRecord = !!currentVetAppointment
-
   const tabs = [
     { id: 'overview', name: 'Overview' },
     { id: 'health', name: 'Health Records' },
@@ -403,10 +349,9 @@ export default function PetDetailsPage() {
     { id: 'photos', name: 'Photos' },
     { id: 'feedback', name: 'Feedback & Suggestions' }
   ]
-
   return (
     <div className="max-w-6xl mx-auto space-y-6">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
           <button
@@ -420,7 +365,6 @@ export default function PetDetailsPage() {
             <p className="text-gray-600 capitalize">{petData.species} • {petData.breed}</p>
           </div>
         </div>
-        
         {!isVet && (
           <div className="flex space-x-3">
             <Link
@@ -448,8 +392,7 @@ export default function PetDetailsPage() {
           </div>
         )}
       </div>
-
-      {/* Pet Summary Card */}
+      {}
       <div className="card">
         <div className="p-6">
           <div className="flex items-start space-x-6">
@@ -466,7 +409,6 @@ export default function PetDetailsPage() {
                 </div>
               )}
             </div>
-            
             <div className="flex-1">
               <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-4">
                 <div>
@@ -495,8 +437,7 @@ export default function PetDetailsPage() {
                   </span>
                 </div>
               </div>
-              
-              {/* Pet Rating */}
+              {}
               <div className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
                 <div className="flex items-center space-x-2">
                   <div className="flex items-center space-x-1">
@@ -517,7 +458,6 @@ export default function PetDetailsPage() {
                     ({petData.totalRatings || 0} reviews)
                   </span>
                 </div>
-                
                 <button className="btn btn-outline btn-sm ml-auto">
                   <StarIcon className="h-4 w-4 mr-2" />
                   Rate This Pet
@@ -525,8 +465,7 @@ export default function PetDetailsPage() {
               </div>
             </div>
           </div>
-          
-          {/* Pet Owner Details */}
+          {}
           {petData.owner && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <div className="flex items-center justify-between">
@@ -544,7 +483,6 @@ export default function PetDetailsPage() {
                       </div>
                     )}
                   </div>
-                  
                   <div className="flex-1">
                     <div className="flex items-center space-x-2">
                       <h4 className="text-lg font-semibold text-gray-900">
@@ -561,12 +499,10 @@ export default function PetDetailsPage() {
                          'Pet Owner'}
                       </span>
                     </div>
-                    
                     <div className="flex items-center space-x-4 mt-1">
                       <span className="text-sm text-gray-500">
                         {petData.owner.totalPets || 1} pet{(petData.owner.totalPets || 1) !== 1 ? 's' : ''}
                       </span>
-                      
                       {petData.owner.joinedDate && (
                         <span className="text-sm text-gray-500">
                           Member since {new Date(petData.owner.joinedDate).getFullYear()}
@@ -575,7 +511,6 @@ export default function PetDetailsPage() {
                     </div>
                   </div>
                 </div>
-                
                 <button
                   onClick={() => navigate(`/profile/${petData.owner._id}`)}
                   className="btn btn-outline btn-sm"
@@ -588,8 +523,7 @@ export default function PetDetailsPage() {
           )}
         </div>
       </div>
-
-      {/* Tabs */}
+      {}
       <div className="border-b border-gray-200">
         <nav className="-mb-px flex space-x-8">
           {tabs.map((tab) => (
@@ -608,11 +542,10 @@ export default function PetDetailsPage() {
           ))}
         </nav>
       </div>
-
-      {/* Tab Content */}
+      {}
       {activeTab === 'overview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Basic Information */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
@@ -636,7 +569,6 @@ export default function PetDetailsPage() {
                   <p className="text-gray-900">{petData.microchipId || 'Not registered'}</p>
                 </div>
               </div>
-              
               {petData.notes && (
                 <div>
                   <label className="label">Notes</label>
@@ -645,8 +577,7 @@ export default function PetDetailsPage() {
               )}
             </div>
           </div>
-
-          {/* Medical Information */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">Medical Information</h3>
@@ -664,7 +595,6 @@ export default function PetDetailsPage() {
                   </div>
                 </div>
               )}
-              
               {petData.allergies?.length > 0 && (
                 <div>
                   <label className="label">Allergies</label>
@@ -677,7 +607,6 @@ export default function PetDetailsPage() {
                   </div>
                 </div>
               )}
-              
               {petData.medications?.length > 0 && (
                 <div>
                   <label className="label">Current Medications</label>
@@ -690,7 +619,6 @@ export default function PetDetailsPage() {
                   </div>
                 </div>
               )}
-              
               {petData.vetContact && (
                 <div>
                   <label className="label">Veterinarian</label>
@@ -701,8 +629,7 @@ export default function PetDetailsPage() {
           </div>
         </div>
       )}
-
-      {/* Vet Health Record Modal */}
+      {}
       {showVetRecordModal && (
         <VetHealthRecordForm
           pet={petData}
@@ -713,7 +640,6 @@ export default function PetDetailsPage() {
           }}
         />
       )}
-
       {activeTab === 'health' && (
         <div className="card">
           <div className="card-header">
@@ -763,7 +689,6 @@ export default function PetDetailsPage() {
           </div>
         </div>
       )}
-
       {activeTab === 'appointments' && (
         <div className="card">
           <div className="card-header">
@@ -818,7 +743,6 @@ export default function PetDetailsPage() {
           </div>
         </div>
       )}
-
       {activeTab === 'photos' && (
         <div className="card">
           <div className="card-header">
@@ -834,7 +758,6 @@ export default function PetDetailsPage() {
                     accept="image/*"
                     onChange={handlePhotoUpload}
                     className="hidden"
-                    disabled={isUploading}
                   />
                 </label>
               )}
@@ -853,12 +776,9 @@ export default function PetDetailsPage() {
                     {!isVet && user?.id === petData.owner?._id && (
                       <button
                         onClick={() => handleDeletePhoto(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600"
-                        title="Delete photo"
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
-                        <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
+                        <XMarkIcon className="h-4 w-4" />
                       </button>
                     )}
                   </div>
@@ -876,7 +796,6 @@ export default function PetDetailsPage() {
 
       {activeTab === 'feedback' && (
         <div className="space-y-6">
-          {/* Add Feedback Form */}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -926,8 +845,7 @@ export default function PetDetailsPage() {
               </form>
             </div>
           </div>
-
-          {/* Feedback List */}
+          {}
           <div className="card">
             <div className="card-header">
               <h3 className="text-lg font-semibold text-gray-900">
@@ -959,7 +877,6 @@ export default function PetDetailsPage() {
                           {new Date(feedback.createdAt).toLocaleDateString()}
                         </span>
                       </div>
-                      
                       <div className="mb-3">
                         {editingFeedback === feedback.id ? (
                           <div className="space-y-3">
@@ -994,8 +911,7 @@ export default function PetDetailsPage() {
                           </p>
                         )}
                       </div>
-
-                      {/* Feedback Type Badge */}
+                      {}
                       <div className="flex items-center justify-between">
                         <span className={cn(
                           'badge badge-sm',
@@ -1007,8 +923,7 @@ export default function PetDetailsPage() {
                            feedback.type === 'care_tip' ? '🏠 Care Tip' :
                            '💭 Experience Share'}
                         </span>
-                        
-                        {/* Action buttons for feedback owner */}
+                        {}
                         {feedback.user.name === user?.name && editingFeedback !== feedback.id && (
                           <div className="flex items-center space-x-2">
                             <button 

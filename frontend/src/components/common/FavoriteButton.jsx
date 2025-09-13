@@ -5,27 +5,21 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { favoritesAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import toast from 'react-hot-toast';
-
 const FavoriteButton = ({ productId, className = '', size = 'md' }) => {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-
-  // Check if product is favorited
   const { data: favoriteStatus, isLoading } = useQuery({
     queryKey: ['favorite-status', productId],
     queryFn: () => favoritesAPI.checkFavoriteStatus(productId),
     enabled: !!user && !!productId,
     select: (data) => data.data.isFavorite
   });
-
-  // Toggle favorite mutation
   const toggleFavoriteMutation = useMutation({
     mutationFn: () => favoritesAPI.toggleFavorite(productId),
     onSuccess: (data) => {
       queryClient.invalidateQueries(['favorite-status', productId]);
       queryClient.invalidateQueries(['favorites']);
       queryClient.invalidateQueries(['favorites-count']);
-      
       const message = data.data.isFavorite 
         ? 'Added to favorites!' 
         : 'Removed from favorites!';
@@ -35,35 +29,28 @@ const FavoriteButton = ({ productId, className = '', size = 'md' }) => {
       toast.error(error.response?.data?.error || 'Failed to update favorites');
     }
   });
-
   const handleToggleFavorite = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    
     if (!user) {
       toast.error('Please login to add favorites');
       return;
     }
-
     toggleFavoriteMutation.mutate();
   };
-
   const sizeClasses = {
     sm: 'h-4 w-4',
     md: 'h-6 w-6',
     lg: 'h-8 w-8'
   };
-
   const buttonSizeClasses = {
     sm: 'p-1',
     md: 'p-2',
     lg: 'p-3'
   };
-
   if (!user) {
     return null;
   }
-
   return (
     <button
       onClick={handleToggleFavorite}
@@ -88,5 +75,4 @@ const FavoriteButton = ({ productId, className = '', size = 'md' }) => {
     </button>
   );
 };
-
 export default FavoriteButton;

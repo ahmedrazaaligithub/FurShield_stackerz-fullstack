@@ -18,31 +18,26 @@ import {
 import { Header } from './layout/Header'
 import { Sidebar } from './layout/Sidebar'
 import { NotificationPanel } from './layout/NotificationPanel'
-
 export const Layout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [notificationPanelOpen, setNotificationPanelOpen] = useState(false)
-
   return (
     <div className="min-h-screen bg-gray-50">
       <Header 
         onMenuClick={() => setSidebarOpen(!sidebarOpen)}
         onNotificationClick={() => setNotificationPanelOpen(!notificationPanelOpen)}
       />
-      
       <div className="flex">
         <Sidebar 
           open={sidebarOpen} 
           onClose={() => setSidebarOpen(false)} 
         />
-        
         <main className="flex-1 p-6 lg:ml-64">
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>
         </main>
       </div>
-      
       <NotificationPanel 
         open={notificationPanelOpen}
         onClose={() => setNotificationPanelOpen(false)}
